@@ -218,9 +218,21 @@ def clean_json_response(text: str) -> str:
 
 
 def _fred_series(series_id: str, fred_api_key: str | None = None) -> pd.Series:
+    import requests, io
+    api_key = fred_api_key or os.getenv("FRED_API_KEY") or os.getenv("fred_api_key")
+    if api_key:
+        url = (
+            f"https://api.stlouisfed.org/fred/series/observations"
+            f"?series_id={series_id}&api_key={api_key}&file_type=json"
+        )
+        resp = requests.get(url, timeout=60)
+        resp.raise_for_status()
+        obs = resp.json().get("observations", [])
+        if obs:
+            df2 = pd.DataFrame(obs)[["date", "value"]]
+            df2["value"] = pd.to_numeric(df2["value"], errors="coerce")
+            return pd.Series(df2["value"].values, index=pd.to_datetime(df2["date"])).dropna()
     url = f"https://fred.stlouisfed.org/graph/fredgraph.csv?id={series_id}"
-    if fred_api_key:
-        url += f"&api_key={fred_api_key}"
     df = pd.read_csv(url)
     date_col = "DATE" if "DATE" in df.columns else "observation_date"
     if date_col not in df.columns or series_id not in df.columns:
