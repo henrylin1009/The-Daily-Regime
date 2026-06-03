@@ -2027,7 +2027,7 @@ HTML_TMPL_LITE = """<!doctype html>
     .logo .logo-the { font-weight:700; }
     .logo .logo-regime { font-weight:700; }
     .logo .logo-dot { color:var(--red); }
-    .sheet-meta { font-family:var(--mono); font-size:0.68rem; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); font-weight:500; }
+    .sheet-meta { font-family:var(--mono); font-size:0.85rem; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); font-weight:500; }
     .sheet { max-width:1040px; margin:0 auto; background:var(--block); padding:1.4rem 2rem 3rem; }
     @media (max-width:560px) { .sheet { padding:1.1rem 1.1rem 2.5rem; } }
     /* Reading measure — keep prose at a comfortable width even on a wide sheet */
