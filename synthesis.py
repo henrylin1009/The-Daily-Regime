@@ -1940,6 +1940,7 @@ def _build_lite_lang_blocks(
             asset_tilt = _tilt_rows_for_lang(tilt_result, lang_key)
             tilt_context = _tilt_context_line(tilt_result, lang_key)
         else:
+            in_transition = False
             regime_disp = _regime_label_display(macro_regime_label, lang_key)
             regime_tone = regime_gauge_tone
             asset_tilt = _regime_asset_tilt_for_lang(regime_asset_tilt_label, lang_key)

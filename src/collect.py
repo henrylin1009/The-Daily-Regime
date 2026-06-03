@@ -284,6 +284,7 @@ INDICATOR_FETCHERS: dict[str, Callable[[str], pd.DataFrame]] = {
     # Market — daily
     "vix": lambda s: _fetch_equity("^VIX", s),
     "dxy": _fetch_dxy,
+    "dgs10": lambda s: _fetch_fred("DGS10", s),
     # GLD is an ETF (share price). If this looks like spot gold / futures,
     # we'd rather fail early than propagate nonsense into percentiles/regimes.
     "gld": lambda s: _fetch_etf_yfinance("GLD", s),
