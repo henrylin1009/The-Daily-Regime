@@ -804,7 +804,7 @@ LITE_UI: dict[str, dict[str, str]] = {
         "bottom_line_head": "The Bottom Line",
         "positioning_lab": "6–12 month positioning",
         "watch_head": "What to Watch",
-        "cio_summary": "CIO Narrative",
+        "cio_summary": "Narrative",
         "watchout_label": "Trigger risk",
         "history_summary": "Historical Analogues",
         "history_us_sub": "US regime analogues — closest historical setups and subsequent S&P returns",
@@ -2235,7 +2235,7 @@ HTML_TMPL_LITE = """<!doctype html>
       }
       var saved = null;
       try { saved = localStorage.getItem(KEY); } catch (e) {}
-      apply(saved || 'zh-Hant');
+      apply(saved || 'en');
       document.addEventListener('click', function (ev) {
         var btn = ev.target.closest('.lang-switch button');
         if (btn) { apply(btn.getAttribute('data-lang')); return; }
