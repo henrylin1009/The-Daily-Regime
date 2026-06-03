@@ -1,0 +1,19 @@
+---
+description: Default web open target for this project
+alwaysApply: true
+---
+
+# Open Web Default
+
+When the user asks to "open web page", "開網頁", or equivalent in this project, default to the Brief/Flow/Synthesis triplet (three linked pages, separate files):
+
+- Entry page: `output/layer3.html` (The primary navigation shell)
+- Related pages in the same shell:
+  - `output/layer2.html`
+  - `output/layer1.html`
+
+If server mode is requested, open `http://127.0.0.1:8080`.
+
+If today's file is missing, open the newest non-legacy `output/flow_brief_*.html`.
+Do not default to `_legacy.html` files unless the user explicitly asks for legacy.
+Do not default to Layer 1/2/3 tabs unless the user explicitly asks for layer tabs.

@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Macro Brief — {{ report_date }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #ffffff;
+      --bg-secondary: #f8f9fb;
+      --bg-card: #ffffff;
+      --border: #e8ecf0;
+      --text-primary: #0f1923;
+      --text-muted: #8a96a3;
+      --text-number: #374151;
+      --green: #16a34a;
+      --yellow: #b45309;
+      --red: #dc2626;
+      --blue: #2563eb;
+      --accent: #4f46e5;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #ffffff;
+      color: #0f1923;
+      line-height: 1.5;
+      padding: 0;
+    }
+    .mono { font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: var(--text-number); }
+    .container { width: 100%; max-width: 1400px; margin: 0 auto; padding: 0 1rem 2rem; }
+    .sticky-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: #ffffff;
+      border-bottom: 1px solid #e8ecf0;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    }
+    .header-inner {
+      display: grid;
+      grid-template-columns: 1.2fr 2fr 1fr;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.85rem 1rem;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    .brand-title { font-size: 1.05rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+    .brand-sub { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.18rem; }
+    .traffic-wrap { display: flex; justify-content: center; gap: 0.5rem; flex-wrap: wrap; }
+    .pill {
+      border: 1px solid #e2e8f0;
+      border-radius: 999px;
+      padding: 0.38rem 0.68rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      white-space: nowrap;
+      color: var(--text-primary);
+      background: #f1f5f9;
+    }
+    .pill.GREEN { background: #f0fdf4; border-color: #bbf7d0; color: #15803d; }
+    .pill.YELLOW { background: #fffbeb; border-color: #fde68a; color: #92400e; }
+    .pill.RED { background: #fef2f2; border-color: #fecaca; color: #b91c1c; }
+    .dot { font-size: 0.8rem; line-height: 1; }
+    .regime-badge {
+      justify-self: end;
+      background: #f8f9fb;
+      border: 1px solid #e8ecf0;
+      border-radius: 10px;
+      padding: 0.5rem 0.7rem;
+      min-width: 210px;
+      text-align: right;
+    }
+    .regime-label { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+    .regime-value { margin-top: 0.2rem; font-size: 0.86rem; font-weight: 600; color: #0f1923; }
+    .regime-strip {
+      background: #f8f9fb;
+      border-bottom: 1px solid #e8ecf0;
+      color: #6b7280;
+      font-size: 0.78rem;
+      padding: 0.55rem 1rem;
+    }
+    .regime-strip-inner { max-width: 1400px; margin: 0 auto; white-space: nowrap; overflow-x: auto; }
+
+    .grid-main {
+      display: grid;
+      grid-template-columns: 3fr 2fr;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    .section {
+      background: #ffffff;
+      border: 1px solid #e8ecf0;
+      border-radius: 10px;
+      padding: 1rem;
+      margin-top: 1rem;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+    }
+    .section-lead {
+    }
+    .executive-summary {
+      font-size: 1.0rem;
+      line-height: 1.7;
+      color: #1f2937;
+      max-width: 80ch;
+    }
+    .section-title {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #6b7280;
+      margin-bottom: 0.8rem;
+      font-weight: 600;
+    }
+    .narrative {
+      font-size: 0.95rem;
+      color: #1f2937;
+      white-space: pre-wrap;
+      max-width: 78ch;
+    }
+    .narrative-tag {
+      display: inline-block;
+      font-size: 0.72rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 999px;
+      padding: 0.25rem 0.5rem;
+      margin-bottom: 0.65rem;
+      color: #92400e;
+      background: #fffbeb;
+    }
+    .match-card {
+      background: #f8f9fb;
+      border: 1px solid #e8ecf0;
+      border-radius: 9px;
+      padding: 0.85rem;
+      margin-top: 0.75rem;
+    }
+    .match-card:first-child { margin-top: 0; }
+    .match-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .date-badge {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.72rem;
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 0.18rem 0.42rem;
+      color: var(--text-number);
+    }
+    .match-desc { margin-top: 0.45rem; font-size: 0.84rem; color: #374151; }
+    .match-what { margin-top: 0.5rem; font-size: 0.82rem; color: #6b7280; }
+    .stat-pills { display: flex; gap: 0.45rem; flex-wrap: wrap; margin-top: 0.65rem; }
+    .stat-pill {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.71rem;
+      border-radius: 999px;
+      border: 1px solid #e2e8f0;
+      padding: 0.22rem 0.46rem;
+      background: #f1f5f9;
+      color: var(--text-number);
+    }
+    .pos { color: var(--green) !important; }
+    .neg { color: var(--red) !important; }
+    .muted { color: var(--text-muted); }
+
+    table { width: 100%; border-collapse: collapse; font-size: 0.79rem; }
+    thead th {
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-size: 0.67rem;
+      letter-spacing: 0.06em;
+      text-align: left;
+      padding: 0.5rem 0.52rem;
+      border-bottom: 1px solid var(--border);
+      font-weight: 600;
+    }
+    tbody td {
+      padding: 0.48rem 0.52rem;
+      border-bottom: 1px solid #eef1f4;
+      vertical-align: top;
+    }
+    tbody tr:nth-child(odd) { background: #fafbfc; }
+
+    .pct-cell { min-width: 92px; }
+    .pct-wrap {
+      position: relative;
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      border-radius: 999px;
+      height: 9px;
+      margin-top: 0.18rem;
+      overflow: hidden;
+    }
+    .pct-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--blue), var(--accent));
+    }
+
+    .attrib-tabs { margin-top: 0.7rem; }
+    .tab-buttons { display: flex; gap: 0.45rem; flex-wrap: wrap; margin-bottom: 0.7rem; }
+    .tab-btn {
+      background: #f8f9fb;
+      border: 1px solid #e8ecf0;
+      color: var(--text-muted);
+      border-radius: 8px;
+      padding: 0.4rem 0.65rem;
+      font-size: 0.74rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .tab-btn.active { background: #ffffff; color: #0f1923; border-color: #cbd5e1; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+    .tab-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; }
+
+    .toggle-btn {
+      background: #f8f9fb;
+      border: 1px solid #e8ecf0;
+      color: #374151;
+      border-radius: 8px;
+      padding: 0.45rem 0.65rem;
+      font-size: 0.76rem;
+      cursor: pointer;
+      margin-bottom: 0.7rem;
+    }
+    .collapsed { display: none; }
+
+    .signal-pill {
+      display: inline-block;
+      padding: 0.14rem 0.38rem;
+      border-radius: 999px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      border: 1px solid transparent;
+    }
+    .signal-pill.GREEN { color: #15803d; border-color: #bbf7d0; background: #f0fdf4; }
+    .signal-pill.YELLOW { color: #92400e; border-color: #fde68a; background: #fffbeb; }
+    .signal-pill.RED { color: #b91c1c; border-color: #fecaca; background: #fef2f2; }
+
+    tr.pct-high { background: #fef2f2 !important; }
+    tr.pct-low { background: #eff6ff !important; }
+
+    .footer {
+      border-top: 1px solid var(--border);
+      margin-top: 1rem;
+      padding-top: 0.65rem;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+    }
+  </style>
+</head>
+<body>
+  {% set ns = namespace(panel_a=None, panel_b=None, panel_c=None, panel_d=None, panel_e=None, panel_f=None) %}
+  {% if factor_attrib and factor_attrib.panels %}
+    {% for p in factor_attrib.panels %}
+      {% if p.id == 'tradeable' %}{% set ns.panel_a = p %}{% endif %}
+      {% if p.id == 'crr' %}{% set ns.panel_b = p %}{% endif %}
+      {% if p.id == 'fama_french' %}{% set ns.panel_c = p %}{% endif %}
+      {% if p.id == 'sectors' %}{% set ns.panel_d = p %}{% endif %}
+      {% if p.id == 'spx_contrib_1d' %}{% set ns.panel_e = p %}{% endif %}
+      {% if p.id == 'spx_contrib_21d' %}{% set ns.panel_f = p %}{% endif %}
+    {% endfor %}
+  {% endif %}
+
+  <header class="sticky-header">
+    <div class="header-inner">
+      <div>
+        <div class="brand-title">Macro Intelligence</div>
+        <div class="brand-sub mono">{{ report_date }} | snapshot {{ as_of }}</div>
+      </div>
+
+      <div class="traffic-wrap">
+        {% for key, info in headline.items() %}
+          {% set label = key | replace('_', ' ') | title %}
+          <span class="pill {{ info.signal }}">
+            <span class="dot">●</span>
+            {{ label }}:
+            {% if info.signal == 'GREEN' %}LOW{% elif info.signal == 'YELLOW' %}ELEVATED{% else %}HIGH{% endif %}
+          </span>
+        {% endfor %}
+      </div>
+
+      <div class="regime-badge">
+        <div class="regime-label">Current Regime</div>
+        <div class="regime-value">
+          {% if regime %}{{ regime.label }} · {{ (regime.probability * 100) | round(0) }}%{% else %}N/A{% endif %}
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="regime-strip">
+    <div class="regime-strip-inner mono">
+      {% if regime %}
+        Month {{ regime.months_in_regime }} of {{ regime.label }} regime
+        | Avg duration: {{ regime.avg_duration_months | round(0) }}m
+        | SPY avg 12m in this regime: {{ regime.avg_12m_forward_return | fmt_pct }}
+        | Worst drawdown: {{ regime.worst_drawdown | fmt_pct }}
+        {% if regime.transition_probs and regime.label in regime.transition_probs %}
+          | Next month: {{ (regime.transition_probs[regime.label] * 100) | round(0) }}% stay {{ regime.label }}
+        {% endif %}
+      {% else %}
+        Regime model unavailable.
+      {% endif %}
+    </div>
+  </div>
+
+  <main class="container">
+    <section class="section section-lead">
+      <div class="section-title">Risk Thermometer</div>
+      <p class="executive-summary">{{ risk_conclusion }}</p>
+      {% if regime_stats.available %}
+      <p class="mono" style="margin-top:0.5rem;">
+        Current episode: {{ regime_stats.current_regime_months }}m
+        | Prior completed episodes: {{ regime_stats.prior_completed_episodes }}
+        {% if regime_stats.prior_completed_episodes == 1 %}
+        ({{ regime_stats.prior_single_duration_months }}m)
+        {% endif %}
+        | Avg duration:
+        {% if regime_stats.avg_prior_duration_months is not none %}
+          {{ regime_stats.avg_prior_duration_months | round(1) }}m
+        {% else %}
+          N/A (n={{ regime_stats.prior_completed_episodes }})
+        {% endif %}
+      </p>
+      {% if regime_stats.longest_similar_episode_note %}
+      <p class="muted" style="margin-top:0.35rem;">{{ regime_stats.longest_similar_episode_note }}</p>
+      {% endif %}
+      <p class="muted" style="margin-top:0.35rem;">Max drawdown measured over full episode duration.</p>
+      {% endif %}
+    </section>
+
+    {% if show_country_matrix %}
+    <section class="section">
+      <div class="section-title">Country Risk Matrix</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Country</th>
+            <th>Risk Signal</th>
+            <th>Policy Rate</th>
+            <th>FX 1m (local vs USD)</th>
+            <th>US-local 10Y spread</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in country_rows %}
+          <tr>
+            <td>{{ r.country }}</td>
+            <td><span class="signal-pill {{ r.signal }}">{{ r.signal }}</span></td>
+            <td class="mono">{{ r.policy_rate }}</td>
+            <td class="mono">{{ r.fx_1m }}</td>
+            <td class="mono">{{ r.spread_10y }}</td>
+            <td class="muted">{{ r.notes }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </section>
+    {% endif %}
+
+    <section class="section">
+      <div class="section-title">Regime Feature Snapshot</div>
+      {% set regime_keys = ['cpi_yoy','unemployment_rate','spread_2y10y','vix','credit_spread_hy','fed_funds_rate'] %}
+      <table>
+        <thead>
+          <tr>
+            <th>Feature</th>
+            <th>Value</th>
+            <th class="pct-cell">Pct</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in details %}
+            {% if row.key in regime_keys %}
+            <tr>
+              <td>{{ row.name }}</td>
+              <td class="mono">{{ row.value | fmt_value(row.key) }}</td>
+              <td class="pct-cell">
+                <span class="mono">{{ row.percentile | round(0) }}th</span>
+                <div class="pct-wrap"><span class="pct-bar" style="width: {{ row.percentile }}%;"></span></div>
+              </td>
+            </tr>
+            {% endif %}
+          {% endfor %}
+        </tbody>
+      </table>
+    </section>
+
+    <section class="section">
+      <div class="section-title">Full Indicator Table</div>
+      <button id="toggleIndicators" class="toggle-btn">Hide all indicators ▲</button>
+      <div id="indicatorTableWrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Indicator</th>
+              <th>Value</th>
+              <th>As of</th>
+              <th class="pct-cell">Pct</th>
+              <th>Trend</th>
+              <th>Signal</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in details %}
+            <tr class="{% if row.percentile > 90 %}pct-high{% elif row.percentile < 10 %}pct-low{% endif %}">
+              <td>
+                {{ row.name }}
+                {% if row.notes %}<br><span class="muted" style="font-size:0.7rem;">{{ row.notes }}</span>{% endif %}
+              </td>
+              <td class="mono">{{ row.value | fmt_value(row.key) }}</td>
+              <td class="mono">{{ row.as_of }}</td>
+              <td class="pct-cell">
+                <span class="mono">{{ row.percentile | round(0) }}th</span>
+                <div class="pct-wrap"><span class="pct-bar" style="width: {{ row.percentile }}%;"></span></div>
+              </td>
+              <td class="{% if row.trend == 'improving' %}pos{% elif row.trend == 'worsening' %}neg{% else %}muted{% endif %}">{{ row.trend }}</td>
+              <td>
+                {% if row.signal %}
+                  <span class="signal-pill {{ row.signal }}">{{ row.signal }}</span>
+                {% else %}
+                  <span class="muted">—</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <span>Layer 2 shows risk state and signal diagnostics only. Not investment advice.</span>
+      <span class="mono">Generated: {{ report_date }}</span>
+    </footer>
+  </main>
+
+  <script>
+    (function () {
+      const buttons = Array.from(document.querySelectorAll(".tab-btn"));
+      const panels = Array.from(document.querySelectorAll(".tab-panel"));
+      buttons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const target = btn.getAttribute("data-tab");
+          buttons.forEach((b) => b.classList.remove("active"));
+          panels.forEach((p) => p.classList.remove("active"));
+          btn.classList.add("active");
+          const panel = document.getElementById(target);
+          if (panel) panel.classList.add("active");
+        });
+      });
+
+      const toggleBtn = document.getElementById("toggleIndicators");
+      const wrap = document.getElementById("indicatorTableWrap");
+      if (toggleBtn && wrap) {
+        toggleBtn.addEventListener("click", () => {
+          const isCollapsed = wrap.classList.toggle("collapsed");
+          toggleBtn.textContent = isCollapsed ? "Show all indicators ▼" : "Hide all indicators ▲";
+        });
+      }
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "macra-web",
+      "runtimeExecutable": "/Users/henrylin/Desktop/analysis copy 3/.venv/bin/python",
+      "runtimeArgs": ["-m", "src.web"],
+      "port": 8080
+    }
+  ]
+}

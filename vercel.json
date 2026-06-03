@@ -1,0 +1,6 @@
+{
+  "outputDirectory": "output",
+  "routes": [
+    { "src": "/", "dest": "/synthesis_lite.html" }
+  ]
+}

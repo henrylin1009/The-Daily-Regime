@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MACRA TIMES · APPENDIX — {{ report_date }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  {{ macra_style_block | safe }}
+  <style>
+    :root { --border:#e8ecf0; --muted:#64748b; --ink:#0f172a; --green:#15803d; --red:#b91c1c; --yellow:#92400e; }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body { font-family:Inter,sans-serif; color:var(--ink); background:#f8f9fb; font-size:13px; }
+    .shell-top { background:#fff; border-bottom:1px solid var(--border); margin-bottom:10px; }
+    .shell-top-inner { max-width:1400px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; padding:0 16px; min-height:56px; }
+    {{ layer_nav_css | safe }}
+    .container { max-width:1400px; margin:0 auto; padding:10px 14px 2rem; }
+    .page-header { margin-bottom:0.75rem; }
+    .page-title { font-size:0.95rem; font-weight:700; letter-spacing:0.05em; text-transform:uppercase; }
+    .page-sub { font-size:0.72rem; color:var(--muted); margin-top:0.2rem; font-family:"JetBrains Mono",monospace; }
+    .drawer-section { margin-top:1rem; scroll-margin-top:72px; }
+    .drawer-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+    h3.drawer-title {
+      font-size:0.7rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+      color:var(--muted); margin:0 0 0.5rem; padding-bottom:0.3rem; border-bottom:1px solid var(--border);
+    }
+    .drawer-card { padding:0.65rem 0.75rem !important; }
+    .sub-label { font-size:0.62rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--muted); font-weight:600; margin:0.45rem 0 0.3rem; }
+    .sub-label:first-child { margin-top:0; }
+    table.data-dense { width:100%; border-collapse:collapse; font-size:0.68rem; }
+    table.data-dense thead th {
+      color:var(--muted); text-transform:uppercase; font-size:0.58rem; letter-spacing:0.05em;
+      text-align:left; padding:0.28rem 0.35rem; border-bottom:1px solid var(--border); font-weight:600;
+    }
+    table.data-dense tbody td { padding:0.24rem 0.35rem; border-bottom:1px solid #eef1f4; vertical-align:middle; line-height:1.35; }
+    table.data-dense tbody tr:nth-child(odd) { background:#fafbfc; }
+    table.data-dense tbody tr.row-anomaly { background:#fef2f2 !important; }
+    .mono { font-family:"JetBrains Mono",ui-monospace,monospace; color:#374151; font-size:0.66rem; }
+    .pos { color:var(--green); } .neg { color:var(--red); } .muted { color:var(--muted); }
+    .sig-RED { color:var(--red); font-weight:600; }
+    .sig-YELLOW { color:var(--yellow); font-weight:600; }
+    .sig-GREEN { color:var(--green); font-weight:600; }
+    .exception-empty { font-size:0.78rem; color:var(--muted); padding:0.25rem 0; }
+    .exception-count { font-size:0.65rem; font-weight:600; color:var(--red); margin-left:0.4rem; }
+    .sig-pill { font-size:0.6rem; font-weight:700; border-radius:999px; padding:1px 6px; border:1px solid #fecaca; background:#fef2f2; color:var(--red); }
+    .eod-line { font-size:0.68rem; font-family:"JetBrains Mono",monospace; margin-bottom:0.35rem; color:#374151; }
+    .cn-res { font-size:0.66rem; font-family:"JetBrains Mono",monospace; margin-top:0.35rem; color:var(--muted); }
+    .footer { margin-top:0.75rem; font-size:0.65rem; color:var(--muted); display:flex; justify-content:space-between; flex-wrap:wrap; gap:0.4rem; }
+    @media (max-width:960px) { .drawer-grid { grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+  <header class="shell-top">
+    <div class="shell-top-inner">
+      <div class="logo-area">
+        <div class="logo">Macra Times</div>
+        <div class="date-sub">{{ report_date }}</div>
+      </div>
+      <div class="right-area">{{ layer_nav_html | safe }}</div>
+    </div>
+  </header>
+
+  <main class="container" id="top">
+    <header class="page-header macra-card macra-card-pad">
+      <h1 class="page-title">MACRA TIMES · DATA APPENDIX</h1>
+      <p class="page-sub">{{ report_date }} · Hard validation data only · MECE four-drawer layout</p>
+    </header>
+
+    <!-- Drawer 1: Anomaly Scan (full width) -->
+    <section class="macra-card macra-card-pad drawer-section drawer-card" id="anomaly-scan">
+      <h3 class="drawer-title">🚨 Anomaly Scan{% if exceptions %}<span class="exception-count">{{ exceptions|length }} flagged</span>{% endif %}</h3>
+      {% if exceptions %}
+      <table class="data-dense">
+        <thead>
+          <tr><th>Drawer</th><th>Source</th><th>Item</th><th>Detail</th><th>Z</th><th>Signal</th><th>Trigger</th></tr>
+        </thead>
+        <tbody>
+          {% for ex in exceptions %}
+          <tr class="row-anomaly">
+            <td>{{ ex.drawer }}</td>
+            <td>{{ ex.source }}</td>
+            <td><strong>{{ ex.label }}</strong></td>
+            <td class="mono">{{ ex.detail }}</td>
+            <td class="mono">{{ ex.z_display }}</td>
+            <td>{% if ex.signal == 'RED' %}<span class="sig-pill">{{ ex.signal }}</span>{% else %}<span class="muted">{{ ex.signal }}</span>{% endif %}</td>
+            <td class="muted">{{ ex.reason }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <p class="exception-empty">No RED signals or |Z|&gt;2.0 anomalies in today's validation universe.</p>
+      {% endif %}
+    </section>
+
+    <!-- Drawers 2–4: 2×2 grid (three quadrants + macro spans if needed) -->
+    <div class="drawer-grid">
+
+      <!-- Drawer 2: Macro Pillars -->
+      <section class="macra-card drawer-card" id="macro-pillars">
+        <h3 class="drawer-title">🧱 Macro Pillars</h3>
+
+        <div class="sub-label">Policy Rates</div>
+        <table class="data-dense">
+          <thead><tr><th>Ctry</th><th>Rate</th><th>MoM</th><th>Trend</th><th>Dir</th></tr></thead>
+          <tbody>
+            {% for r in macro.policy_rows %}
+            <tr{% if r.anomaly %} class="row-anomaly"{% endif %}>
+              <td>{{ r.country }}</td>
+              <td class="mono">{{ r.latest }}</td>
+              <td class="mono">{{ r.mom }}</td>
+              <td>{{ r.trend }}</td>
+              <td>{{ r.direction }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+        <div class="sub-label">CB Balance Sheets</div>
+        <table class="data-dense">
+          <thead><tr><th>CB</th><th>Assets</th><th>MoM%</th><th>3m%</th><th>Dir</th></tr></thead>
+          <tbody>
+            {% for r in macro.bs_rows %}
+            <tr{% if r.anomaly %} class="row-anomaly"{% endif %}>
+              <td>{{ r.cb }}</td>
+              <td class="mono">{{ r.latest }}</td>
+              <td class="mono">{{ r.mom }}</td>
+              <td class="mono">{{ r.chg3m }}</td>
+              <td>{{ r.direction }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+        <div class="sub-label">Current Account</div>
+        <table class="data-dense">
+          <thead><tr><th>Ctry</th><th>Latest</th><th>Chg</th><th>Trend</th></tr></thead>
+          <tbody>
+            {% for r in macro.ca_rows %}
+            <tr{% if r.anomaly %} class="row-anomaly"{% endif %}>
+              <td>{{ r.country }}</td>
+              <td class="mono">{{ r.latest }}</td>
+              <td class="mono">{{ r.change }}</td>
+              <td>{{ r.trend }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+        <div class="sub-label">TIC / Cross-Border</div>
+        <table class="data-dense">
+          <thead><tr><th>Ctry</th><th>UST bn</th><th>MoM bn</th><th>3m</th></tr></thead>
+          <tbody>
+            {% for r in macro.tic_rows %}
+            <tr{% if r.anomaly %} class="row-anomaly"{% endif %}>
+              <td>{{ r.country }}</td>
+              <td class="mono">{{ r.latest }}</td>
+              <td class="mono {% if r.mom_val >= 0 %}pos{% else %}neg{% endif %}">{{ r.mom }}</td>
+              <td>{{ r.trend }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        <p class="cn-res">China FX reserves: {{ macro.cn_res_latest }} bn · MoM <span class="{% if macro.cn_res_mom_val >= 0 %}pos{% else %}neg{% endif %}">{{ macro.cn_res_mom }}</span></p>
+      </section>
+
+      <!-- Drawer 3: Tactical Tape -->
+      <section class="macra-card drawer-card" id="tactical-tape">
+        <h3 class="drawer-title">🌊 Tactical Tape</h3>
+
+        {% if tactical.l3_available %}
+        {% if tactical.surfaced_rows %}
+        <div class="sub-label">Surfaced Indicators</div>
+        <table class="data-dense">
+          <thead><tr><th>Indicator</th><th>Latest</th><th>Δ</th><th>Z</th><th>Sig</th></tr></thead>
+          <tbody>
+            {% for r in tactical.surfaced_rows %}
+            <tr{% if r.anomaly %} class="row-anomaly"{% endif %}>
+              <td>{{ r.name }}</td>
+              <td class="mono">{{ r.latest }}</td>
+              <td class="mono">{{ r.change }}</td>
+              <td class="mono">{{ r.z }}</td>
+              <td class="sig-{{ r.signal }}">{{ r.signal }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% endif %}
+
+        <div class="sub-label">FX Momentum</div>
+        <table class="data-dense">
+          <thead><tr><th>Ctry</th><th>Sig</th><th>FX 1m</th><th>FX 3m</th><th>10Y spr</th></tr></thead>
+          <tbody>
+            {% for r in tactical.fx_rows %}
+            <tr{% if r.anomaly %} class="row-anomaly"{% endif %}>
+              <td>{{ r.country }}</td>
+              <td class="sig-{{ r.signal }}">{{ r.signal }}</td>
+              <td class="mono">{{ r.fx_1m }}</td>
+              <td class="mono">{{ r.fx_3m }}</td>
+              <td class="mono">{{ r.spread_10y }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+        {% if tactical.flow_rows %}
+        <div class="sub-label">Flow Validation</div>
+        <table class="data-dense">
+          <thead><tr><th>Series</th><th>Latest</th><th>1M</th><th>Z</th><th>Sig</th></tr></thead>
+          <tbody>
+            {% for r in tactical.flow_rows %}
+            <tr{% if r.anomaly %} class="row-anomaly"{% endif %}>
+              <td>{{ r.name }}</td>
+              <td class="mono">{{ r.latest }}</td>
+              <td class="mono">{{ r.chg_1m }}</td>
+              <td class="mono">{{ r.z }}</td>
+              <td class="sig-{{ r.signal }}">{{ r.signal }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% endif %}
+
+        {% if tactical.event_of_day.show %}
+        <div class="sub-label">Event of Day</div>
+        <p class="eod-line{% if tactical.event_of_day.anomaly %} row-anomaly{% endif %}" style="{% if tactical.event_of_day.anomaly %}background:#fef2f2;padding:0.25rem 0.35rem;border-radius:4px;{% endif %}">
+          {{ tactical.event_of_day.name }} · {{ tactical.event_of_day.latest }} · Δ {{ tactical.event_of_day.change }} · Z {{ tactical.event_of_day.z }} · <span class="sig-{{ tactical.event_of_day.signal }}">{{ tactical.event_of_day.signal }}</span>
+        </p>
+        {% endif %}
+        {% else %}
+        <p class="exception-empty">Tactical L3 data unavailable — run synthesis.py first.</p>
+        <div class="sub-label">FX Momentum</div>
+        <table class="data-dense">
+          <thead><tr><th>Ctry</th><th>Sig</th><th>FX 1m</th><th>FX 3m</th><th>10Y spr</th></tr></thead>
+          <tbody>
+            {% for r in tactical.fx_rows %}
+            <tr{% if r.anomaly %} class="row-anomaly"{% endif %}>
+              <td>{{ r.country }}</td>
+              <td class="sig-{{ r.signal }}">{{ r.signal }}</td>
+              <td class="mono">{{ r.fx_1m }}</td>
+              <td class="mono">{{ r.fx_3m }}</td>
+              <td class="mono">{{ r.spread_10y }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% if tactical.flow_rows %}
+        <div class="sub-label">Flow Validation</div>
+        <table class="data-dense">
+          <thead><tr><th>Series</th><th>Latest</th><th>1M</th><th>Z</th><th>Sig</th></tr></thead>
+          <tbody>
+            {% for r in tactical.flow_rows %}
+            <tr{% if r.anomaly %} class="row-anomaly"{% endif %}>
+              <td>{{ r.name }}</td>
+              <td class="mono">{{ r.latest }}</td>
+              <td class="mono">{{ r.chg_1m }}</td>
+              <td class="mono">{{ r.z }}</td>
+              <td class="sig-{{ r.signal }}">{{ r.signal }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% endif %}
+        {% endif %}
+      </section>
+
+      <!-- Drawer 4: Sentiment & Stress (spans full bottom row on wide screens) -->
+      <section class="macra-card drawer-card" id="sentiment-stress" style="grid-column:1 / -1;">
+        <h3 class="drawer-title">🎭 Sentiment &amp; Stress</h3>
+        <div class="drawer-grid" style="gap:8px;">
+          <div>
+            <div class="sub-label">CFTC Positioning</div>
+            <table class="data-dense">
+              <thead><tr><th>Contract</th><th>Net</th><th>4w Δ</th><th>Z</th><th>Ext</th></tr></thead>
+              <tbody>
+                {% set extreme_cot = sentiment.cot_rows | selectattr('extreme') | list %}
+                {% if extreme_cot %}
+                {% for r in extreme_cot %}
+                <tr class="row-anomaly">
+                  <td>{{ r.contract }}</td>
+                  <td class="mono">{{ r.net_fmt }}</td>
+                  <td class="mono">{{ r.chg4w_fmt }}</td>
+                  <td class="mono">{{ r.zscore_fmt }}</td>
+                  <td>⚠</td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr><td colspan="5" class="muted exception-empty">目前無極端倉位</td></tr>
+                {% endif %}
+              </tbody>
+            </table>
+          </div>
+          <div>
+            <div class="sub-label">Volatility / Skew</div>
+            {% set anomaly_skew = sentiment.vol_skew_rows | selectattr('anomaly') | list %}
+            {% if anomaly_skew %}
+            <table class="data-dense">
+              <thead><tr><th>Series</th><th>Level</th><th>Label</th><th>Z</th></tr></thead>
+              <tbody>
+                {% for r in anomaly_skew %}
+                <tr class="row-anomaly">
+                  <td>{{ r.name }}</td>
+                  <td class="mono">{{ r.level }}</td>
+                  <td>{{ r.label }}</td>
+                  <td class="mono">{{ r.z }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+            {% else %}
+            <p class="exception-empty">目前無異常（SKEW / VVIX 正常範圍）</p>
+            {% endif %}
+
+            <div class="sub-label">Risk Premia</div>
+            <table class="data-dense">
+              <thead><tr><th>Indicator</th><th>Value</th><th>Δ</th><th>Sig</th></tr></thead>
+              <tbody>
+                {% set stress_liq = sentiment.liq_rows | selectattr('signal', 'equalto', 'stress') | list %}
+                {% set anomaly_liq = sentiment.liq_rows | selectattr('anomaly') | list %}
+                {% set visible_liq = (stress_liq + anomaly_liq) | unique(attribute='indicator') | list %}
+                {% if visible_liq %}
+                {% for r in visible_liq %}
+                <tr class="row-anomaly">
+                  <td>{{ r.indicator }}</td>
+                  <td class="mono">{{ r.value }}</td>
+                  <td class="mono">{{ r.change }}</td>
+                  <td>{{ r.signal }}</td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr><td colspan="4" class="muted exception-empty">流動性正常，無壓力信號</td></tr>
+                {% endif %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {% if sentiment.historical_rows %}
+        <div class="sub-label">Historical Matches</div>
+        <table class="data-dense">
+          <thead><tr><th>Date</th><th>Distance</th><th>Match</th></tr></thead>
+          <tbody>
+            {% for r in sentiment.historical_rows %}
+            <tr>
+              <td class="mono">{{ r.date }}</td>
+              <td class="mono">{{ r.distance }}</td>
+              <td>{{ r.description }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% endif %}
+      </section>
+    </div>
+
+    <footer class="footer">
+      <span>Data appendix · hard metrics only · not investment advice.</span>
+      <span class="mono">Generated {{ report_date }}</span>
+    </footer>
+  </main>
+</body>
+</html>

@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Macro Intelligence Dashboard - {{ report_date }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --border: #e8ecf0;
+      --muted: #8a96a3;
+      --accent: #4f46e5;
+      --pill-green: #f0fdf4;
+      --pill-yellow: #fffbeb;
+      --pill-red: #fef2f2;
+      --text: #0f1923;
+      --bg: #ffffff;
+      --bg-soft: #f8f9fb;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      line-height: 1.5;
+    }
+
+    .mono { font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .muted { color: var(--muted); }
+
+    .sticky-header {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    }
+
+    .header-inner {
+      max-width: 1500px;
+      margin: 0 auto;
+      padding: 0.8rem 1rem;
+      display: grid;
+      grid-template-columns: 1.2fr 2fr;
+      gap: 0.9rem;
+      align-items: center;
+    }
+
+    .brand-title { font-size: 1.02rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+    .brand-sub { margin-top: 0.18rem; font-size: 0.78rem; color: var(--muted); }
+
+    .signal-row { display: flex; justify-content: flex-end; gap: 0.45rem; flex-wrap: wrap; }
+
+    .pill {
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      padding: 0.34rem 0.62rem;
+      font-size: 0.74rem;
+      font-weight: 600;
+      display: inline-flex;
+      gap: 0.35rem;
+      align-items: center;
+      white-space: nowrap;
+    }
+    .pill.GREEN { background: var(--pill-green); color: #166534; }
+    .pill.YELLOW { background: var(--pill-yellow); color: #92400e; }
+    .pill.RED { background: var(--pill-red); color: #991b1b; }
+
+    .tabs {
+      max-width: 1500px;
+      margin: 0 auto;
+      padding: 0 1rem 0.75rem;
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      border-top: 1px solid #f1f4f6;
+    }
+
+    .top-tab {
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--bg-soft);
+      color: #334155;
+      font-size: 0.74rem;
+      font-weight: 600;
+      padding: 0.3rem 0.62rem;
+      cursor: pointer;
+    }
+    .top-tab.active {
+      background: #eef2ff;
+      border-color: #c7d2fe;
+      color: #312e81;
+    }
+
+    .container {
+      max-width: 1500px;
+      margin: 0 auto;
+      padding: 1rem;
+    }
+
+    .top-panel { display: none; }
+    .top-panel.active { display: block; }
+
+    .country-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.8rem;
+    }
+
+    .country-card {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #fff;
+      cursor: pointer;
+      overflow: hidden;
+    }
+    .country-card-head {
+      padding: 0.7rem 0.8rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.65rem;
+      background: #fafbfc;
+    }
+    .country-card-title { font-weight: 700; font-size: 0.82rem; }
+    .country-card-body {
+      border-top: 1px solid var(--border);
+      padding: 0.8rem;
+      display: none;
+    }
+    .country-card.expanded .country-card-body { display: block; }
+    .country-card.expanded .country-card-head { background: #eef2ff; }
+
+    @media (max-width: 1100px) {
+      .country-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .header-inner { grid-template-columns: 1fr; }
+      .signal-row { justify-content: flex-start; }
+    }
+
+    @media (max-width: 760px) {
+      .country-grid { grid-template-columns: 1fr; }
+      .tabs { padding-bottom: 0.65rem; }
+      .top-tab { font-size: 0.72rem; }
+    }
+  </style>
+</head>
+<body>
+  <header class="sticky-header">
+    <div class="header-inner">
+      <div>
+        <div class="brand-title">Macro Intelligence Dashboard</div>
+        <div class="brand-sub mono">{{ report_date }}</div>
+      </div>
+      <div class="signal-row">
+        <!-- INJECT:HEADLINE_PILLS -->
+      </div>
+    </div>
+    <nav class="tabs" aria-label="Top level sections">
+      <button class="top-tab active" data-tab="us-macro">US Macro</button>
+      <button class="top-tab" data-tab="capital-flows">Capital Flows</button>
+      <button class="top-tab" data-tab="global-regime">Global Regime</button>
+      <button class="top-tab" data-tab="synthesis">Synthesis</button>
+      <button class="top-tab" data-tab="countries">Countries</button>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section id="us-macro" class="top-panel active">
+      <!-- INJECT:US_MACRO -->
+    </section>
+
+    <section id="capital-flows" class="top-panel">
+      <!-- INJECT:FLOW -->
+    </section>
+
+    <section id="global-regime" class="top-panel">
+      <!-- INJECT:GLOBAL_REGIME -->
+    </section>
+
+    <section id="synthesis" class="top-panel">
+      <!-- INJECT:SYNTHESIS -->
+    </section>
+
+    <section id="countries" class="top-panel">
+      <div class="country-grid">
+        <!-- INJECT:COUNTRIES -->
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      const tabs = Array.from(document.querySelectorAll(".top-tab"));
+      const panels = Array.from(document.querySelectorAll(".top-panel"));
+
+      tabs.forEach((tab) => {
+        tab.addEventListener("click", () => {
+          const id = tab.getAttribute("data-tab");
+          tabs.forEach((t) => t.classList.remove("active"));
+          panels.forEach((p) => p.classList.remove("active"));
+          tab.classList.add("active");
+          const panel = document.getElementById(id);
+          if (panel) panel.classList.add("active");
+        });
+      });
+
+      const countryCards = Array.from(document.querySelectorAll(".country-card"));
+      countryCards.forEach((card) => {
+        const head = card.querySelector(".country-card-head");
+        if (!head) return;
+        head.addEventListener("click", () => {
+          const isExpanded = card.classList.contains("expanded");
+          countryCards.forEach((c) => c.classList.remove("expanded"));
+          if (!isExpanded) card.classList.add("expanded");
+        });
+      });
+    })();
+  </script>
+
+  <!-- INJECT:PAGE_SCRIPTS -->
+</body>
+</html>
