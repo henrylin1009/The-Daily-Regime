@@ -242,7 +242,7 @@
       }
       var saved = null;
       try { saved = localStorage.getItem(KEY); } catch (e) {}
-      apply(saved || 'zh-Hant');
+      apply(saved || 'en');
       document.addEventListener('click', function (ev) {
         var btn = ev.target.closest('.lang-switch button');
         if (btn) { apply(btn.getAttribute('data-lang')); return; }
@@ -272,8 +272,8 @@
       <div class="sheet-title-right">
         <div class="sheet-meta">2026-06-03</div>
         <div class="lang-switch" role="group" aria-label="Language">
-          <button type="button" data-lang="zh-Hant" class="is-active">中文</button>
-          <button type="button" data-lang="en">EN</button>
+          <button type="button" data-lang="zh-Hant">中文</button>
+          <button type="button" data-lang="en" class="is-active">EN</button>
         </div>
       </div>
     </div>
@@ -640,7 +640,7 @@
             
             <div class="an-card">
               <div class="an-per">2007-11</div>
-              <div class="an-desc">金融海嘯前——殖利率曲線平坦、波動率低、信貸市場自滿</div>
+              <div class="an-desc">金融危機前——曲線平坦，波動率低，信貸自滿</div>
               <div class="an-ret">
                 <div class="an-stat neg"><span class="an-l">美股 12m</span><span class="an-v">-39%</span></div>
                 <div class="an-stat neg"><span class="an-l">3m</span><span class="an-v">-9%</span></div>
@@ -651,7 +651,7 @@
             
             <div class="an-card">
               <div class="an-per">2000-10</div>
-              <div class="an-desc">網路泡沫高峰——勞動市場緊繃、估值偏高</div>
+              <div class="an-desc">網路泡沫高峰——勞動力市場緊俏，估值偏高</div>
               <div class="an-ret">
                 <div class="an-stat neg"><span class="an-l">美股 12m</span><span class="an-v">-26%</span></div>
                 <div class="an-stat neg"><span class="an-l">3m</span><span class="an-v">-4%</span></div>
@@ -662,7 +662,7 @@
             
             <div class="an-card">
               <div class="an-per">2014-08</div>
-              <div class="an-desc">週期中段放緩——波動率低、美元走強、油價開始下跌</div>
+              <div class="an-desc">週期中段放緩——波動率低，美元走強，油價開始下跌</div>
               <div class="an-ret">
                 <div class="an-stat neg"><span class="an-l">美股 12m</span><span class="an-v">-1%</span></div>
                 <div class="an-stat pos"><span class="an-l">3m</span><span class="an-v">+3%</span></div>
@@ -695,7 +695,7 @@
             
             <div class="an-card">
               <div class="an-per">2006-11</div>
-              <div class="an-desc">金融海嘯前流動性高峰 — 利差交易盛行，全球波動率低</div>
+              <div class="an-desc">金融危機前流動性高峰 — 利差交易盛行，全球波動率低</div>
               <div class="an-ret">
                 
                 
@@ -850,7 +850,7 @@
 
       
       <div class="modcard">
-        <div class="mod-label">CIO Narrative</div>
+        <div class="mod-label">Narrative</div>
         <div class="det-inner">
           <p class="narr-p">The US economy is in an Overheat regime: growth is accelerating, inflation is rising (CPI at 3.95% and still climbing), and the stock market is rallying with broadening participation. The Fed is on hold, credit spreads are tight, and volatility is low. This is a Goldilocks-like environment for risk assets, and the momentum is clearly risk-on — tech stocks are near 12-month highs, and money is flowing into equities globally.</p><p class="narr-p">But beneath the surface, cracks are forming. The bond market is pricing out rate cuts — the yield curve is bear-flattening, and short-term bonds are underperforming long-term ones. Investors are buying tail-risk protection even as implied volatility falls, a classic late-cycle divergence. The yen short is at an extreme that historically precedes violent reversals. If the dollar weakens further or risk appetite suddenly turns, the crowded carry trade could unwind, hitting emerging markets and risk assets.</p>
           <p class="narr-p"><b>Trigger risk ·</b> If the yen suddenly strengthens (e.g., on BoJ intervention or risk-off), the crowded carry trade will unwind, causing sharp losses in risk assets and EM currencies.</p>
