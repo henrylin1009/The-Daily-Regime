@@ -25,7 +25,7 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Run pipeline (retry up to 3x on failure)
+      - name: Run pipeline
         env:
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
@@ -33,20 +33,15 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
-          for attempt in 1 2 3; do
-            echo "=== Attempt $attempt ==="
-            python flow_run.py && \
-            python run.py && \
-            python global_regime.py && \
-            python synthesis.py && break
-            echo "Attempt $attempt failed, retrying in 30s..."
-            sleep 30
-          done
+          python flow_run.py
+          python run.py
+          python global_regime.py
+          python synthesis.py
 
       - name: Commit report
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add output/synthesis_lite.html
+          git add output/synthesis_lite.html data/raw/ || true
           git diff --staged --quiet || git commit -m "Daily report $(date -u +%Y-%m-%d)"
           git push

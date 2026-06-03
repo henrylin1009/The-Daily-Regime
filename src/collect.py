@@ -88,6 +88,28 @@ def _fetch_fred_csv(symbol: str, start_date: str) -> pd.DataFrame:
     return out.reset_index(drop=True)
 
 
+def _fetch_fred_api(symbol: str, start_date: str) -> pd.DataFrame:
+    """FRED official JSON API with api_key — avoids fredgraph.csv rate limits."""
+    import os
+    api_key = os.getenv("FRED_API_KEY") or os.getenv("fred_api_key")
+    if not api_key:
+        raise RuntimeError("FRED_API_KEY not set")
+    url = (
+        f"https://api.stlouisfed.org/fred/series/observations"
+        f"?series_id={symbol}&api_key={api_key}&file_type=json"
+        f"&observation_start={start_date}&vintage_dates="
+    )
+    resp = requests.get(url, timeout=60, headers={"Accept": "application/json"})
+    resp.raise_for_status()
+    obs = resp.json().get("observations", [])
+    if not obs:
+        raise RuntimeError(f"No observations returned for {symbol}")
+    out = pd.DataFrame(obs)[["date", "value"]]
+    out["date"] = pd.to_datetime(out["date"])
+    out["value"] = pd.to_numeric(out["value"], errors="coerce")
+    return out.dropna(subset=["value"]).sort_values("date").reset_index(drop=True)
+
+
 def _fetch_fred_openbb(
     symbol: str,
     start_date: str,
@@ -110,16 +132,12 @@ def _fetch_fred(
     start_date: str,
     transform: str | None = None,
 ) -> pd.DataFrame:
-    """FRED via public CSV (default); OpenBB API if a valid FRED_API_KEY is set."""
-    if fred_api_key_valid():
-        try:
-            df = _fetch_fred_openbb(symbol, start_date, transform)
-            if not df.empty:
-                return df
-        except Exception:
-            pass
-    if transform:
-        # Public CSV is raw levels only; transforms applied downstream
+    """FRED: official JSON API first (most reliable), then CSV fallback."""
+    try:
+        df = _fetch_fred_api(symbol, start_date)
+        if not df.empty:
+            return df
+    except Exception:
         pass
     return _fetch_fred_csv(symbol, start_date)
 
@@ -368,9 +386,15 @@ def collect_all(
             data[name] = collect_one(name, start_date, force_refresh)
         except Exception as exc:
             errors.append(f"{name}: {exc}")
-
-    if errors:
-        raise RuntimeError("Failed to collect:\n" + "\n".join(errors))
+            cache = _cache_path(name)
+            if cache.exists():
+                try:
+                    data[name] = pd.read_csv(cache, index_col=0, parse_dates=True)
+                    print(f"  collect: {name} fetch failed, using cache ({exc})", file=sys.stderr)
+                except Exception:
+                    print(f"  collect: {name} failed and no cache ({exc})", file=sys.stderr)
+            else:
+                print(f"  collect: {name} failed and no cache ({exc})", file=sys.stderr)
 
     return data
 
