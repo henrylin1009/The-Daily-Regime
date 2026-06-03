@@ -93,6 +93,7 @@ def _fetch_fred_api(symbol: str, start_date: str) -> pd.DataFrame:
     import os
     api_key = os.getenv("FRED_API_KEY") or os.getenv("fred_api_key")
     if not api_key:
+        print("  _fetch_fred_api: FRED_API_KEY not set, skipping", file=sys.stderr)
         raise RuntimeError("FRED_API_KEY not set")
     url = (
         f"https://api.stlouisfed.org/fred/series/observations"
