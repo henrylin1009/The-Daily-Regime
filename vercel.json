@@ -1,5 +1,7 @@
 {
+  "buildCommand": null,
   "outputDirectory": "output",
+  "framework": null,
   "routes": [
     { "src": "/", "dest": "/synthesis_lite.html" }
   ]
