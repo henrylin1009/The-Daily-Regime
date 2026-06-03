@@ -16,10 +16,16 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ hashFiles('requirements.txt') }}
+
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Run pipeline
+      - name: Run pipeline (retry up to 3x on failure)
         env:
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
@@ -27,10 +33,15 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
-          python flow_run.py
-          python run.py
-          python global_regime.py
-          python synthesis.py
+          for attempt in 1 2 3; do
+            echo "=== Attempt $attempt ==="
+            python flow_run.py && \
+            python run.py && \
+            python global_regime.py && \
+            python synthesis.py && break
+            echo "Attempt $attempt failed, retrying in 30s..."
+            sleep 30
+          done
 
       - name: Commit report
         run: |
