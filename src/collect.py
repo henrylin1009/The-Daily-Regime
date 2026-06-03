@@ -95,12 +95,18 @@ def _fetch_fred_api(symbol: str, start_date: str) -> pd.DataFrame:
     if not api_key:
         print("  _fetch_fred_api: FRED_API_KEY not set, skipping", file=sys.stderr)
         raise RuntimeError("FRED_API_KEY not set")
+    import time
     url = (
         f"https://api.stlouisfed.org/fred/series/observations"
         f"?series_id={symbol}&api_key={api_key}&file_type=json"
         f"&observation_start={start_date}&vintage_dates="
     )
-    resp = requests.get(url, timeout=60, headers={"Accept": "application/json"})
+    for attempt in range(3):
+        resp = requests.get(url, timeout=60, headers={"Accept": "application/json"})
+        if resp.status_code == 429:
+            time.sleep(5 * (attempt + 1))
+            continue
+        break
     resp.raise_for_status()
     obs = resp.json().get("observations", [])
     if not obs:

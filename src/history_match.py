@@ -69,7 +69,8 @@ def build_feature_matrix(data: dict[str, pd.DataFrame]) -> pd.DataFrame:
 
     for feat in features:
         if feat not in data:
-            raise ValueError(f"Missing feature: {feat}")
+            print(f"  history_match: skipping missing feature {feat}", file=sys.stderr)
+            continue
         df = data[feat].copy()
         df["date"] = pd.to_datetime(df["date"])
         s = df.set_index("date")["value"].sort_index()
