@@ -760,6 +760,8 @@ LITE_UI: dict[str, dict[str, str]] = {
         "watch_head": "關鍵觀察",
         "cio_summary": "完整研判分析",
         "watchout_label": "觸發風險",
+        "zone_history": "歷史借鏡",
+        "zone_history_sub": "最相似歷史環境與其後資產表現",
         "history_summary": "歷史借鏡",
         "history_us_sub": "美國體制借鏡 — 最相似歷史環境與其後美股表現",
         "history_div_sub": "全球分歧借鏡 — 多國分歧下 EM／黃金／銅表現",
@@ -806,6 +808,8 @@ LITE_UI: dict[str, dict[str, str]] = {
         "watch_head": "What to Watch",
         "cio_summary": "Narrative",
         "watchout_label": "Trigger risk",
+        "zone_history": "Historical Analogues",
+        "zone_history_sub": "Closest historical setups and subsequent asset returns",
         "history_summary": "Historical Analogues",
         "history_us_sub": "US regime analogues — closest historical setups and subsequent S&P returns",
         "history_div_sub": "Global divergence analogues — EM / gold / copper after multi-country splits",
@@ -1865,6 +1869,7 @@ def _carry_rows_for_lang(carry: dict, lang: str) -> dict:
     for r in carry.get("rows", []):
         rows.append({
             "country": r["country_zh"] if is_zh else r["country"],
+            "country_code": r["country"],
             "spread_bp": r.get("spread_bp"),
             "fx_1m": r.get("fx_1m"),
             "flow_label": r.get("flow_label"),
@@ -1964,7 +1969,8 @@ def _build_lite_lang_blocks(
                 "tilt_context": tilt_context,
                 "regime_buffer": _regime_buffer_line(tilt_result, lang_key) if use_tilt and tilt_result else "",
                 "transition_matrix": _transition_matrix_rows(tilt_result, lang_key) if use_tilt and tilt_result else [],
-                "carry_relative": _carry_rows_for_lang(carry_relative, lang_key) if carry_relative else None,
+                "carry_relative": (_carry_for_lang := _carry_rows_for_lang(carry_relative, lang_key) if carry_relative else None),
+                "carry_by_code": {r["country_code"]: r for r in (_carry_for_lang or {}).get("rows", [])},
                 "tilt_legend_regime": (nearest_zh if lang_key == "zh" else nearest) if in_transition else regime_disp,
                 "daily_themes": themes_local,
                 "directive": directive_view,
@@ -2170,6 +2176,15 @@ HTML_TMPL_LITE = """<!doctype html>
     .cty-vs.mixed { background:var(--cream); color:var(--muted); } .cty-vs.limited { background:var(--cream); color:var(--muted); }
     .cty-row { font-size:0.92rem; line-height:1.55; color:#1d1d1b; margin:0.2rem 0; }
     .cty-row b { font-family:var(--sans); color:var(--muted); font-weight:600; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.04em; }
+    /* Merged country+carry cards */
+    .cty-carry-grid { display:grid; grid-template-columns:1fr 1fr; gap:0.9rem; }
+    @media (max-width:680px) { .cty-carry-grid { grid-template-columns:1fr; } }
+    .cty-carry-card { background:var(--block); border-radius:12px; padding:0.95rem 1.05rem; }
+    .cty-carry-head { display:flex; align-items:baseline; flex-wrap:wrap; gap:0.4rem; margin-bottom:0.25rem; }
+    .cty-carry-head .carry-country { font-size:1.02rem; font-weight:700; }
+    .cty-carry-sep { border:none; border-top:1px solid var(--rule); margin:0.5rem 0 0.45rem; }
+    .cty-gears .cty-row { margin:0.15rem 0; }
+    .zone-hist { border-left:3px solid #78716c; }
     .full-link { font-family:var(--sans); display:inline-block; margin-top:0.5rem; font-size:0.78rem; color:var(--ink); text-decoration:underline; font-weight:700; }
     .full-link:hover { text-decoration:underline; }
     .foot { font-family:var(--sans); text-align:center; font-size:0.66rem; color:var(--muted); margin-top:1.8rem; letter-spacing:0.04em; }
@@ -2451,33 +2466,49 @@ HTML_TMPL_LITE = """<!doctype html>
         <div class="zone-sub">{{ block.ui.zone_global_sub }}</div>
       </div>
 
+      {% if block.country_matrix %}
       {% if block.carry_relative %}
-      <div class="section-head">{% if block.lang == 'zh-Hant' %}資本流動 · 利差承接面{% else %}Capital Flow · Rate-Differential Map{% endif %}
+      <div class="section-head" style="margin-top:0.6rem;">{% if block.lang == 'zh-Hant' %}利差承接面{% else %}Rate-Differential Map{% endif %}
         {% if block.carry_relative.vix_pct is not none %}<span class="carry-switch {{ block.carry_relative.switch_tone }}">VIX {{ block.carry_relative.vix_pct }}{% if block.lang == 'zh-Hant' %} 百分位{% else %}th{% endif %} · {{ block.carry_relative.switch }}</span>{% endif %}
       </div>
-      <div class="carry-grid">
-        {% for r in block.carry_relative.rows %}
-        <div class="carry-cell">
-          <div class="carry-top">
-            <span class="carry-country">{{ r.country }}</span>
-            <span class="carry-role role-{{ r.role }}">{{ r.role_label }}</span>
+      {% endif %}
+      <div class="cty-carry-grid">
+        {% for panel in block.country_matrix %}
+        {% set cr = block.carry_by_code[panel.country_code] if panel.country_code in block.carry_by_code else none %}
+        <div class="cty-carry-card">
+          <div class="cty-carry-head">
+            <span class="carry-country">{{ panel.country }}</span>
+            {% if panel.align_label %}<span class="cty-vs {{ panel.align_class }}">{{ panel.align_label }}</span>{% endif %}
+            {% if cr %}<span class="carry-role role-{{ cr.role }}">{{ cr.role_label }}</span>{% endif %}
           </div>
+          {% if cr %}
           <div class="carry-stats">
-            {% if r.spread_bp is not none %}<span>{% if block.lang == 'zh-Hant' %}美債利差{% else %}UST spread{% endif %} {{ "%+.0f"|format(r.spread_bp) }}bp</span>{% endif %}
-            {% if r.fx_1m is not none %}<span class="sp">·</span><span>{% if block.lang == 'zh-Hant' %}匯率1m{% else %}FX 1m{% endif %} {{ "%+.2f"|format(r.fx_1m) }}%</span>{% endif %}
-            {% if r.flow_label %}<span class="sp">·</span><span class="{% if r.flow_dir == 'supportive' %}ep{% else %}en{% endif %}">{{ r.flow_label }}</span>{% endif %}
+            {% if cr.spread_bp is not none %}<span>{% if block.lang == 'zh-Hant' %}美債利差{% else %}UST spread{% endif %} {{ "%+.0f"|format(cr.spread_bp) }}bp</span>{% endif %}
+            {% if cr.fx_1m is not none %}<span class="sp">·</span><span>{% if block.lang == 'zh-Hant' %}匯率1m{% else %}FX 1m{% endif %} {{ "%+.2f"|format(cr.fx_1m) }}%</span>{% endif %}
+            {% if cr.flow_label %}<span class="sp">·</span><span class="{% if cr.flow_dir == 'supportive' %}ep{% else %}en{% endif %}">{{ cr.flow_label }}</span>{% endif %}
           </div>
-          {% if block.lang == 'zh-Hant' and r.note %}<div class="carry-note">{{ r.note }}</div>{% endif %}
+          {% if block.lang == 'zh-Hant' and cr.note %}<div class="carry-note">{{ cr.note }}</div>{% endif %}
+          {% endif %}
+          <hr class="cty-carry-sep">
+          <div class="cty-gears">
+            {% for gear in panel.gears %}
+            <div class="cty-row"><b>{{ gear.title }}</b>　{{ gear.body }}</div>
+            {% endfor %}
+          </div>
         </div>
         {% endfor %}
       </div>
+      {% if block.carry_relative %}
       <div class="tilt-legend">{% if block.lang == 'zh-Hant' %}利差 = 美債 − 當地 10Y · carry 開關看 VIX · 攤開不評分（美國為原點，中國資本管制走政策分化）{% else %}Spread = UST − local 10Y · carry switch = VIX · parts shown, not scored (US is origin; China is capital-controlled → policy/FX){% endif %}</div>
       {% endif %}
-
+      {% endif %}
 
       {% if block.historical_matches or block.divergence_matches %}
+      <div class="zone-divider zone-hist">
+        <div class="zone-title">{{ block.ui.zone_history }}</div>
+        <div class="zone-sub">{{ block.ui.zone_history_sub }}</div>
+      </div>
       <div class="modcard">
-        <div class="mod-label">{{ block.ui.history_summary }}</div>
         <div class="det-inner">
           {% if block.historical_matches %}
           <div class="an-sub">{{ block.ui.history_us_sub }}</div>
@@ -2514,22 +2545,6 @@ HTML_TMPL_LITE = """<!doctype html>
           </div>
           {% endif %}
           <div class="an-disc">* {{ block.ui.history_disc }}{% if block.history_translation_fallback %} {{ block.ui.history_disc_fallback }}{% endif %}</div>
-        </div>
-      </div>
-      {% endif %}
-
-      {% if block.country_matrix %}
-      <div class="modcard">
-        <div class="mod-label">{{ block.ui.country_summary }}{% if block.lang == 'zh-Hant' %}（{{ block.country_matrix|length }} 國）{% else %} ({{ block.country_matrix|length }} markets){% endif %}</div>
-        <div class="det-inner cty-wrap">
-          {% for panel in block.country_matrix %}
-          <div class="cty">
-            <div class="cty-h">{{ panel.country }}{% if panel.align_label %}<span class="cty-vs {{ panel.align_class }}">{{ panel.align_label }}</span>{% endif %}</div>
-            {% for gear in panel.gears %}
-            <div class="cty-row"><b>{{ gear.title }}</b>　{{ gear.body }}</div>
-            {% endfor %}
-          </div>
-          {% endfor %}
         </div>
       </div>
       {% endif %}
