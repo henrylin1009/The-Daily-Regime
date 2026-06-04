@@ -2098,7 +2098,7 @@ HTML_TMPL_LITE = """<!doctype html>
     /* Transition matrix — big numbers (lives in the Market Regime card) */
     .trans-block { margin-top:1.3rem; }
     .trans-head { font-family:var(--sans); font-size:0.7rem; font-weight:600; color:var(--muted); margin-bottom:0.75rem; letter-spacing:0.01em; }
-    .trans-stats { display:flex; flex-wrap:wrap; gap:1.3rem 2.4rem; align-items:flex-end; }
+    .trans-stats { display:flex; flex-wrap:nowrap; gap:1.3rem 2.4rem; align-items:flex-end; overflow-x:auto; padding-bottom:0.25rem; }
     .trans-stat { display:flex; flex-direction:column; gap:0.25rem; }
     .ts-num { font-family:var(--mono); font-size:1.7rem; font-weight:600; line-height:0.95; letter-spacing:-0.03em; color:var(--ink); }
     .trans-stat.ts-stay .ts-num { font-size:2.3rem; }
