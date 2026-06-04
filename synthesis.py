@@ -735,11 +735,11 @@ LITE_UI: dict[str, dict[str, str]] = {
     "zh": {
         "subtitle": "戰略綜合",
         "today_line_kicker": "今日一句",
-        "zone_us_anchor": "美國基準 · US Anchor",
+        "zone_us_anchor": "美國基準",
         "zone_us_anchor_sub": "全球定價的錨與開關 — 美國週期、金融條件、資產配置",
-        "zone_global": "國際承接面 · Global Relative",
-        "zone_global_sub": "各國相對美國 — 利差、資本流向、carry（美國為原點）",
-        "zone_synthesis": "今日主題 · Today",
+        "zone_global": "國際承接面",
+        "zone_global_sub": "各國相對美國 — 利差、資本流向、利差交易（美國為原點）",
+        "zone_synthesis": "今日主題",
         "zone_synthesis_sub": "今天最重要的主題與風險",
         "regime_k": "市場體制（美國主導）",
         "coherence_k": "訊號一致性",
@@ -2416,7 +2416,7 @@ HTML_TMPL_LITE = """<!doctype html>
 
       {% if block.regime_asset_tilt %}
       <div class="modcard">
-      <div class="mod-label">{% if block.lang == 'zh-Hant' %}資產配置 · ALLOCATION{% else %}ASSET ALLOCATION{% endif %}</div>
+      <div class="mod-label">{% if block.lang == 'zh-Hant' %}資產配置{% else %}ASSET ALLOCATION{% endif %}</div>
       <div class="mod-head">{{ block.tilt_legend_regime }}{% if block.lang == 'zh-Hant' %} · 配置傾向{% else %} tilt{% endif %}{{ info(block.methodology.asset_tilt) }}</div>
       {% if block.tilt_context %}<div class="tilt-context">{% if not block.in_transition %}{{ block.tilt_legend_regime }} · {% endif %}{{ block.tilt_context }}</div>{% endif %}
       <div class="tilt-grid">
