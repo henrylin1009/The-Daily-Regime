@@ -318,12 +318,12 @@ def regime_prob_timeseries(
     })
 
     layout = {
-        "margin": {"t": 10, "b": 36, "l": 10, "r": 10},
-        "height": 120,
+        "margin": {"t": 10, "b": 10, "l": 10, "r": 10},
+        "height": 80,
         "paper_bgcolor": "rgba(0,0,0,0)",
         "plot_bgcolor": "rgba(0,0,0,0)",
         "shapes": shapes,
-        "legend": {"orientation": "h", "y": -0.35, "font": {"size": 10}, "x": 0},
+        "legend": {"orientation": "v", "y": -0.05, "yanchor": "top", "x": 0, "font": {"size": 11}, "tracegroupgap": 4},
         "xaxis": {"showgrid": False, "tickfont": {"size": 10}, "type": "date"},
         "yaxis": {"visible": False, "range": [0, 1]},
         "hovermode": "closest",
