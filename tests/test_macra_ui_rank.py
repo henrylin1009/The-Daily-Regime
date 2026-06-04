@@ -52,17 +52,17 @@ def test_spread_trade_uses_rank_1_and_6():
         layer="L2",
     )
     line = spread_trade_line(ranked)
-    assert "[LONG]" in line
-    assert "[SHORT]" in line
+    assert "動能最強" in line
+    assert "動能最弱" in line
     assert "China" in line
     assert "US" in line
 
 
 def test_format_accordion_summary():
     s = format_accordion_summary({"country": "US", "is_us_core": True, "signal": "YELLOW"}, 1, 43)
-    assert s["rank_label"] == "[ Rank 1 ]"
+    assert s["rank_label"] == "[ 1 ]"
     assert s["is_core"] is True
-    assert "43" in s["divergence_text"]
+    assert s["divergence_text"] == "(留意觀察)"
 
 
 def test_l1_none_policy_rate_formats_cleanly():

@@ -34,7 +34,7 @@ def test_normalize_daily_themes_bilingual():
 
 
 def test_regime_label_display_zh():
-    assert syn._regime_label_display("Goldilocks", "zh") == "金絲雀（溫和增長）"
+    assert syn._regime_label_display("Goldilocks", "zh") == "金絲雀"
     assert syn._regime_label_display("Goldilocks", "en") == "Goldilocks"
 
 
@@ -103,9 +103,9 @@ def test_normalize_watch_list_bilingual_from_dicts():
     assert en_list == ["US CPI next release"]
     assert bi[0]["zh"] == "美國下次CPI發布"
     zh_items = syn._lite_critical_watchout(bi, "zh")
-    assert zh_items == ["美國下次CPI發布"]
+    assert zh_items == [{"text": "美國下次CPI發布", "reasoning": ""}]
     en_items = syn._lite_critical_watchout(bi, "en")
-    assert en_items == ["US CPI next release"]
+    assert en_items == [{"text": "US CPI next release", "reasoning": ""}]
 
 
 def test_lite_theme_kicker_zh():
