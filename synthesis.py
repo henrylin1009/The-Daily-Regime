@@ -2052,7 +2052,7 @@ HTML_TMPL_LITE = """<!doctype html>
     .kicker { font-family:var(--sans); font-size:0.78rem; font-weight:700; text-transform:uppercase; letter-spacing:0.09em; color:var(--red); margin-bottom:0.35rem; }
     .section-head { font-family:var(--sans); font-size:0.82rem; font-weight:700; text-transform:uppercase; letter-spacing:0.09em; color:var(--red); margin:1.6rem 0 0.9rem; }
     /* No divider lines — blocks define the sections. Zone header is just a big title. */
-    .zone-divider { margin:2.4rem 0 1rem; padding:0; border:none; scroll-margin-top:0.5rem; }
+    .zone-divider { margin:2.4rem 0 1rem; padding:0; border:none; }
     .zone-title { font-family:var(--serif); font-size:1.85rem; font-weight:700; color:var(--ink); letter-spacing:-0.015em; line-height:1.08; }
     .zone-sub { font-family:var(--sans); font-size:0.82rem; color:var(--muted); margin-top:0.4rem; letter-spacing:0; line-height:1.45; }
     /* Big colour-block module (Notion structure + Economist palette, no rules) */
