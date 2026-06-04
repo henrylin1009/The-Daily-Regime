@@ -23,11 +23,9 @@
     body { margin:0; background:var(--block); color:var(--ink); font-family:var(--serif); -webkit-font-smoothing:antialiased; }
     /* scroll-margin always applies, regardless of motion preference */
     .snap-anchor { scroll-margin-top: 1.5rem; }
-    /* Proximity snap: two points only — top + US Anchor */
+    /* scroll-snap disabled — natural mobile scroll */
     @media (prefers-reduced-motion: no-preference) {
-      html { scroll-snap-type: y proximity; }
-      .snap-top { scroll-snap-align: start; }
-      .snap-anchor { scroll-snap-align: start; }
+      html { scroll-snap-type: none; }
     }
     /* Section break divider before US Anchor */
     /* Full-screen section break — the editorial/quant boundary */
@@ -336,8 +334,8 @@
     <div class="lang-block" data-lang="zh-Hant">
       <div class="tab-pane active" data-pane="today">
       <div class="hero">
-        <div class="hero-kicker">今日一句<span class="info tip-right" tabindex="0" role="button" aria-label="方法說明">i<span class="tip">美國經濟仍處於過熱體制：成長加速、通膨上升、勞動市場依然緊俏。聯準會按兵不動，市場已不再預期降息。股市上漲、信用利差收窄、波動率偏低。這是典型的晚週期風險偏好環境，投資人追逐報酬。 但在平靜的表面下，警示訊號正在閃爍。尾部風險保護的成本正在上升，即使整體波動率下降。日圓利差交易處於極端水準，突然的平倉可能動盪市場。債券曲線趨平，歷史上這預示經濟放緩。表面平靜與隱藏避險之間的背離顯示，市場並不如表面看起來那麼安心。</span></span></div>
-        <h1 class="hero-stance">過熱體制不變，但尾部風險正在累積。</h1>
+        <div class="hero-kicker">今日一句<span class="info tip-right" tabindex="0" role="button" aria-label="方法說明">i<span class="tip">美國經濟處於過熱體制：成長加速、通膨加速（CPI達3.95%，PCE達3.5%），聯準會按兵不動。市場預期不會降息，但股市接近歷史高點，信用利差收窄。這是典型的晚週期動態：好消息已被定價，任何負面意外都可能引發劇烈重新定價。殖利率曲線熊市走平，漲勢擴散至更多股票，但歷史顯示此類條件往往預示波動加劇。 關鍵緊張在於平靜的表面與緊張的內裡。雖然VIX偏低且改善中，但SKEW指數上升——投資者正在買入尾部保護。日圓利差交易處於極端（淨空頭創紀錄），突然的平倉可能波及全球市場。美元走弱，雖有利於新興市場和商品，但也反映對美國例外論的信心喪失。發散評分為49（偏高），因避險成本異常和黃金波動性而受罰。現在不是自滿的時候。</span></span></div>
+        <h1 class="hero-stance">過熱體制：成長強勁、通膨升溫、市場自滿。</h1>
       </div>
 
       
@@ -349,23 +347,23 @@
       
       <article class="story">
         <div class="kicker">美國</div>
-        <div class="headline-row"><h2 class="headline">過熱格局持續，但裂縫浮現</h2><span class="info tip-left" tabindex="0" role="button" aria-label="方法說明">i<span class="tip">美國宏觀體制為過熱：GDP年增2.66%加速中，CPI年增3.95%（從2.67%上升），PCE達3.5%。殖利率曲線（2年10年利差）已平坦至0.49%，短天期與長天期債券比率連續7日惡化，顯示市場正在排除降息。歷史類比如2007-11（金融危機前）和2000-10（網路泡沫頂峰）顯示，平坦曲線與低波動可能預示股市大幅回調，但當前環境也類似2014-08中期放緩，股市大致持平。關鍵在於通膨仍在加速，聯準會短期內不太可能降息。</span></span></div>
-        <p class="story-body">美國經濟仍在過熱，成長與通膨同步加速，但債券市場已開始排除降息可能性。殖利率曲線趨平，長天期債券表現遜於短天期，顯示投資人預期聯準會將更久維持利率不變。</p>
-        <p class="implication"><b>長線意義 ·</b> 此環境歷史上有利於股票與實質資產，而非長天期債券。</p>
+        <div class="headline-row"><h2 class="headline">通膨升溫，金髮女孩經濟出現裂痕</h2><span class="info tip-left" tabindex="0" role="button" aria-label="方法說明">i<span class="tip">宏觀體制為過熱：美國成長加速，CPI從2.67%升至2.99%（4月），PCE達3.5%。2-10年期曲線熊市走平至0.49%，市場隱含聯準會利率為3.65%，與當前3.64%一致——預期不會降息。歷史類比（如2007-11和2000-10）顯示，這種條件（曲線平坦、低波動、高通膨）往往在12個月內導致股市大幅回調。</span></span></div>
+        <p class="story-body">美國通膨加速，CPI達3.95%、PCE達3.5%，但成長依然穩健。市場預期不會降息，股市卻接近高點——這種緊張局勢在歷史上往往預示波動加劇。</p>
+        <p class="implication"><b>長線意義 ·</b> 這有利於實質資產和短天期債券，而非長天期債券。</p>
       </article>
       
       <article class="story">
-        <div class="kicker">日本</div>
-        <div class="headline-row"><h2 class="headline">日圓空頭交易過度擁擠</h2><span class="info tip-left" tabindex="0" role="button" aria-label="方法說明">i<span class="tip">日圓淨空頭部位的52週Z分數為-2.56，屬於極端水準。日圓過去一個月兌美元貶值1.98%，美日利差達194個基點，鼓勵利差交易。然而，SKEW指數（尾部風險保護）正在上升，而VVIX（波動率的波動率）下降，顯示機構投資人正在悄悄買入下行保護，即使表面波動看似平靜。這種模式通常預示著擁擠交易將出現劇烈反轉。</span></span></div>
-        <p class="story-body">幾乎所有人都在做空日圓，淨空頭部位處於近年罕見的極端水準。日圓兌美元大幅貶值，利差交易吸引追求收益的資金。但當交易如此擁擠時，劇烈反轉的風險也隨之升高。</p>
-        <p class="implication"><b>長線意義 ·</b> 日圓升值將壓抑日股，並引發利差交易虧損，有利於黃金等避險資產。</p>
+        <div class="kicker">日本 · 美國</div>
+        <div class="headline-row"><h2 class="headline">日圓利差交易處於危險極端</h2><span class="info tip-left" tabindex="0" role="button" aria-label="方法說明">i<span class="tip">日圓淨空頭部位的52週Z-score為-2.56，是罕見的極端值。美元兌日圓單日飆升1.98%至159.94，紐元兌日圓上漲2.30%。美日利差達194個基點，鼓勵利差交易。然而，此類極端情況在歷史上往往預示劇烈反轉，例如2018年6月聯準會升息引發利差交易平倉。日本持有美債增加280億美元，但這種資金流入只有在風險偏好持續時才具有支撐性。</span></span></div>
+        <p class="story-body">日圓大幅貶值，美元兌日圓單日漲近2%，淨空頭部位處於歷史極端。若風險偏好轉變，這項擁擠交易可能劇烈平倉。</p>
+        <p class="implication"><b>長線意義 ·</b> 這對日股構成壓力，有利於避險的美元投資者，但對全球利差交易構成尾部風險。</p>
       </article>
       
       <article class="story">
-        <div class="kicker">台灣</div>
-        <div class="headline-row"><h2 class="headline">台灣資金流入持續強勁</h2><span class="info tip-left" tabindex="0" role="button" aria-label="方法說明">i<span class="tip">台灣過去20日外資累積流入達2120億新台幣，屬於極高水準。新台幣過去一個月兌美元升值0.26%，股市（加權指數）過去一年漲幅強勁。第二層資金流訊號為綠燈，顯示資金流入支撐。但近期加權指數單日下跌1.68%，顯示部分獲利了結。</span></span></div>
-        <p class="story-body">外資持續湧入台灣，過去20日累積流入金額達極高水準。新台幣兌美元匯率穩定，股市雖近期回檔仍吸引資金。</p>
-        <p class="implication"><b>長線意義 ·</b> 台灣股市與新台幣受強勁外資流入支撐，但全球風險偏好轉向可能引發資金外流。</p>
+        <div class="kicker">台灣 · 美國</div>
+        <div class="headline-row"><h2 class="headline">台灣資金流入顯示科技需求強勁</h2><span class="info tip-left" tabindex="0" role="button" aria-label="方法說明">i<span class="tip">台灣的外資流量信號為綠色，20日外資流入2120億新台幣。台幣穩定（兌美元+0.26%）。台灣持有美債增加91億美元，股市強勁（加權指數45677，今日下跌1.68%）。科技股（XLK）處於12個月回報的第99百分位，顯示極度樂觀。此模式類似2021年2月的再通膨時期，當時新興市場科技股短暫表現優異。</span></span></div>
+        <p class="story-body">外資在過去20天內大舉流入2120億新台幣至台灣，推動台幣走強。這反映了全球對科技股、尤其是半導體的強勁需求。</p>
+        <p class="implication"><b>長線意義 ·</b> 這對台股和台幣有利，但科技股的高估值（XLK處於第99百分位）需保持謹慎。</p>
       </article>
       
       </div>
@@ -375,7 +373,7 @@
       <div class="modcard">
         <div class="mod-label">關鍵觀察</div>
         <ul class="watch-list">
-          <li>日圓利差交易平倉<span class="info tip-left" tabindex="0" role="button" aria-label="方法說明">i<span class="tip">日圓淨空頭部位處於52週極端（），過去一個月貶值1.98%。任何催化劑（例如日本央行鷹派意外、風險規避事件）都可能引發劇烈軋空，導致利差交易大幅虧損，日圓急升。</span></span></li><li>美國殖利率曲線趨平<span class="info tip-left" tabindex="0" role="button" aria-label="方法說明">i<span class="tip">2年10年利差已平坦至0.49%，短天期與長天期債券比率連續7日惡化。若曲線進一步倒掛，可能預示衰退擔憂，引發風險規避。</span></span></li><li>黃金波動率飆升<span class="info tip-left" tabindex="0" role="button" aria-label="方法說明">i<span class="tip">黃金波動率（GVZ）正在飆升，而黃金本身在過熱體制下下跌。這種背離顯示黃金可能因流動性或追繳保證金而被拋售，可能是更廣泛壓力的警告。</span></span></li>
+          <li>日圓利差交易平倉<span class="info tip-left" tabindex="0" role="button" aria-label="方法說明">i<span class="tip">日圓淨空頭處於52週極端（），美元兌日圓單日飆升1.98%。突然反轉可能引發劇烈平倉，影響全球風險資產。</span></span></li><li>美國通膨數據意外<span class="info tip-left" tabindex="0" role="button" aria-label="方法說明">i<span class="tip">CPI達3.95%且加速中；任何上行意外都可能迫使聯準會升息，打壓股市和長天期債券。</span></span></li><li>台灣科技股回調<span class="info tip-left" tabindex="0" role="button" aria-label="方法說明">i<span class="tip">外資大量流入（20日2120億新台幣），但XLK處於第99百分位。科技股情緒逆轉可能引發資金外流和台幣貶值。</span></span></li>
         </ul>
       </div>
       
@@ -384,8 +382,8 @@
       <div class="modcard">
         <div class="mod-label">完整研判分析</div>
         <div class="det-inner">
-          <p class="narr-p">美國經濟仍處於過熱體制：成長加速、通膨上升、勞動市場依然緊俏。聯準會按兵不動，市場已不再預期降息。股市上漲、信用利差收窄、波動率偏低。這是典型的晚週期風險偏好環境，投資人追逐報酬。</p><p class="narr-p">但在平靜的表面下，警示訊號正在閃爍。尾部風險保護的成本正在上升，即使整體波動率下降。日圓利差交易處於極端水準，突然的平倉可能動盪市場。債券曲線趨平，歷史上這預示經濟放緩。表面平靜與隱藏避險之間的背離顯示，市場並不如表面看起來那麼安心。</p>
-          <p class="narr-p"><b>觸發風險 ·</b> 若日圓因利差交易平倉而突然升值，則全球風險資產可能大幅拋售，美元將走弱。</p>
+          <p class="narr-p">美國經濟處於過熱體制：成長加速、通膨加速（CPI達3.95%，PCE達3.5%），聯準會按兵不動。市場預期不會降息，但股市接近歷史高點，信用利差收窄。這是典型的晚週期動態：好消息已被定價，任何負面意外都可能引發劇烈重新定價。殖利率曲線熊市走平，漲勢擴散至更多股票，但歷史顯示此類條件往往預示波動加劇。</p><p class="narr-p">關鍵緊張在於平靜的表面與緊張的內裡。雖然VIX偏低且改善中，但SKEW指數上升——投資者正在買入尾部保護。日圓利差交易處於極端（淨空頭創紀錄），突然的平倉可能波及全球市場。美元走弱，雖有利於新興市場和商品，但也反映對美國例外論的信心喪失。發散評分為49（偏高），因避險成本異常和黃金波動性而受罰。現在不是自滿的時候。</p>
+          <p class="narr-p"><b>觸發風險 ·</b> 若日圓突然走強（例如因日本央行干預或避險事件），擁擠的利差交易可能劇烈平倉，導致日圓融資部位大幅虧損，全球波動性飆升。</p>
         </div>
       </div>
       
@@ -653,11 +651,11 @@
           
           <div class="cty-gears">
             
-            <div class="cty-row"><b>過熱定價</b>市場預期聯準會將按兵不動，因成長與通膨加速。</div>
+            <div class="cty-row"><b>過熱定價</b>市場預期不會降息，通膨上升，成長穩健——典型的過熱定價。</div>
             
-            <div class="cty-row"><b>風險偏好資金流</b>資金流入股票與信用債，美元偏強，殖利率曲線趨平。</div>
+            <div class="cty-row"><b>風險偏好資金流</b>資金流入股市和信用債；美元走弱，但資本流入依然強勁。</div>
             
-            <div class="cty-row"><b>隱藏謹慎</b>尾部風險保護變貴；投資人買入下行保險。</div>
+            <div class="cty-row"><b>隱藏謹慎</b>尾部風險保護變得昂貴——平靜表面下的隱藏謹慎信號。</div>
             
           </div>
         </div>
@@ -683,11 +681,11 @@
           
           <div class="cty-gears">
             
-            <div class="cty-row"><b>日圓偏弱</b>市場預期日圓進一步貶值；利差交易擁擠。</div>
+            <div class="cty-row"><b>利差交易極端</b>市場預期日圓持續貶值；利差交易擁擠且處於極端。</div>
             
-            <div class="cty-row"><b>利差外流</b>資金從日圓流向較高收益貨幣。</div>
+            <div class="cty-row"><b>資本外流</b>資金從日圓流向較高收益資產；美債持有量增加。</div>
             
-            <div class="cty-row"><b>軋空風險</b>極端空頭部位面臨劇烈軋空風險。</div>
+            <div class="cty-row"><b>平倉風險</b>若日圓反轉，存在劇烈平倉風險；干預可能。</div>
             
           </div>
         </div>
@@ -713,11 +711,11 @@
           
           <div class="cty-gears">
             
-            <div class="cty-row"><b>歐元偏弱</b>市場預期歐洲央行按兵不動；歐元走弱。</div>
+            <div class="cty-row"><b>歐元走弱</b>市場預期歐元走弱；歐洲央行按兵不動，成長不明。</div>
             
-            <div class="cty-row"><b>資金外流</b>資金從歐元流向美元；利差具支撐。</div>
+            <div class="cty-row"><b>資本外流</b>資金從歐元流向美元；利差146個基點。</div>
             
-            <div class="cty-row"><b>資金流警示</b>第二層資金流訊號紅燈；應謹慎。</div>
+            <div class="cty-row"><b>擁擠多頭</b>擁擠的歐元多頭部位（極端）構成反轉風險。</div>
             
           </div>
         </div>
@@ -743,11 +741,11 @@
           
           <div class="cty-gears">
             
-            <div class="cty-row"><b>人民幣偏強</b>市場預期人民幣升值；資金流入。</div>
+            <div class="cty-row"><b>人民幣走強</b>市場預期人民幣走強；資本流入具有支撐性。</div>
             
-            <div class="cty-row"><b>流入壓力</b>外匯儲備增加；人民幣升值；銅需求強勁。</div>
+            <div class="cty-row"><b>資本流入</b>資金流入中國；外匯儲備增加690億美元，銅需求強勁。</div>
             
-            <div class="cty-row"><b>政策風險</b>資本管制限制風險；關注政策分化。</div>
+            <div class="cty-row"><b>出口風險</b>政策轉變或全球放緩影響出口的風險。</div>
             
           </div>
         </div>
@@ -773,11 +771,11 @@
           
           <div class="cty-gears">
             
-            <div class="cty-row"><b>穩定偏強</b>市場預期新台幣穩定；外資持續流入。</div>
+            <div class="cty-row"><b>科技繁榮</b>市場預期科技驅動成長；外資大量流入。</div>
             
-            <div class="cty-row"><b>流入動能</b>外資強勁流入股市；新台幣兌美元穩定。</div>
+            <div class="cty-row"><b>外資流入</b>外資大量湧入；台幣穩定，美債持有量增加。</div>
             
-            <div class="cty-row"><b>反轉風險</b>若全球風險偏好轉向，資金流入可能反轉。</div>
+            <div class="cty-row"><b>估值風險</b>科技股估值處於極端；劇烈反轉風險。</div>
             
           </div>
         </div>
@@ -807,7 +805,7 @@
             
             <div class="an-card">
               <div class="an-per">2007-11</div>
-              <div class="an-desc">金融危機前——曲線平坦，波動率低，信貸自滿</div>
+              <div class="an-desc">金融海嘯前——曲線平坦，波動率低，信貸自滿</div>
               <div class="an-ret">
                 <div class="an-stat neg"><span class="an-l">美股 12m</span><span class="an-v">-39%</span></div>
                 <div class="an-stat neg"><span class="an-l">3m</span><span class="an-v">-9%</span></div>
@@ -818,7 +816,7 @@
             
             <div class="an-card">
               <div class="an-per">2000-10</div>
-              <div class="an-desc">網路泡沫高峰——勞動力市場緊俏，估值偏高</div>
+              <div class="an-desc">網路泡沫高峰——勞動市場緊俏，估值偏高</div>
               <div class="an-ret">
                 <div class="an-stat neg"><span class="an-l">美股 12m</span><span class="an-v">-26%</span></div>
                 <div class="an-stat neg"><span class="an-l">3m</span><span class="an-v">-4%</span></div>
@@ -910,8 +908,8 @@
     <div class="lang-block" data-lang="en">
       <div class="tab-pane active" data-pane="today">
       <div class="hero">
-        <div class="hero-kicker">In one line<span class="info tip-right" tabindex="0" role="button" aria-label="方法說明">i<span class="tip">The US economy remains in an Overheat regime: growth is accelerating, inflation is rising, and the labor market is still tight. The Fed is on hold, and the market has stopped pricing in rate cuts. Equities are rallying, credit spreads are tight, and volatility is low. This is a classic late-cycle risk-on environment where investors are chasing returns. But beneath the calm surface, warning signs are flashing. The cost of tail-risk protection is rising, even as overall volatility falls. The yen carry trade is at an extreme, and a sudden unwind could roil markets. The bond market is flattening, which historically has preceded economic slowdowns. The divergence between surface calm and hidden hedging suggests the market is not as comfortable as it looks.</span></span></div>
-        <h1 class="hero-stance">Overheat regime intact, but tail risks are building.</h1>
+        <div class="hero-kicker">In one line<span class="info tip-right" tabindex="0" role="button" aria-label="方法說明">i<span class="tip">The US economy is in an Overheat regime: growth is accelerating, inflation is accelerating (CPI at 3.95%, PCE at 3.5%), and the Fed is on hold. The market is pricing in no rate cuts, yet equities are near all-time highs and credit spreads are tight. This is a classic late-cycle dynamic where good news is already priced in, and any negative surprise could trigger a sharp repricing. The yield curve is bear-flattening, and the rally is broadening to more stocks, but history shows that such conditions often precede volatility. The key tension is between the calm surface and the nervous underbelly. While market volatility is low and improving, the demand for downside protection index is rising — investors are buying tail protection. The yen carry trade is at an extreme (net shorts at a record), and a sudden unwind could ripple through global markets. The dollar is weakening, which supports EM and commodities, but also reflects a loss of confidence in US exceptionalism. The the gap between markets is elevated at 49, with penalties from hedging cost anomalies and gold volatility. This is not a time for complacency.</span></span></div>
+        <h1 class="hero-stance">Overheat regime: growth strong, inflation rising, markets complacent.</h1>
       </div>
 
       
@@ -923,23 +921,23 @@
       
       <article class="story">
         <div class="kicker">US</div>
-        <div class="headline-row"><h2 class="headline">Overheat regime holds, but cracks appear</h2><span class="info tip-left" tabindex="0" role="button" aria-label="方法說明">i<span class="tip">The US macro regime is Overheat: GDP growth is accelerating (2.66% YoY), CPI is rising (3.95% YoY, up from 2.67%), and PCE is at 3.5%. The yield curve (2y10y spread) has flattened to 0.49%, and the the bond market's rate-cut expectations ratio (short vs long bonds) is deteriorating for 7 consecutive days, meaning the market is pricing out rate cuts. Historical analogues like 2007-11 (pre-GFC) and 2000-10 (dot-com peak) show that such flat curves and low vol can precede sharp equity drawdowns, but the current environment also resembles 2014-08 mid-cycle slowdown where equities were flat. The key is that inflation is still accelerating, so the Fed is unlikely to cut soon.</span></span></div>
-        <p class="story-body">The US economy is still running hot with accelerating growth and inflation, but the bond market is starting to price out rate cuts. The yield curve is flattening, and long-term bonds are underperforming short-term ones, signaling that investors expect the Fed to stay on hold longer.</p>
-        <p class="implication"><b>Long-term takeaway ·</b> This environment historically favours equities and real assets over long-duration bonds.</p>
+        <div class="headline-row"><h2 class="headline">Goldilocks cracks as inflation heats up</h2><span class="info tip-left" tabindex="0" role="button" aria-label="方法說明">i<span class="tip">The macro regime is Overheat: US growth accelerating, CPI rising from 2.67% to 2.99% (April), PCE at 3.5%. The 2-10y curve is bear-flattening at 0.49%, and the market-implied Fed rate is 3.65%, aligned with the current 3.64% — no cuts expected. Historical analogues like 2007-11 and 2000-10 show that such conditions (flat curve, low vol, high inflation) often lead to sharp equity drawdowns within 12 months.</span></span></div>
+        <p class="story-body">US inflation is accelerating, with CPI at 3.95% and PCE at 3.5%, while growth remains solid. The market is pricing in no rate cuts, yet equities are near highs — a tension that historically precedes volatility.</p>
+        <p class="implication"><b>Long-term takeaway ·</b> This favours real assets and short-duration bonds over long-duration bonds in a portfolio.</p>
       </article>
       
       <article class="story">
-        <div class="kicker">Japan</div>
-        <div class="headline-row"><h2 class="headline">Yen short is a crowded trade</h2><span class="info tip-left" tabindex="0" role="button" aria-label="方法說明">i<span class="tip">Japanese yen bearish bets are at a 52-week Z-score of -2.56, which is an extreme level. The yen has weakened 1.98% against the dollar in the past month, and the US-Japan rate spread is 194bp, encouraging carry trades. However, the demand for downside protection index (tail-risk protection) is rising, and the the volatility of volatility (volatility of volatility) is falling, indicating that institutions are quietly buying downside protection even as surface volatility looks calm. This pattern often precedes a sharp reversal in crowded trades.</span></span></div>
-        <p class="story-body">Almost everyone is betting against the yen, with bearish bets at an extreme not seen in recent history. The yen has weakened sharply against the dollar, and the carry trade is attracting yield seekers. But when a trade gets this crowded, the risk of a violent unwind grows.</p>
-        <p class="implication"><b>Long-term takeaway ·</b> A yen rally would pressure Japanese equities and trigger losses in carry trades, benefiting safe-haven assets like gold.</p>
+        <div class="kicker">Japan · US</div>
+        <div class="headline-row"><h2 class="headline">Yen carry trade at dangerous extreme</h2><span class="info tip-left" tabindex="0" role="button" aria-label="方法說明">i<span class="tip">JPY net shorts are at a 52-week Z-score of -2.56, an extreme rarely seen. the Japanese yen surged 1.98% in a day to 159.94, and the New Zealand dollar carry trade jumped 2.30%. The US-Japan rate spread is 194bp, encouraging carry. However, such extremes historically precede sharp reversals, as in 2018-06 when Fed hikes triggered a carry unwind. Japan's TIC holdings of UST rose $28bn, but the flow is supportive only while risk appetite lasts.</span></span></div>
+        <p class="story-body">The yen is weakening sharply, with the Japanese yen up nearly 2% in a day and bearish bets at a record extreme. This crowded trade could unwind violently if risk appetite shifts.</p>
+        <p class="implication"><b>Long-term takeaway ·</b> This pressures Japanese equities and benefits hedged USD-based investors, but poses a tail risk for global carry trades.</p>
       </article>
       
       <article class="story">
-        <div class="kicker">Taiwan</div>
-        <div class="headline-row"><h2 class="headline">Taiwan inflows remain strong</h2><span class="info tip-left" tabindex="0" role="button" aria-label="方法說明">i<span class="tip">Taiwan's foreign inflows over the past 20 days total 212 billion TWD, a very high level. The Taiwan dollar has appreciated 0.26% against the USD in the past month, and the equity market (Taiwan Index) is up strongly over the past year. The the underlying data flow signal for Taiwan is GREEN, indicating supportive capital flows. However, the recent 1.68% daily drop in the Taiwan Index suggests some profit-taking.</span></span></div>
-        <p class="story-body">Foreign investors continue to pour money into Taiwan, with inflows over the past 20 days reaching a very high level. The Taiwan dollar is stable against the US dollar, and the equity market is attracting capital despite a recent pullback.</p>
-        <p class="implication"><b>Long-term takeaway ·</b> Taiwan equities and the Taiwan dollar are supported by strong foreign inflows, but a reversal in global risk appetite could trigger outflows.</p>
+        <div class="kicker">Taiwan · US</div>
+        <div class="headline-row"><h2 class="headline">Taiwan inflows signal tech demand</h2><span class="info tip-left" tabindex="0" role="button" aria-label="方法說明">i<span class="tip">Taiwan's foreign flow signals healthy flows, with 20-day foreign inflows of 212bn TWD. The TWD is stable (+0.26% vs USD). Taiwan's TIC holdings of UST rose $9.1bn, and the equity market is strong (Taiwan Index at 45677, though down 1.68% today). The tech sector (XLK) is at the 99th percentile of 12-month returns, indicating extreme bullishness. This pattern echoes 2021-02 reflation, where EM tech outperformed briefly.</span></span></div>
+        <p class="story-body">Foreign investors poured a massive 212 billion TWD into Taiwan over the past 20 days, driving the currency stronger. This reflects strong global demand for tech, especially semiconductors.</p>
+        <p class="implication"><b>Long-term takeaway ·</b> This is positive for Taiwan equities and the TWD, but the tech sector's high valuation (XLK at 99th percentile) warrants caution.</p>
       </article>
       
       </div>
@@ -949,7 +947,7 @@
       <div class="modcard">
         <div class="mod-label">What to Watch</div>
         <ul class="watch-list">
-          <li>Yen carry trade unwind<span class="info tip-left" tabindex="0" role="button" aria-label="方法說明">i<span class="tip">Yen net shorts are at a 52-week extreme, and the yen has weakened 1.98% in the past month. Any catalyst (e.g., BOJ hawkish surprise, risk-off event) could trigger a violent squeeze, causing sharp losses in carry trades and a rally in the yen.</span></span></li><li>US yield curve flattening<span class="info tip-left" tabindex="0" role="button" aria-label="方法說明">i<span class="tip">The 2y10y spread has flattened to 0.49% and the the bond market's rate-cut expectations ratio has been deteriorating for 7 days. If the curve inverts further, it could signal recession fears and trigger a risk-off move.</span></span></li><li>Gold volatility spike<span class="info tip-left" tabindex="0" role="button" aria-label="方法說明">i<span class="tip">Gold volatility (GVZ) is spiking, and gold itself is falling despite the Overheat regime. This divergence suggests that gold is being sold for liquidity or margin calls, which could be a warning of broader stress.</span></span></li>
+          <li>Yen carry trade unwind<span class="info tip-left" tabindex="0" role="button" aria-label="方法說明">i<span class="tip">JPY net shorts are at a 52-week extreme, and the Japanese yen surged 1.98% in a day. A sudden reversal could trigger a violent unwind, impacting global risk assets.</span></span></li><li>US inflation data surprise<span class="info tip-left" tabindex="0" role="button" aria-label="方法說明">i<span class="tip">CPI at 3.95% and accelerating; any upside surprise could force the Fed to hike, crushing equities and long-duration bonds.</span></span></li><li>Taiwan tech sector correction<span class="info tip-left" tabindex="0" role="button" aria-label="方法說明">i<span class="tip">Foreign inflows are massive (212bn TWD in 20 days), but XLK is at the 99th percentile. A reversal in tech sentiment could trigger outflows and TWD weakness.</span></span></li>
         </ul>
       </div>
       
@@ -958,8 +956,8 @@
       <div class="modcard">
         <div class="mod-label">Narrative</div>
         <div class="det-inner">
-          <p class="narr-p">The US economy remains in an Overheat regime: growth is accelerating, inflation is rising, and the labor market is still tight. The Fed is on hold, and the market has stopped pricing in rate cuts. Equities are rallying, credit spreads are tight, and volatility is low. This is a classic late-cycle risk-on environment where investors are chasing returns.</p><p class="narr-p">But beneath the calm surface, warning signs are flashing. The cost of tail-risk protection is rising, even as overall volatility falls. The yen carry trade is at an extreme, and a sudden unwind could roil markets. The bond market is flattening, which historically has preceded economic slowdowns. The divergence between surface calm and hidden hedging suggests the market is not as comfortable as it looks.</p>
-          <p class="narr-p"><b>Trigger risk ·</b> If the yen suddenly strengthens due to a carry trade unwind, then risk assets globally could sell off sharply, and the dollar would weaken.</p>
+          <p class="narr-p">The US economy is in an Overheat regime: growth is accelerating, inflation is accelerating (CPI at 3.95%, PCE at 3.5%), and the Fed is on hold. The market is pricing in no rate cuts, yet equities are near all-time highs and credit spreads are tight. This is a classic late-cycle dynamic where good news is already priced in, and any negative surprise could trigger a sharp repricing. The yield curve is bear-flattening, and the rally is broadening to more stocks, but history shows that such conditions often precede volatility.</p><p class="narr-p">The key tension is between the calm surface and the nervous underbelly. While market volatility is low and improving, the demand for downside protection index is rising — investors are buying tail protection. The yen carry trade is at an extreme (net shorts at a record), and a sudden unwind could ripple through global markets. The dollar is weakening, which supports EM and commodities, but also reflects a loss of confidence in US exceptionalism. The the gap between markets is elevated at 49, with penalties from hedging cost anomalies and gold volatility. This is not a time for complacency.</p>
+          <p class="narr-p"><b>Trigger risk ·</b> If the yen suddenly strengthens (e.g., due to BoJ intervention or a risk-off event), the crowded carry trade could unwind violently, causing sharp losses in yen-funded positions and a spike in global volatility.</p>
         </div>
       </div>
       
@@ -1227,11 +1225,11 @@
           
           <div class="cty-gears">
             
-            <div class="cty-row"><b>Overheat pricing</b>Market expects the Fed to stay on hold as growth and inflation accelerate.</div>
+            <div class="cty-row"><b>Overheat pricing</b>Market expects no rate cuts, inflation rising, growth solid — a classic Overheat pricing.</div>
             
-            <div class="cty-row"><b>Risk-on flows</b>Money flows into equities and credit, dollar firm, yield curve flattening.</div>
+            <div class="cty-row"><b>Risk-on flows</b>Money flowing into equities and credit; dollar weakening, but capital inflows remain strong.</div>
             
-            <div class="cty-row"><b>Hidden caution</b>Tail-risk protection getting expensive; investors buying downside insurance.</div>
+            <div class="cty-row"><b>Hidden caution</b>Tail-risk protection getting expensive — a sign of hidden caution beneath calm surface.</div>
             
           </div>
         </div>
@@ -1257,11 +1255,11 @@
           
           <div class="cty-gears">
             
-            <div class="cty-row"><b>Yen weakness bias</b>Market expects yen to weaken further; carry trade crowded.</div>
+            <div class="cty-row"><b>Carry trade extreme</b>Market expects yen to keep weakening; carry trade crowded and at extreme.</div>
             
-            <div class="cty-row"><b>Carry outflows</b>Capital flows out of yen into higher-yielding currencies.</div>
+            <div class="cty-row"><b>Capital outflow</b>Capital flowing out of yen into higher-yielding assets; UST holdings rising.</div>
             
-            <div class="cty-row"><b>Squeeze risk</b>Extreme short positioning risks violent squeeze.</div>
+            <div class="cty-row"><b>Unwind risk</b>Risk of violent unwind if yen reverses; intervention possible.</div>
             
           </div>
         </div>
@@ -1287,11 +1285,11 @@
           
           <div class="cty-gears">
             
-            <div class="cty-row"><b>Euro weakness bias</b>Market expects ECB to stay on hold; euro weakening.</div>
+            <div class="cty-row"><b>Euro weakening</b>Market expects euro to weaken; ECB on hold, growth unclear.</div>
             
-            <div class="cty-row"><b>Capital outflows</b>Capital flows out of euro into USD; rate spread supportive.</div>
+            <div class="cty-row"><b>Capital outflow</b>Capital flowing out of euro into USD; rate spread 146bp.</div>
             
-            <div class="cty-row"><b>Flow caution</b>the underlying data flow signal RED; caution warranted.</div>
+            <div class="cty-row"><b>Crowded long</b>Crowded long euro position (extreme) poses reversal risk.</div>
             
           </div>
         </div>
@@ -1317,11 +1315,11 @@
           
           <div class="cty-gears">
             
-            <div class="cty-row"><b>Yuan strength bias</b>Market expects yuan to strengthen; capital inflows.</div>
+            <div class="cty-row"><b>Yuan strength</b>Market expects yuan to strengthen; capital inflows supportive.</div>
             
-            <div class="cty-row"><b>Inflow pressure</b>FX reserves rising; yuan appreciating; copper demand strong.</div>
+            <div class="cty-row"><b>Capital inflow</b>Capital flowing into China; FX reserves up $69bn, copper demand strong.</div>
             
-            <div class="cty-row"><b>Policy risk</b>Capital controls limit risk; watch policy divergence.</div>
+            <div class="cty-row"><b>Export risk</b>Risk of policy shift or global slowdown hurting exports.</div>
             
           </div>
         </div>
@@ -1347,11 +1345,11 @@
           
           <div class="cty-gears">
             
-            <div class="cty-row"><b>Stable bias</b>Market expects TWD stable; foreign inflows continue.</div>
+            <div class="cty-row"><b>Tech boom</b>Market expects tech-driven growth; foreign inflows massive.</div>
             
-            <div class="cty-row"><b>Inflow momentum</b>Strong foreign equity inflows; TWD stable vs USD.</div>
+            <div class="cty-row"><b>Foreign inflows</b>Foreign capital pouring in; TWD stable, UST holdings rising.</div>
             
-            <div class="cty-row"><b>Reversal risk</b>Inflow reversal risk if global risk appetite turns.</div>
+            <div class="cty-row"><b>Valuation risk</b>Tech sector at extreme valuation; risk of sharp reversal.</div>
             
           </div>
         </div>

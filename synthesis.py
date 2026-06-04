@@ -2084,11 +2084,9 @@ HTML_TMPL_LITE = """<!doctype html>
     body { margin:0; background:var(--block); color:var(--ink); font-family:var(--serif); -webkit-font-smoothing:antialiased; }
     /* scroll-margin always applies, regardless of motion preference */
     .snap-anchor { scroll-margin-top: 1.5rem; }
-    /* Proximity snap: two points only — top + US Anchor */
+    /* scroll-snap disabled — natural mobile scroll */
     @media (prefers-reduced-motion: no-preference) {
-      html { scroll-snap-type: y proximity; }
-      .snap-top { scroll-snap-align: start; }
-      .snap-anchor { scroll-snap-align: start; }
+      html { scroll-snap-type: none; }
     }
     /* Section break divider before US Anchor */
     /* Full-screen section break — the editorial/quant boundary */
