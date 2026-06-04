@@ -1291,7 +1291,7 @@ def _build_regime_quadrant_plotly() -> dict:
     return {"traces": traces, "layout": layout}
 
 
-def _build_zscore_plotly() -> dict:
+def _build_zscore_plotly(lang: str = "zh-Hant") -> dict:
     """
     Plotly JSON: 5-panel financial conditions monitor using actual historical KDE.
 
@@ -1326,13 +1326,14 @@ def _build_zscore_plotly() -> dict:
 
     # (series, zh_label, en_label, stress_dir)
     # stress_dir: +1 = high is stress, -1 = low is stress, 0 = neutral
-    indicators = [
+    _indicators = [
         (credit,    "信用利差 BAA",      "Credit Spreads BAA", +1),
         (curve,     "殖利率曲線 2-10y", "Yield Curve 2-10y",  -1),
         (real_rate, "實質政策利率",      "Real Policy Rate",    0),
-        (dxy,       "美元指數 DXY",     "USD Index",           0),
+        (dxy,       "美元指數 DXY",     "USD Index DXY",       0),
         (vix,       "VIX 恐慌指數",     "VIX",                +1),
     ]
+    indicators = [(s, en if lang == "en" else zh, en, d) for s, zh, en, d in _indicators]
 
     traces: list[dict] = []
     annotations: list[dict] = []
@@ -1407,7 +1408,10 @@ def _build_zscore_plotly() -> dict:
         marker_y = float(kde([cur])[0])
         # Format current value label
         cur_fmt = f"{cur:.1f}" if abs(cur) > 20 else f"{cur:+.2f}"
-        hover = f"<b>{en_lbl}</b><br>現值 {cur_fmt}<br>歷史第 {pct:.0f} 百分位<extra></extra>"
+        if lang == "en":
+            hover = f"<b>{en_lbl}</b><br>Current {cur_fmt}<br>{pct:.0f}th percentile<extra></extra>"
+        else:
+            hover = f"<b>{en_lbl}</b><br>現值 {cur_fmt}<br>歷史第 {pct:.0f} 百分位<extra></extra>"
 
         traces.append({
             "type": "scatter",
@@ -1437,10 +1441,11 @@ def _build_zscore_plotly() -> dict:
             "xanchor": "center",
         })
         # Value + percentile
+        pct_label = f"{pct:.0f}th pct" if lang == "en" else f"第 {pct:.0f} 百分位"
         annotations.append({
             "text": (
                 f"<span style='color:{color}'><b>{cur_fmt}</b></span>"
-                f" · 第 {pct:.0f} 百分位"
+                f" · {pct_label}"
             ),
             "xref": f"{xref} domain", "yref": f"{yref} domain",
             "x": 0.5, "y": 1.05, "showarrow": False,
@@ -2396,13 +2401,13 @@ HTML_TMPL_LITE = """<!doctype html>
       </div>
       {% endif %}
 
-      {% if zscore_data %}
+      {% if zscore_data_zh or zscore_data_en %}
       <div class="viz-card" style="margin-top:0.6rem;">
         <div class="viz-label">{% if block.lang == 'zh-Hant' %}美國金融條件溫度計 · 實際歷史分布（非理論常態）{% else %}US Financial Conditions · Empirical distribution{% endif %}</div>
         <div id="chart-zscore-{{ block.lang }}" style="width:100%;"></div>
         <script>
         (function(){
-          var d = {{ zscore_data | safe }};
+          var d = {{ (zscore_data_zh if block.lang == 'zh-Hant' else zscore_data_en) | safe }};
           if(d.traces) Plotly.newPlot('chart-zscore-{{ block.lang }}', d.traces, d.layout, {responsive:true,displayModeBar:false,scrollZoom:false});
         })();
         </script>
@@ -4152,10 +4157,11 @@ def _write_synthesis_lite_html(
         print(f"  Warning: quadrant chart failed ({exc})", file=sys.stderr)
         regime_quadrant_data = {}
     try:
-        zscore_data = _build_zscore_plotly()
+        zscore_data_zh = _build_zscore_plotly(lang="zh-Hant")
+        zscore_data_en = _build_zscore_plotly(lang="en")
     except Exception as exc:
         print(f"  Warning: z-score chart failed ({exc})", file=sys.stderr)
-        zscore_data = {}
+        zscore_data_zh = zscore_data_en = {}
     out_html_lite = OUTPUT_DIR / "synthesis_lite.html"
     meta = llm_meta if isinstance(llm_meta, dict) else {}
     out_html_lite.write_text(
@@ -4165,7 +4171,8 @@ def _write_synthesis_lite_html(
             llm_meta=meta,
             llm_placeholder=bool(llm_placeholder),
             regime_quadrant_data=json.dumps(regime_quadrant_data),
-            zscore_data=json.dumps(zscore_data),
+            zscore_data_zh=json.dumps(zscore_data_zh),
+            zscore_data_en=json.dumps(zscore_data_en),
         ),
         encoding="utf-8",
     )
