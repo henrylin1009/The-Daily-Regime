@@ -2017,6 +2017,7 @@ HTML_TMPL_LITE = """<!doctype html>
     /* Scroll snap — single boundary at US Anchor (editorial above / quant below) */
     @media (prefers-reduced-motion: no-preference) {
       html { scroll-snap-type: y mandatory; }
+      .hero { scroll-snap-align: start; }
       .snap-anchor { scroll-snap-align: start; scroll-snap-stop: always; scroll-margin-top: 0; }
     }
     /* Section break divider before US Anchor */
