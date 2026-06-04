@@ -2207,8 +2207,8 @@ HTML_TMPL_LITE = """<!doctype html>
     .cty-vs { font-family:var(--sans); display:inline-block; font-size:0.64rem; padding:0.12rem 0.5rem; margin-left:0.5rem; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; vertical-align:middle; }
     .cty-vs.aligned { background:var(--cream); color:var(--ink); } .cty-vs.diverging { background:#fdeee4; color:var(--red); }
     .cty-vs.mixed { background:var(--cream); color:var(--muted); } .cty-vs.limited { background:var(--cream); color:var(--muted); }
-    .cty-row { font-size:0.92rem; line-height:1.55; color:#1d1d1b; margin:0.2rem 0; }
-    .cty-row b { font-family:var(--sans); color:var(--muted); font-weight:600; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.04em; }
+    .cty-row { font-size:0.92rem; line-height:1.55; color:#1d1d1b; margin:0.55rem 0 0; display:flex; flex-direction:column; gap:0.1rem; }
+    .cty-row b { font-family:var(--sans); color:var(--red); font-weight:700; font-size:0.65rem; text-transform:uppercase; letter-spacing:0.06em; }
     /* Merged country+carry cards */
     .cty-carry-grid { display:grid; grid-template-columns:1fr 1fr; gap:0.9rem; }
     @media (max-width:680px) { .cty-carry-grid { grid-template-columns:1fr; } }
@@ -2531,7 +2531,7 @@ HTML_TMPL_LITE = """<!doctype html>
           {% endif %}
           <div class="cty-gears">
             {% for gear in panel.gears %}
-            <div class="cty-row"><b>{{ gear.title }}</b>　{{ gear.body }}</div>
+            <div class="cty-row"><b>{{ gear.title }}</b>{{ gear.body }}</div>
             {% endfor %}
           </div>
         </div>
