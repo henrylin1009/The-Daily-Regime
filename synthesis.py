@@ -2157,7 +2157,7 @@ HTML_TMPL_LITE = """<!doctype html>
     .det-inner { padding:0; }
     .narr-p { font-size:0.98rem; line-height:1.72; color:#1d1d1b; margin:0 0 0.8rem; }
     /* Analogues */
-    .an-sub { font-family:var(--sans); font-size:0.7rem; font-weight:700; text-transform:uppercase; color:var(--muted); margin:0.3rem 0 0.6rem; letter-spacing:0.1em; }
+    .an-sub { font-family:var(--sans); font-size:0.7rem; font-weight:700; text-transform:uppercase; color:var(--red); margin:0.3rem 0 0.6rem; letter-spacing:0.1em; }
     .an-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(195px,1fr)); gap:0.7rem; margin-bottom:0.5rem; }
     .an-card { border:none; border-radius:12px; padding:0.85rem 0.95rem; background:var(--block); }
     .an-per { font-family:var(--mono); font-size:0.8rem; font-weight:600; letter-spacing:-0.02em; }
@@ -2201,7 +2201,7 @@ HTML_TMPL_LITE = """<!doctype html>
     .viz-section { margin:1.1rem 0; }
     .viz-card { border:none; border-radius:16px; padding:1.1rem 1rem 0.7rem; background:var(--paper); overflow-x:auto; }
     @media (max-width:600px) { .viz-card [id^="chart-zscore"] { min-width:560px; } }
-    .viz-label { font-family:var(--sans); font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:var(--muted); margin-bottom:0.5rem; }
+    .viz-label { font-family:var(--sans); font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:var(--red); margin-bottom:0.5rem; }
     .edition-kicker { font-family:var(--sans); font-size:0.7rem; text-transform:uppercase; letter-spacing:0.14em; color:var(--muted); font-weight:600; margin-bottom:0.35rem; }
     .today-line-wrap { padding-bottom:0.6rem; margin-bottom:0.15rem; }
     .today-line-k { font-family:var(--sans); font-size:0.62rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:var(--red); margin-bottom:0.35rem; }
