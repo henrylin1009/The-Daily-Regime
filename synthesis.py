@@ -2014,6 +2014,11 @@ HTML_TMPL_LITE = """<!doctype html>
     }
     * { box-sizing:border-box; }
     body { margin:0; background:var(--block); color:var(--ink); font-family:var(--serif); -webkit-font-smoothing:antialiased; }
+    /* Scroll snap — zone-level only (proximity = doesn't trap you in long sections) */
+    @media (prefers-reduced-motion: no-preference) {
+      html { scroll-snap-type: y proximity; }
+      .hero, .zone-divider { scroll-snap-align: start; scroll-snap-stop: normal; }
+    }
     /* Sheet title (white header with red rule) */
     .sheet-title { display:flex; align-items:center; justify-content:space-between; gap:0.75rem; flex-wrap:wrap; padding:0.3rem 0.2rem 1rem; margin-bottom:0; }
     /* Hero — today's stance as a white card, integrated with the block system */
@@ -2037,7 +2042,7 @@ HTML_TMPL_LITE = """<!doctype html>
     .kicker { font-family:var(--sans); font-size:0.78rem; font-weight:700; text-transform:uppercase; letter-spacing:0.09em; color:var(--red); margin-bottom:0.35rem; }
     .section-head { font-family:var(--sans); font-size:0.82rem; font-weight:700; text-transform:uppercase; letter-spacing:0.09em; color:var(--red); margin:1.6rem 0 0.9rem; }
     /* No divider lines — blocks define the sections. Zone header is just a big title. */
-    .zone-divider { margin:2.4rem 0 1rem; padding:0; border:none; }
+    .zone-divider { margin:2.4rem 0 1rem; padding:0; border:none; scroll-margin-top:0.5rem; }
     .zone-title { font-family:var(--serif); font-size:1.85rem; font-weight:700; color:var(--ink); letter-spacing:-0.015em; line-height:1.08; }
     .zone-sub { font-family:var(--sans); font-size:0.82rem; color:var(--muted); margin-top:0.4rem; letter-spacing:0; line-height:1.45; }
     /* Big colour-block module (Notion structure + Economist palette, no rules) */
