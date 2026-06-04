@@ -763,8 +763,10 @@ LITE_UI: dict[str, dict[str, str]] = {
         "zone_history": "歷史借鏡",
         "zone_history_sub": "最相似歷史環境與其後資產表現",
         "history_summary": "歷史借鏡",
-        "history_us_sub": "美國體制借鏡 — 最相似歷史環境與其後美股表現",
-        "history_div_sub": "全球分歧借鏡 — 多國分歧下 EM／黃金／銅表現",
+        "history_us_sub": "美國體制借鏡",
+        "history_us_sub2": "最相似歷史環境與其後美股表現",
+        "history_div_sub": "全球分歧借鏡",
+        "history_div_sub2": "多國分歧下 EM／黃金／銅表現",
         "history_disc": "歷史數據僅供脈絡參考，不代表未來表現。",
         "history_disc_fallback": "部分描述未能翻譯，仍顯示英文原文。",
         "spy_12m": "美股 12m",
@@ -811,8 +813,10 @@ LITE_UI: dict[str, dict[str, str]] = {
         "zone_history": "Historical Analogues",
         "zone_history_sub": "Closest historical setups and subsequent asset returns",
         "history_summary": "Historical Analogues",
-        "history_us_sub": "US regime analogues — closest historical setups and subsequent S&P returns",
-        "history_div_sub": "Global divergence analogues — EM / gold / copper after multi-country splits",
+        "history_us_sub": "US regime analogues",
+        "history_us_sub2": "closest historical setups and subsequent S&P returns",
+        "history_div_sub": "Global divergence analogues",
+        "history_div_sub2": "EM / gold / copper after multi-country splits",
         "history_disc": "Historical data for context only; not a forecast.",
         "history_disc_fallback": "Some descriptions could not be translated and remain in English.",
         "spy_12m": "S&P 12m",
@@ -2188,7 +2192,8 @@ HTML_TMPL_LITE = """<!doctype html>
     .det-inner { padding:0; }
     .narr-p { font-size:0.98rem; line-height:1.72; color:#1d1d1b; margin:0 0 0.8rem; }
     /* Analogues */
-    .an-sub { font-family:var(--sans); font-size:0.7rem; font-weight:700; text-transform:uppercase; color:var(--red); margin:0.3rem 0 0.6rem; letter-spacing:0.1em; }
+    .an-sub { font-family:var(--sans); font-size:0.7rem; font-weight:700; text-transform:uppercase; color:var(--red); margin:0.3rem 0 0.1rem; letter-spacing:0.1em; }
+    .an-sub2 { font-family:var(--sans); font-size:0.68rem; color:var(--muted); margin:0 0 0.6rem; letter-spacing:0.01em; }
     .an-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(195px,1fr)); gap:0.7rem; margin-bottom:0.5rem; }
     .an-card { border:none; border-radius:12px; padding:0.85rem 0.95rem; background:var(--block); }
     .an-per { font-family:var(--mono); font-size:0.8rem; font-weight:600; letter-spacing:-0.02em; }
@@ -2552,6 +2557,7 @@ HTML_TMPL_LITE = """<!doctype html>
         <div class="det-inner">
           {% if block.historical_matches %}
           <div class="an-sub">{{ block.ui.history_us_sub }}</div>
+          <div class="an-sub2">{{ block.ui.history_us_sub2 }}</div>
           <div class="an-grid">
             {% for m in block.historical_matches %}
             {% set r12 = m.spy_return_12m %}{% set dd = m.max_drawdown_12m %}
@@ -2569,6 +2575,7 @@ HTML_TMPL_LITE = """<!doctype html>
           {% endif %}
           {% if block.divergence_matches %}
           <div class="an-sub" style="margin-top:0.9rem;">{{ block.ui.history_div_sub }}</div>
+          <div class="an-sub2">{{ block.ui.history_div_sub2 }}</div>
           <div class="an-grid">
             {% for m in block.divergence_matches %}
             <div class="an-card">
