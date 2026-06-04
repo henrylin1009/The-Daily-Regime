@@ -2108,7 +2108,7 @@ HTML_TMPL_LITE = """<!doctype html>
     .tab-pane { display:none; }
     .tab-pane.active { display:block; }
     /* Hero — today's stance as a white card, integrated with the block system */
-    .hero { background:var(--paper); border-radius:18px; padding:1.8rem 2rem; margin:0.2rem 0 1.3rem; }
+    .hero { background:var(--paper); border-radius:18px; padding:1.8rem 2rem; margin:1.4rem 0 1.3rem; }
     @media (max-width:560px) { .hero { padding:1.35rem 1.3rem; } }
     .hero-meta { font-family:var(--sans); font-size:0.66rem; text-transform:uppercase; letter-spacing:0.11em; color:var(--muted); font-weight:600; margin-bottom:1rem; display:flex; gap:0.55rem; align-items:center; flex-wrap:wrap; }
     .hero-meta .ok { color:var(--green); font-weight:700; }
