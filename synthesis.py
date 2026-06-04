@@ -2024,6 +2024,7 @@ HTML_TMPL_LITE = """<!doctype html>
       --green:#4a7c59;                 /* restored — down-move (ZH) / up-move (EN) + gauge benign */
     }
     * { box-sizing:border-box; }
+    html { -webkit-overflow-scrolling:touch; }
     body { margin:0; background:var(--block); color:var(--ink); font-family:var(--serif); -webkit-font-smoothing:antialiased; }
     /* scroll-margin always applies, regardless of motion preference */
     .snap-anchor { scroll-margin-top: 1.5rem; }
@@ -2105,7 +2106,7 @@ HTML_TMPL_LITE = """<!doctype html>
     /* Transition matrix — big numbers (lives in the Market Regime card) */
     .trans-block { margin-top:1.3rem; }
     .trans-head { font-family:var(--sans); font-size:0.7rem; font-weight:600; color:var(--muted); margin-bottom:0.75rem; letter-spacing:0.01em; }
-    .trans-stats { display:flex; flex-wrap:nowrap; gap:1.3rem 2.4rem; align-items:flex-end; overflow-x:auto; padding-bottom:0.25rem; }
+    .trans-stats { display:flex; flex-wrap:nowrap; gap:1.3rem 2.4rem; align-items:flex-start; overflow-x:auto; padding-bottom:0.25rem; }
     .trans-stat { display:flex; flex-direction:column; gap:0.25rem; }
     .ts-num { font-family:var(--mono); font-size:1.7rem; font-weight:600; line-height:0.95; letter-spacing:-0.03em; color:var(--ink); }
     .trans-stat.ts-stay .ts-num { font-size:2.3rem; }
@@ -2183,7 +2184,8 @@ HTML_TMPL_LITE = """<!doctype html>
     .cty-carry-card { background:var(--block); border-radius:12px; padding:0.95rem 1.05rem; }
     .cty-carry-head { display:flex; align-items:baseline; flex-wrap:wrap; gap:0.4rem; margin-bottom:0.25rem; }
     .cty-carry-head .carry-country { font-size:1.02rem; font-weight:700; }
-    .cty-carry-sep { border:none; border-top:1px solid var(--rule); margin:0.5rem 0 0.45rem; }
+    .cty-carry-top { background:var(--paper); border-radius:10px; padding:0.6rem 0.75rem; margin-bottom:0.5rem; }
+    .cty-carry-sep { display:none; }
     .cty-gears .cty-row { margin:0.15rem 0; }
     .full-link { font-family:var(--sans); display:inline-block; margin-top:0.5rem; font-size:0.78rem; color:var(--ink); text-decoration:underline; font-weight:700; }
     .full-link:hover { text-decoration:underline; }
@@ -2206,6 +2208,8 @@ HTML_TMPL_LITE = """<!doctype html>
     .today-line { font-size:1.5rem; font-weight:700; line-height:1.34; letter-spacing:-0.015em; margin:0; }
     html[data-lite-lang="en"] .lang-block[data-lang="zh-Hant"] { display:none; }
     html[data-lite-lang="zh-Hant"] .lang-block[data-lang="en"] { display:none; }
+    html[data-lite-lang="en"] .ai-zh { display:none; }
+    html[data-lite-lang="zh-Hant"] .ai-en { display:none; }
     /* Localized gain/loss colour — Western(EN): up=green, down=red · 紅漲綠跌(ZH): 漲=紅, 跌=綠 */
     .lang-block[data-lang="en"] .ep,
     .lang-block[data-lang="en"] .tilt-ret.pos,
@@ -2304,7 +2308,7 @@ HTML_TMPL_LITE = """<!doctype html>
         <div class="tagline">Translating data into macro narratives</div>
       </div>
       <div class="sheet-title-right">
-        <div class="sheet-meta">{{ report_date }}</div>
+        <div class="sheet-meta">{{ report_date }}{% if not llm_placeholder %} <span class="ok ai-badge"><span class="ai-zh">· AI 分析已更新</span><span class="ai-en">· AI analysis up to date</span></span>{% endif %}</div>
         <div class="lang-switch" role="group" aria-label="Language">
           <button type="button" data-lang="zh-Hant">中文</button>
           <button type="button" data-lang="en" class="is-active">EN</button>
@@ -2323,7 +2327,7 @@ HTML_TMPL_LITE = """<!doctype html>
     {% for block in lite_lang_blocks %}
     <div class="lang-block" data-lang="{{ block.lang }}">
       <div class="hero">
-        <div class="hero-meta">{{ block.ui.subtitle }}{% if not llm_placeholder %} <span class="ok">· {% if block.lang == 'zh-Hant' %}AI 分析已更新{% else %}AI analysis up to date{% endif %}</span>{% endif %}</div>
+        <div class="hero-meta">
         <div class="hero-kicker">{{ block.ui.today_line_kicker }}{{ info(block.directive.the_narrative | join(' '), 'tip-right') }}</div>
         <h1 class="hero-stance">{{ block.directive.the_stance }}</h1>
       </div>
@@ -2411,7 +2415,7 @@ HTML_TMPL_LITE = """<!doctype html>
         <script>
         (function(){
           var d = {{ regime_quadrant_data | safe }};
-          if(d.traces) Plotly.newPlot('chart-regime-{{ block.lang }}', d.traces, d.layout, {responsive:true,displayModeBar:false,scrollZoom:false});
+          if(d.traces) Plotly.newPlot('chart-regime-{{ block.lang }}', d.traces, d.layout, {responsive:true,displayModeBar:false,scrollZoom:false,doubleClick:false});
         })();
         </script>
       </div>
@@ -2424,7 +2428,7 @@ HTML_TMPL_LITE = """<!doctype html>
         <script>
         (function(){
           var d = {{ (zscore_data_zh if block.lang == 'zh-Hant' else zscore_data_en) | safe }};
-          if(d.traces) Plotly.newPlot('chart-zscore-{{ block.lang }}', d.traces, d.layout, {responsive:true,displayModeBar:false,scrollZoom:false});
+          if(d.traces) Plotly.newPlot('chart-zscore-{{ block.lang }}', d.traces, d.layout, {responsive:true,displayModeBar:false,scrollZoom:false,doubleClick:false});
         })();
         </script>
       </div>
@@ -2478,20 +2482,21 @@ HTML_TMPL_LITE = """<!doctype html>
         {% for panel in block.country_matrix %}
         {% set cr = block.carry_by_code[panel.country_code] if panel.country_code in block.carry_by_code else none %}
         <div class="cty-carry-card">
-          <div class="cty-carry-head">
-            <span class="carry-country">{{ panel.country }}</span>
-            {% if panel.align_label %}<span class="cty-vs {{ panel.align_class }}">{{ panel.align_label }}</span>{% endif %}
-            {% if cr %}<span class="carry-role role-{{ cr.role }}">{{ cr.role_label }}</span>{% endif %}
+          <div class="cty-carry-top">
+            <div class="cty-carry-head">
+              <span class="carry-country">{{ panel.country }}</span>
+              {% if panel.align_label %}<span class="cty-vs {{ panel.align_class }}">{{ panel.align_label }}</span>{% endif %}
+              {% if cr %}<span class="carry-role role-{{ cr.role }}">{{ cr.role_label }}</span>{% endif %}
+            </div>
+            {% if cr %}
+            <div class="carry-stats">
+              {% if cr.spread_bp is not none %}<span>{% if block.lang == 'zh-Hant' %}美債利差{% else %}UST spread{% endif %} {{ "%+.0f"|format(cr.spread_bp) }}bp</span>{% endif %}
+              {% if cr.fx_1m is not none %}<span class="sp">·</span><span>{% if block.lang == 'zh-Hant' %}匯率1m{% else %}FX 1m{% endif %} {{ "%+.2f"|format(cr.fx_1m) }}%</span>{% endif %}
+              {% if cr.flow_label %}<span class="sp">·</span><span class="{% if cr.flow_dir == 'supportive' %}ep{% else %}en{% endif %}">{{ cr.flow_label }}</span>{% endif %}
+            </div>
+            {% if block.lang == 'zh-Hant' and cr.note %}<div class="carry-note">{{ cr.note }}</div>{% endif %}
+            {% endif %}
           </div>
-          {% if cr %}
-          <div class="carry-stats">
-            {% if cr.spread_bp is not none %}<span>{% if block.lang == 'zh-Hant' %}美債利差{% else %}UST spread{% endif %} {{ "%+.0f"|format(cr.spread_bp) }}bp</span>{% endif %}
-            {% if cr.fx_1m is not none %}<span class="sp">·</span><span>{% if block.lang == 'zh-Hant' %}匯率1m{% else %}FX 1m{% endif %} {{ "%+.2f"|format(cr.fx_1m) }}%</span>{% endif %}
-            {% if cr.flow_label %}<span class="sp">·</span><span class="{% if cr.flow_dir == 'supportive' %}ep{% else %}en{% endif %}">{{ cr.flow_label }}</span>{% endif %}
-          </div>
-          {% if block.lang == 'zh-Hant' and cr.note %}<div class="carry-note">{{ cr.note }}</div>{% endif %}
-          {% endif %}
-          <hr class="cty-carry-sep">
           <div class="cty-gears">
             {% for gear in panel.gears %}
             <div class="cty-row"><b>{{ gear.title }}</b>　{{ gear.body }}</div>
