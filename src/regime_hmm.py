@@ -254,12 +254,12 @@ def regime_prob_timeseries(
     states = model.predict(X_df.values)
     regime_series = pd.Series(states, index=X_df.index)
 
-    # Map state int → label and color (matches page palette: --green #4a7c59, --red #E3120B, --cream #f3f1ea)
+    # Colors reused from page CSS (no new colors introduced)
     palette = {
-        0: "#d4ede4",  # Expansionary — soft green
-        1: "#f5dada",  # Stress / Contraction — soft red
-        2: "#ebe7de",  # Neutral / Transitional — warm cream
-        3: "#f5e9cf",  # Restrictive — soft amber
+        0: "#eef3ef",  # Expansionary — llm-banner--ok bg
+        1: "#fdeee4",  # Stress / Contraction — carry-switch.risk bg
+        2: "#f3f1ea",  # Neutral / Transitional — var(--cream)
+        3: "#d9d6cc",  # Restrictive — var(--rule)
     }
     # Build episodes (consecutive runs of same state)
     episodes = []
