@@ -2579,23 +2579,14 @@ HTML_TMPL_LITE = """<!doctype html>
           }, 30);
         }
       });
-      // Top scroll-progress bar — tracks active panel's internal scroll
+      // Top scroll-progress bar — tracks window scroll
       var bar = document.querySelector('.scroll-progress');
       if (bar) {
         var upd = function () {
-          var active = document.querySelector('.panel-top') || document.documentElement;
-          var pw = document.querySelector('.page-wrap');
-          // If page-wrap has scrolled to panel-bottom, track that instead
-          if (pw && pw.scrollTop > pw.clientHeight * 0.5) {
-            active = document.querySelector('.panel-bottom') || active;
-          }
-          var max = active.scrollHeight - active.clientHeight;
-          bar.style.width = (max > 0 ? (active.scrollTop / max * 100) : 0) + '%';
+          var max = document.documentElement.scrollHeight - window.innerHeight;
+          bar.style.width = (max > 0 ? (window.scrollY / max * 100) : 0) + '%';
         };
-        var pw = document.querySelector('.page-wrap');
-        if (pw) { pw.addEventListener('scroll', upd, { passive: true }); }
-        var panels = document.querySelectorAll('.panel-top, .panel-bottom');
-        panels.forEach(function(p){ p.addEventListener('scroll', upd, { passive: true }); });
+        window.addEventListener('scroll', upd, { passive: true });
         window.addEventListener('resize', upd);
         upd();
       }

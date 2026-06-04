@@ -758,7 +758,7 @@
             
             <div class="an-card">
               <div class="an-per">2007-11</div>
-              <div class="an-desc">金融危機前——曲線平坦，波動率低，信貸自滿</div>
+              <div class="an-desc">金融海嘯前——殖利率曲線平坦、波動率低、信貸市場自滿</div>
               <div class="an-ret">
                 <div class="an-stat neg"><span class="an-l">美股 12m</span><span class="an-v">-39%</span></div>
                 <div class="an-stat neg"><span class="an-l">3m</span><span class="an-v">-9%</span></div>
@@ -769,7 +769,7 @@
             
             <div class="an-card">
               <div class="an-per">2000-10</div>
-              <div class="an-desc">網路泡沫高峰——勞動力市場緊俏，估值偏高</div>
+              <div class="an-desc">網路泡沫高峰——勞動市場緊繃、估值偏高</div>
               <div class="an-ret">
                 <div class="an-stat neg"><span class="an-l">美股 12m</span><span class="an-v">-26%</span></div>
                 <div class="an-stat neg"><span class="an-l">3m</span><span class="an-v">-4%</span></div>
@@ -780,7 +780,7 @@
             
             <div class="an-card">
               <div class="an-per">2014-08</div>
-              <div class="an-desc">週期中段放緩——波動率低，美元走強，油價開始下跌</div>
+              <div class="an-desc">週期中段放緩——波動率低、美元走強、油價開始下跌</div>
               <div class="an-ret">
                 <div class="an-stat neg"><span class="an-l">美股 12m</span><span class="an-v">-1%</span></div>
                 <div class="an-stat pos"><span class="an-l">3m</span><span class="an-v">+3%</span></div>
@@ -813,7 +813,7 @@
             
             <div class="an-card">
               <div class="an-per">2006-11</div>
-              <div class="an-desc">金融危機前流動性高峰 — 利差交易盛行，全球波動率低</div>
+              <div class="an-desc">金融危機前流動性高峰 — 利差交易盛行，全球波動率偏低</div>
               <div class="an-ret">
                 
                 
@@ -1424,23 +1424,14 @@
           }, 30);
         }
       });
-      // Top scroll-progress bar — tracks active panel's internal scroll
+      // Top scroll-progress bar — tracks window scroll
       var bar = document.querySelector('.scroll-progress');
       if (bar) {
         var upd = function () {
-          var active = document.querySelector('.panel-top') || document.documentElement;
-          var pw = document.querySelector('.page-wrap');
-          // If page-wrap has scrolled to panel-bottom, track that instead
-          if (pw && pw.scrollTop > pw.clientHeight * 0.5) {
-            active = document.querySelector('.panel-bottom') || active;
-          }
-          var max = active.scrollHeight - active.clientHeight;
-          bar.style.width = (max > 0 ? (active.scrollTop / max * 100) : 0) + '%';
+          var max = document.documentElement.scrollHeight - window.innerHeight;
+          bar.style.width = (max > 0 ? (window.scrollY / max * 100) : 0) + '%';
         };
-        var pw = document.querySelector('.page-wrap');
-        if (pw) { pw.addEventListener('scroll', upd, { passive: true }); }
-        var panels = document.querySelectorAll('.panel-top, .panel-bottom');
-        panels.forEach(function(p){ p.addEventListener('scroll', upd, { passive: true }); });
+        window.addEventListener('scroll', upd, { passive: true });
         window.addEventListener('resize', upd);
         upd();
       }
