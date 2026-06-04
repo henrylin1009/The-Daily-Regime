@@ -2017,7 +2017,7 @@ HTML_TMPL_LITE = """<!doctype html>
     /* No snap tricks — section-break IS the full-screen boundary */
     /* Section break divider before US Anchor */
     /* Full-screen section break — the editorial/quant boundary */
-    .section-break { height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0.75rem; margin:0; border-top:1px solid var(--rule); }
+    .section-break { height:20vh; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0.75rem; margin:0; border-top:1px solid var(--rule); }
     .section-break-label { font-family:var(--sans); font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.14em; color:var(--muted); }
     .section-break-arrow { color:var(--muted); font-size:1.4rem; line-height:1; animation:bob 1.8s ease-in-out infinite; }
     @keyframes bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(6px)} }
