@@ -2016,9 +2016,8 @@ HTML_TMPL_LITE = """<!doctype html>
     body { margin:0; background:var(--block); color:var(--ink); font-family:var(--serif); -webkit-font-smoothing:antialiased; }
     /* Scroll snap — single boundary at US Anchor (editorial above / quant below) */
     @media (prefers-reduced-motion: no-preference) {
-      html { scroll-snap-type: y mandatory; }
-      .hero { scroll-snap-align: start; }
-      .snap-anchor { scroll-snap-align: start; scroll-snap-stop: always; scroll-margin-top: 0; }
+      html { scroll-snap-type: y proximity; }
+      .snap-anchor { scroll-snap-align: start; scroll-margin-top: 0; }
     }
     /* Section break divider before US Anchor */
     .section-break { display:flex; flex-direction:column; align-items:center; gap:0.5rem; margin:2.8rem 0 0; padding:1.2rem 0 0; border-top:1px solid var(--rule); }
