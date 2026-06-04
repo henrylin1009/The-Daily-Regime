@@ -2178,6 +2178,7 @@ HTML_TMPL_LITE = """<!doctype html>
     .llm-banner b { font-weight:700; }
     .viz-section { margin:1.1rem 0; }
     .viz-card { border:none; border-radius:16px; padding:1.1rem 1rem 0.7rem; background:var(--paper); overflow-x:auto; }
+    @media (max-width:600px) { .viz-card [id^="chart-zscore"] { min-width:560px; } }
     .viz-label { font-family:var(--sans); font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:var(--muted); margin-bottom:0.5rem; }
     .edition-kicker { font-family:var(--sans); font-size:0.7rem; text-transform:uppercase; letter-spacing:0.14em; color:var(--muted); font-weight:600; margin-bottom:0.35rem; }
     .today-line-wrap { padding-bottom:0.6rem; margin-bottom:0.15rem; }
