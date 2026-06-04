@@ -2039,7 +2039,7 @@ def _build_lite_lang_blocks(
 # analogues, per-country matrix) is tucked into collapsible <details>.
 # ──────────────────────────────────────────────────────────────────────────
 HTML_TMPL_LITE = """<!doctype html>
-<html lang="zh-Hant">
+<html lang="en" data-lite-lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
