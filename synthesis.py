@@ -2294,6 +2294,13 @@ HTML_TMPL_LITE = """<!doctype html>
     .viz-card { border:none; border-radius:16px; padding:1.1rem 1rem 0.7rem; background:var(--paper); overflow-x:auto; }
     @media (max-width:600px) { .viz-card [id^="chart-zscore"] { min-width:560px; } }
     .viz-label { font-family:var(--sans); font-size:0.82rem; font-weight:700; text-transform:uppercase; letter-spacing:0.09em; color:var(--red); margin-bottom:0.5rem; }
+    .sector-perf-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; padding:0 0.2rem 0.15rem 0; }
+    .sector-perf-table { width:max-content; min-width:100%; margin-top:0.4rem; }
+    .sector-perf-table th, .sector-perf-table td { white-space:nowrap; }
+    .sector-perf-table th:last-child, .sector-perf-table td:last-child { padding-right:12px; }
+    .sector-perf-label { display:inline-flex; align-items:center; gap:6px; white-space:nowrap; }
+    .sector-perf-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+    .sector-perf-excess { font-family:var(--mono); font-size:0.78rem; color:var(--muted); }
     .edition-kicker { font-family:var(--sans); font-size:0.7rem; text-transform:uppercase; letter-spacing:0.14em; color:var(--muted); font-weight:600; margin-bottom:0.35rem; }
     .today-line-wrap { padding-bottom:0.6rem; margin-bottom:0.15rem; }
     .today-line-k { font-family:var(--sans); font-size:0.62rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:var(--red); margin-bottom:0.35rem; }
@@ -2744,8 +2751,8 @@ HTML_TMPL_LITE = """<!doctype html>
       {% if sector_performance %}
       <div class="modcard" style="margin-top:0.4rem;">
         <div class="mod-label"><span class="ai-zh">板塊表現 · 對 SPY</span><span class="ai-en">Sector performance · vs SPY</span></div>
-        <div style="overflow-x:auto;">
-        <table class="data-table" style="width:100%;min-width:420px;margin-top:0.4rem;">
+        <div class="sector-perf-scroll">
+        <table class="data-table sector-perf-table">
           <thead>
             <tr>
               <th><span class="ai-zh">板塊</span><span class="ai-en">Sector</span></th>
@@ -2758,17 +2765,19 @@ HTML_TMPL_LITE = """<!doctype html>
           {% for r in sector_performance %}
           <tr{% if r.is_benchmark %} style="background:#f8f9fb;"{% endif %}>
             <td>
-              <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:{{ r.color }};margin-right:6px;vertical-align:middle;"></span>
-              <strong{% if r.is_benchmark %} style="color:var(--ink);"{% endif %}>{{ r.label }}</strong>
+              <span class="sector-perf-label">
+                <span class="sector-perf-dot" style="background:{{ r.color }};"></span>
+                <strong{% if r.is_benchmark %} style="color:var(--ink);"{% endif %}>{{ r.label }}</strong>
+              </span>
             </td>
-            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;white-space:nowrap;">
-              {% if r.ret_1w is not none %}<span class="tilt-ret {% if r.ret_1w >= 0 %}pos{% else %}neg{% endif %}">{{ "%+.1f"|format(r.ret_1w) }}%</span>{% if r.excess_1w is not none %} <span class="tilt-ret {% if r.excess_1w >= 0 %}pos{% else %}neg{% endif %}" style="font-size:0.78rem;">({{ "%+.1f"|format(r.excess_1w) }}%)</span>{% endif %}{% else %}—{% endif %}
+            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;">
+              {% if r.ret_1w is not none %}<span class="tilt-ret {% if r.ret_1w >= 0 %}pos{% else %}neg{% endif %}">{{ "%+.1f"|format(r.ret_1w) }}%</span>{% if r.excess_1w is not none %} <span class="sector-perf-excess">({{ "%+.1f"|format(r.excess_1w) }}%)</span>{% endif %}{% else %}—{% endif %}
             </td>
-            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;white-space:nowrap;">
-              {% if r.ret_1m is not none %}<span class="tilt-ret {% if r.ret_1m >= 0 %}pos{% else %}neg{% endif %}">{{ "%+.1f"|format(r.ret_1m) }}%</span>{% if r.excess_1m is not none %} <span class="tilt-ret {% if r.excess_1m >= 0 %}pos{% else %}neg{% endif %}" style="font-size:0.78rem;">({{ "%+.1f"|format(r.excess_1m) }}%)</span>{% endif %}{% else %}—{% endif %}
+            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;">
+              {% if r.ret_1m is not none %}<span class="tilt-ret {% if r.ret_1m >= 0 %}pos{% else %}neg{% endif %}">{{ "%+.1f"|format(r.ret_1m) }}%</span>{% if r.excess_1m is not none %} <span class="sector-perf-excess">({{ "%+.1f"|format(r.excess_1m) }}%)</span>{% endif %}{% else %}—{% endif %}
             </td>
-            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;white-space:nowrap;">
-              {% if r.ret_1y is not none %}<span class="tilt-ret {% if r.ret_1y >= 0 %}pos{% else %}neg{% endif %}">{{ "%+.1f"|format(r.ret_1y) }}%</span>{% if r.excess_1y is not none %} <span class="tilt-ret {% if r.excess_1y >= 0 %}pos{% else %}neg{% endif %}" style="font-size:0.78rem;">({{ "%+.1f"|format(r.excess_1y) }}%)</span>{% endif %}{% else %}—{% endif %}
+            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;">
+              {% if r.ret_1y is not none %}<span class="tilt-ret {% if r.ret_1y >= 0 %}pos{% else %}neg{% endif %}">{{ "%+.1f"|format(r.ret_1y) }}%</span>{% if r.excess_1y is not none %} <span class="sector-perf-excess">({{ "%+.1f"|format(r.excess_1y) }}%)</span>{% endif %}{% else %}—{% endif %}
             </td>
           </tr>
           {% endfor %}

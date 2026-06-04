@@ -208,6 +208,13 @@
     .viz-card { border:none; border-radius:16px; padding:1.1rem 1rem 0.7rem; background:var(--paper); overflow-x:auto; }
     @media (max-width:600px) { .viz-card [id^="chart-zscore"] { min-width:560px; } }
     .viz-label { font-family:var(--sans); font-size:0.82rem; font-weight:700; text-transform:uppercase; letter-spacing:0.09em; color:var(--red); margin-bottom:0.5rem; }
+    .sector-perf-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; padding:0 0.2rem 0.15rem 0; }
+    .sector-perf-table { width:max-content; min-width:100%; margin-top:0.4rem; }
+    .sector-perf-table th, .sector-perf-table td { white-space:nowrap; }
+    .sector-perf-table th:last-child, .sector-perf-table td:last-child { padding-right:12px; }
+    .sector-perf-label { display:inline-flex; align-items:center; gap:6px; white-space:nowrap; }
+    .sector-perf-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+    .sector-perf-excess { font-family:var(--mono); font-size:0.78rem; color:var(--muted); }
     .edition-kicker { font-family:var(--sans); font-size:0.7rem; text-transform:uppercase; letter-spacing:0.14em; color:var(--muted); font-weight:600; margin-bottom:0.35rem; }
     .today-line-wrap { padding-bottom:0.6rem; margin-bottom:0.15rem; }
     .today-line-k { font-family:var(--sans); font-size:0.62rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:var(--red); margin-bottom:0.35rem; }
@@ -829,7 +836,7 @@
             
             <div class="an-card">
               <div class="an-per">2007-11</div>
-              <div class="an-desc">金融海嘯前——曲線平坦、波動率低、信貸自滿</div>
+              <div class="an-desc">金融危機前——曲線平坦，波動率低，信貸自滿</div>
               <div class="an-ret">
                 <div class="an-stat neg"><span class="an-l">美股 12m</span><span class="an-v">-39%</span></div>
                 <div class="an-stat neg"><span class="an-l">3m</span><span class="an-v">-9%</span></div>
@@ -840,7 +847,7 @@
             
             <div class="an-card">
               <div class="an-per">2000-10</div>
-              <div class="an-desc">網路泡沫高峰——勞動市場緊俏、估值偏高</div>
+              <div class="an-desc">網路泡沫高峰——勞動力市場緊俏，估值偏高</div>
               <div class="an-ret">
                 <div class="an-stat neg"><span class="an-l">美股 12m</span><span class="an-v">-26%</span></div>
                 <div class="an-stat neg"><span class="an-l">3m</span><span class="an-v">-4%</span></div>
@@ -851,7 +858,7 @@
             
             <div class="an-card">
               <div class="an-per">2014-08</div>
-              <div class="an-desc">週期中段放緩——波動率低、美元走強、油價開始下跌</div>
+              <div class="an-desc">週期中段放緩——波動率低，美元走強，油價開始下跌</div>
               <div class="an-ret">
                 <div class="an-stat neg"><span class="an-l">美股 12m</span><span class="an-v">-1%</span></div>
                 <div class="an-stat pos"><span class="an-l">3m</span><span class="an-v">+3%</span></div>
@@ -885,7 +892,7 @@
             
             <div class="an-card">
               <div class="an-per">2006-11</div>
-              <div class="an-desc">金融危機前流動性高峰 — 利差交易盛行，全球波動率偏低</div>
+              <div class="an-desc">金融海嘯前流動性高峰 — 利差交易盛行，全球波動率低</div>
               <div class="an-ret">
                 
                 
@@ -992,8 +999,8 @@
       
       <div class="modcard" style="margin-top:0.4rem;">
         <div class="mod-label"><span class="ai-zh">板塊表現 · 對 SPY</span><span class="ai-en">Sector performance · vs SPY</span></div>
-        <div style="overflow-x:auto;">
-        <table class="data-table" style="width:100%;min-width:420px;margin-top:0.4rem;">
+        <div class="sector-perf-scroll">
+        <table class="data-table sector-perf-table">
           <thead>
             <tr>
               <th><span class="ai-zh">板塊</span><span class="ai-en">Sector</span></th>
@@ -1006,113 +1013,127 @@
           
           <tr style="background:#f8f9fb;">
             <td>
-              <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#6b7280;margin-right:6px;vertical-align:middle;"></span>
-              <strong style="color:var(--ink);">SPY</strong>
+              <span class="sector-perf-label">
+                <span class="sector-perf-dot" style="background:#6b7280;"></span>
+                <strong style="color:var(--ink);">SPY</strong>
+              </span>
             </td>
-            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;white-space:nowrap;">
+            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;">
               <span class="tilt-ret pos">+1.6%</span>
             </td>
-            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;white-space:nowrap;">
+            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;">
               <span class="tilt-ret pos">+5.1%</span>
             </td>
-            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;white-space:nowrap;">
+            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;">
               <span class="tilt-ret pos">+28.7%</span>
             </td>
           </tr>
           
           <tr>
             <td>
-              <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#4f46e5;margin-right:6px;vertical-align:middle;"></span>
-              <strong>Tech</strong>
+              <span class="sector-perf-label">
+                <span class="sector-perf-dot" style="background:#4f46e5;"></span>
+                <strong>Tech</strong>
+              </span>
             </td>
-            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;white-space:nowrap;">
-              <span class="tilt-ret pos">+6.2%</span> <span class="tilt-ret pos" style="font-size:0.78rem;">(+4.6%)</span>
+            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;">
+              <span class="tilt-ret pos">+6.2%</span> <span class="sector-perf-excess">(+4.6%)</span>
             </td>
-            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;white-space:nowrap;">
-              <span class="tilt-ret pos">+15.6%</span> <span class="tilt-ret pos" style="font-size:0.78rem;">(+10.4%)</span>
+            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;">
+              <span class="tilt-ret pos">+15.6%</span> <span class="sector-perf-excess">(+10.4%)</span>
             </td>
-            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;white-space:nowrap;">
-              <span class="tilt-ret pos">+61.5%</span> <span class="tilt-ret pos" style="font-size:0.78rem;">(+32.7%)</span>
-            </td>
-          </tr>
-          
-          <tr>
-            <td>
-              <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#9333ea;margin-right:6px;vertical-align:middle;"></span>
-              <strong>Utilities</strong>
-            </td>
-            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;white-space:nowrap;">
-              <span class="tilt-ret pos">+3.2%</span> <span class="tilt-ret pos" style="font-size:0.78rem;">(+1.5%)</span>
-            </td>
-            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;white-space:nowrap;">
-              <span class="tilt-ret neg">-1.8%</span> <span class="tilt-ret neg" style="font-size:0.78rem;">(-7.0%)</span>
-            </td>
-            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;white-space:nowrap;">
-              <span class="tilt-ret pos">+13.2%</span> <span class="tilt-ret neg" style="font-size:0.78rem;">(-15.5%)</span>
+            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;">
+              <span class="tilt-ret pos">+61.5%</span> <span class="sector-perf-excess">(+32.7%)</span>
             </td>
           </tr>
           
           <tr>
             <td>
-              <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#dc2626;margin-right:6px;vertical-align:middle;"></span>
-              <strong>Industrials</strong>
+              <span class="sector-perf-label">
+                <span class="sector-perf-dot" style="background:#9333ea;"></span>
+                <strong>Utilities</strong>
+              </span>
             </td>
-            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;white-space:nowrap;">
-              <span class="tilt-ret pos">+2.1%</span> <span class="tilt-ret pos" style="font-size:0.78rem;">(+0.5%)</span>
+            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;">
+              <span class="tilt-ret pos">+3.2%</span> <span class="sector-perf-excess">(+1.5%)</span>
             </td>
-            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;white-space:nowrap;">
-              <span class="tilt-ret pos">+1.1%</span> <span class="tilt-ret neg" style="font-size:0.78rem;">(-4.1%)</span>
+            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;">
+              <span class="tilt-ret neg">-1.8%</span> <span class="sector-perf-excess">(-7.0%)</span>
             </td>
-            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;white-space:nowrap;">
-              <span class="tilt-ret pos">+23.4%</span> <span class="tilt-ret neg" style="font-size:0.78rem;">(-5.4%)</span>
-            </td>
-          </tr>
-          
-          <tr>
-            <td>
-              <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#059669;margin-right:6px;vertical-align:middle;"></span>
-              <strong>Healthcare</strong>
-            </td>
-            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;white-space:nowrap;">
-              <span class="tilt-ret pos">+1.9%</span> <span class="tilt-ret pos" style="font-size:0.78rem;">(+0.3%)</span>
-            </td>
-            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;white-space:nowrap;">
-              <span class="tilt-ret pos">+3.0%</span> <span class="tilt-ret neg" style="font-size:0.78rem;">(-2.1%)</span>
-            </td>
-            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;white-space:nowrap;">
-              <span class="tilt-ret pos">+13.8%</span> <span class="tilt-ret neg" style="font-size:0.78rem;">(-15.0%)</span>
+            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;">
+              <span class="tilt-ret pos">+13.2%</span> <span class="sector-perf-excess">(-15.5%)</span>
             </td>
           </tr>
           
           <tr>
             <td>
-              <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#0891b2;margin-right:6px;vertical-align:middle;"></span>
-              <strong>Financials</strong>
+              <span class="sector-perf-label">
+                <span class="sector-perf-dot" style="background:#dc2626;"></span>
+                <strong>Industrials</strong>
+              </span>
             </td>
-            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;white-space:nowrap;">
-              <span class="tilt-ret pos">+0.2%</span> <span class="tilt-ret neg" style="font-size:0.78rem;">(-1.4%)</span>
+            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;">
+              <span class="tilt-ret pos">+2.1%</span> <span class="sector-perf-excess">(+0.5%)</span>
             </td>
-            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;white-space:nowrap;">
-              <span class="tilt-ret pos">+0.8%</span> <span class="tilt-ret neg" style="font-size:0.78rem;">(-4.3%)</span>
+            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;">
+              <span class="tilt-ret pos">+1.1%</span> <span class="sector-perf-excess">(-4.1%)</span>
             </td>
-            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;white-space:nowrap;">
-              <span class="tilt-ret pos">+3.2%</span> <span class="tilt-ret neg" style="font-size:0.78rem;">(-25.5%)</span>
+            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;">
+              <span class="tilt-ret pos">+23.4%</span> <span class="sector-perf-excess">(-5.4%)</span>
             </td>
           </tr>
           
           <tr>
             <td>
-              <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#d97706;margin-right:6px;vertical-align:middle;"></span>
-              <strong>Energy</strong>
+              <span class="sector-perf-label">
+                <span class="sector-perf-dot" style="background:#059669;"></span>
+                <strong>Healthcare</strong>
+              </span>
             </td>
-            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;white-space:nowrap;">
-              <span class="tilt-ret neg">-4.5%</span> <span class="tilt-ret neg" style="font-size:0.78rem;">(-6.1%)</span>
+            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;">
+              <span class="tilt-ret pos">+1.9%</span> <span class="sector-perf-excess">(+0.3%)</span>
             </td>
-            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;white-space:nowrap;">
-              <span class="tilt-ret pos">+1.7%</span> <span class="tilt-ret neg" style="font-size:0.78rem;">(-3.4%)</span>
+            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;">
+              <span class="tilt-ret pos">+3.0%</span> <span class="sector-perf-excess">(-2.1%)</span>
             </td>
-            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;white-space:nowrap;">
-              <span class="tilt-ret pos">+41.6%</span> <span class="tilt-ret pos" style="font-size:0.78rem;">(+12.8%)</span>
+            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;">
+              <span class="tilt-ret pos">+13.8%</span> <span class="sector-perf-excess">(-15.0%)</span>
+            </td>
+          </tr>
+          
+          <tr>
+            <td>
+              <span class="sector-perf-label">
+                <span class="sector-perf-dot" style="background:#0891b2;"></span>
+                <strong>Financials</strong>
+              </span>
+            </td>
+            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;">
+              <span class="tilt-ret pos">+0.2%</span> <span class="sector-perf-excess">(-1.4%)</span>
+            </td>
+            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;">
+              <span class="tilt-ret pos">+0.8%</span> <span class="sector-perf-excess">(-4.3%)</span>
+            </td>
+            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;">
+              <span class="tilt-ret pos">+3.2%</span> <span class="sector-perf-excess">(-25.5%)</span>
+            </td>
+          </tr>
+          
+          <tr>
+            <td>
+              <span class="sector-perf-label">
+                <span class="sector-perf-dot" style="background:#d97706;"></span>
+                <strong>Energy</strong>
+              </span>
+            </td>
+            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;">
+              <span class="tilt-ret neg">-4.5%</span> <span class="sector-perf-excess">(-6.1%)</span>
+            </td>
+            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;">
+              <span class="tilt-ret pos">+1.7%</span> <span class="sector-perf-excess">(-3.4%)</span>
+            </td>
+            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;">
+              <span class="tilt-ret pos">+41.6%</span> <span class="sector-perf-excess">(+12.8%)</span>
             </td>
           </tr>
           
@@ -1806,8 +1827,8 @@
       
       <div class="modcard" style="margin-top:0.4rem;">
         <div class="mod-label"><span class="ai-zh">板塊表現 · 對 SPY</span><span class="ai-en">Sector performance · vs SPY</span></div>
-        <div style="overflow-x:auto;">
-        <table class="data-table" style="width:100%;min-width:420px;margin-top:0.4rem;">
+        <div class="sector-perf-scroll">
+        <table class="data-table sector-perf-table">
           <thead>
             <tr>
               <th><span class="ai-zh">板塊</span><span class="ai-en">Sector</span></th>
@@ -1820,113 +1841,127 @@
           
           <tr style="background:#f8f9fb;">
             <td>
-              <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#6b7280;margin-right:6px;vertical-align:middle;"></span>
-              <strong style="color:var(--ink);">SPY</strong>
+              <span class="sector-perf-label">
+                <span class="sector-perf-dot" style="background:#6b7280;"></span>
+                <strong style="color:var(--ink);">SPY</strong>
+              </span>
             </td>
-            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;white-space:nowrap;">
+            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;">
               <span class="tilt-ret pos">+1.6%</span>
             </td>
-            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;white-space:nowrap;">
+            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;">
               <span class="tilt-ret pos">+5.1%</span>
             </td>
-            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;white-space:nowrap;">
+            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;">
               <span class="tilt-ret pos">+28.7%</span>
             </td>
           </tr>
           
           <tr>
             <td>
-              <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#4f46e5;margin-right:6px;vertical-align:middle;"></span>
-              <strong>Tech</strong>
+              <span class="sector-perf-label">
+                <span class="sector-perf-dot" style="background:#4f46e5;"></span>
+                <strong>Tech</strong>
+              </span>
             </td>
-            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;white-space:nowrap;">
-              <span class="tilt-ret pos">+6.2%</span> <span class="tilt-ret pos" style="font-size:0.78rem;">(+4.6%)</span>
+            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;">
+              <span class="tilt-ret pos">+6.2%</span> <span class="sector-perf-excess">(+4.6%)</span>
             </td>
-            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;white-space:nowrap;">
-              <span class="tilt-ret pos">+15.6%</span> <span class="tilt-ret pos" style="font-size:0.78rem;">(+10.4%)</span>
+            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;">
+              <span class="tilt-ret pos">+15.6%</span> <span class="sector-perf-excess">(+10.4%)</span>
             </td>
-            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;white-space:nowrap;">
-              <span class="tilt-ret pos">+61.5%</span> <span class="tilt-ret pos" style="font-size:0.78rem;">(+32.7%)</span>
-            </td>
-          </tr>
-          
-          <tr>
-            <td>
-              <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#9333ea;margin-right:6px;vertical-align:middle;"></span>
-              <strong>Utilities</strong>
-            </td>
-            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;white-space:nowrap;">
-              <span class="tilt-ret pos">+3.2%</span> <span class="tilt-ret pos" style="font-size:0.78rem;">(+1.5%)</span>
-            </td>
-            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;white-space:nowrap;">
-              <span class="tilt-ret neg">-1.8%</span> <span class="tilt-ret neg" style="font-size:0.78rem;">(-7.0%)</span>
-            </td>
-            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;white-space:nowrap;">
-              <span class="tilt-ret pos">+13.2%</span> <span class="tilt-ret neg" style="font-size:0.78rem;">(-15.5%)</span>
+            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;">
+              <span class="tilt-ret pos">+61.5%</span> <span class="sector-perf-excess">(+32.7%)</span>
             </td>
           </tr>
           
           <tr>
             <td>
-              <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#dc2626;margin-right:6px;vertical-align:middle;"></span>
-              <strong>Industrials</strong>
+              <span class="sector-perf-label">
+                <span class="sector-perf-dot" style="background:#9333ea;"></span>
+                <strong>Utilities</strong>
+              </span>
             </td>
-            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;white-space:nowrap;">
-              <span class="tilt-ret pos">+2.1%</span> <span class="tilt-ret pos" style="font-size:0.78rem;">(+0.5%)</span>
+            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;">
+              <span class="tilt-ret pos">+3.2%</span> <span class="sector-perf-excess">(+1.5%)</span>
             </td>
-            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;white-space:nowrap;">
-              <span class="tilt-ret pos">+1.1%</span> <span class="tilt-ret neg" style="font-size:0.78rem;">(-4.1%)</span>
+            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;">
+              <span class="tilt-ret neg">-1.8%</span> <span class="sector-perf-excess">(-7.0%)</span>
             </td>
-            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;white-space:nowrap;">
-              <span class="tilt-ret pos">+23.4%</span> <span class="tilt-ret neg" style="font-size:0.78rem;">(-5.4%)</span>
-            </td>
-          </tr>
-          
-          <tr>
-            <td>
-              <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#059669;margin-right:6px;vertical-align:middle;"></span>
-              <strong>Healthcare</strong>
-            </td>
-            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;white-space:nowrap;">
-              <span class="tilt-ret pos">+1.9%</span> <span class="tilt-ret pos" style="font-size:0.78rem;">(+0.3%)</span>
-            </td>
-            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;white-space:nowrap;">
-              <span class="tilt-ret pos">+3.0%</span> <span class="tilt-ret neg" style="font-size:0.78rem;">(-2.1%)</span>
-            </td>
-            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;white-space:nowrap;">
-              <span class="tilt-ret pos">+13.8%</span> <span class="tilt-ret neg" style="font-size:0.78rem;">(-15.0%)</span>
+            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;">
+              <span class="tilt-ret pos">+13.2%</span> <span class="sector-perf-excess">(-15.5%)</span>
             </td>
           </tr>
           
           <tr>
             <td>
-              <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#0891b2;margin-right:6px;vertical-align:middle;"></span>
-              <strong>Financials</strong>
+              <span class="sector-perf-label">
+                <span class="sector-perf-dot" style="background:#dc2626;"></span>
+                <strong>Industrials</strong>
+              </span>
             </td>
-            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;white-space:nowrap;">
-              <span class="tilt-ret pos">+0.2%</span> <span class="tilt-ret neg" style="font-size:0.78rem;">(-1.4%)</span>
+            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;">
+              <span class="tilt-ret pos">+2.1%</span> <span class="sector-perf-excess">(+0.5%)</span>
             </td>
-            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;white-space:nowrap;">
-              <span class="tilt-ret pos">+0.8%</span> <span class="tilt-ret neg" style="font-size:0.78rem;">(-4.3%)</span>
+            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;">
+              <span class="tilt-ret pos">+1.1%</span> <span class="sector-perf-excess">(-4.1%)</span>
             </td>
-            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;white-space:nowrap;">
-              <span class="tilt-ret pos">+3.2%</span> <span class="tilt-ret neg" style="font-size:0.78rem;">(-25.5%)</span>
+            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;">
+              <span class="tilt-ret pos">+23.4%</span> <span class="sector-perf-excess">(-5.4%)</span>
             </td>
           </tr>
           
           <tr>
             <td>
-              <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#d97706;margin-right:6px;vertical-align:middle;"></span>
-              <strong>Energy</strong>
+              <span class="sector-perf-label">
+                <span class="sector-perf-dot" style="background:#059669;"></span>
+                <strong>Healthcare</strong>
+              </span>
             </td>
-            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;white-space:nowrap;">
-              <span class="tilt-ret neg">-4.5%</span> <span class="tilt-ret neg" style="font-size:0.78rem;">(-6.1%)</span>
+            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;">
+              <span class="tilt-ret pos">+1.9%</span> <span class="sector-perf-excess">(+0.3%)</span>
             </td>
-            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;white-space:nowrap;">
-              <span class="tilt-ret pos">+1.7%</span> <span class="tilt-ret neg" style="font-size:0.78rem;">(-3.4%)</span>
+            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;">
+              <span class="tilt-ret pos">+3.0%</span> <span class="sector-perf-excess">(-2.1%)</span>
             </td>
-            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;white-space:nowrap;">
-              <span class="tilt-ret pos">+41.6%</span> <span class="tilt-ret pos" style="font-size:0.78rem;">(+12.8%)</span>
+            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;">
+              <span class="tilt-ret pos">+13.8%</span> <span class="sector-perf-excess">(-15.0%)</span>
+            </td>
+          </tr>
+          
+          <tr>
+            <td>
+              <span class="sector-perf-label">
+                <span class="sector-perf-dot" style="background:#0891b2;"></span>
+                <strong>Financials</strong>
+              </span>
+            </td>
+            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;">
+              <span class="tilt-ret pos">+0.2%</span> <span class="sector-perf-excess">(-1.4%)</span>
+            </td>
+            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;">
+              <span class="tilt-ret pos">+0.8%</span> <span class="sector-perf-excess">(-4.3%)</span>
+            </td>
+            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;">
+              <span class="tilt-ret pos">+3.2%</span> <span class="sector-perf-excess">(-25.5%)</span>
+            </td>
+          </tr>
+          
+          <tr>
+            <td>
+              <span class="sector-perf-label">
+                <span class="sector-perf-dot" style="background:#d97706;"></span>
+                <strong>Energy</strong>
+              </span>
+            </td>
+            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;">
+              <span class="tilt-ret neg">-4.5%</span> <span class="sector-perf-excess">(-6.1%)</span>
+            </td>
+            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;">
+              <span class="tilt-ret pos">+1.7%</span> <span class="sector-perf-excess">(-3.4%)</span>
+            </td>
+            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;">
+              <span class="tilt-ret pos">+41.6%</span> <span class="sector-perf-excess">(+12.8%)</span>
             </td>
           </tr>
           
