@@ -46,6 +46,7 @@
     .hero-stance { font-family:var(--serif); font-size:2.05rem; font-weight:700; line-height:1.2; letter-spacing:-0.02em; margin:0; color:var(--ink); }
     @media (max-width:560px) { .hero-stance { font-size:1.55rem; } }
     .logo { font-family:'Playfair Display',Georgia,serif; font-size:2rem; line-height:1; color:var(--ink); }
+    .tagline { font-family:var(--sans); font-size:0.78rem; color:var(--muted); margin-top:0.35rem; letter-spacing:0.01em; }
     .logo .logo-the { font-weight:700; }
     .logo .logo-regime { font-weight:700; }
     .logo .logo-dot { color:var(--red); }
@@ -99,7 +100,7 @@
     /* Transition matrix — big numbers (lives in the Market Regime card) */
     .trans-block { margin-top:1.3rem; }
     .trans-head { font-family:var(--sans); font-size:0.7rem; font-weight:600; color:var(--muted); margin-bottom:0.75rem; letter-spacing:0.01em; }
-    .trans-stats { display:flex; flex-wrap:wrap; gap:1.3rem 2.4rem; align-items:flex-end; }
+    .trans-stats { display:flex; flex-wrap:nowrap; gap:1.3rem 2.4rem; align-items:flex-end; overflow-x:auto; padding-bottom:0.25rem; }
     .trans-stat { display:flex; flex-direction:column; gap:0.25rem; }
     .ts-num { font-family:var(--mono); font-size:1.7rem; font-weight:600; line-height:0.95; letter-spacing:-0.03em; color:var(--ink); }
     .trans-stat.ts-stay .ts-num { font-size:2.3rem; }
@@ -171,6 +172,14 @@
     .cty-vs.mixed { background:var(--cream); color:var(--muted); } .cty-vs.limited { background:var(--cream); color:var(--muted); }
     .cty-row { font-size:0.92rem; line-height:1.55; color:#1d1d1b; margin:0.2rem 0; }
     .cty-row b { font-family:var(--sans); color:var(--muted); font-weight:600; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.04em; }
+    /* Merged country+carry cards */
+    .cty-carry-grid { display:grid; grid-template-columns:1fr 1fr; gap:0.9rem; }
+    @media (max-width:680px) { .cty-carry-grid { grid-template-columns:1fr; } }
+    .cty-carry-card { background:var(--block); border-radius:12px; padding:0.95rem 1.05rem; }
+    .cty-carry-head { display:flex; align-items:baseline; flex-wrap:wrap; gap:0.4rem; margin-bottom:0.25rem; }
+    .cty-carry-head .carry-country { font-size:1.02rem; font-weight:700; }
+    .cty-carry-sep { border:none; border-top:1px solid var(--rule); margin:0.5rem 0 0.45rem; }
+    .cty-gears .cty-row { margin:0.15rem 0; }
     .full-link { font-family:var(--sans); display:inline-block; margin-top:0.5rem; font-size:0.78rem; color:var(--ink); text-decoration:underline; font-weight:700; }
     .full-link:hover { text-decoration:underline; }
     .foot { font-family:var(--sans); text-align:center; font-size:0.66rem; color:var(--muted); margin-top:1.8rem; letter-spacing:0.04em; }
@@ -287,6 +296,7 @@
     <div class="sheet-title">
       <div>
         <div class="logo"><span class="logo-the">The Daily </span><span class="logo-regime">Regime</span><span class="logo-dot">.</span></div>
+        <div class="tagline">Translating data into macro narratives</div>
       </div>
       <div class="sheet-title-right">
         <div class="sheet-meta">2026-06-03</div>
@@ -591,71 +601,155 @@
       </div>
 
       
-      <div class="section-head">資本流動 · 利差承接面
+      <div class="modcard">
+      
+      <div class="section-head" style="margin-top:0;">利差承接面
         <span class="carry-switch warning">VIX 46 百分位 · 中性（波動居中）</span>
       </div>
-      <div class="carry-grid">
+      
+      <div class="cty-carry-grid">
         
-        <div class="carry-cell">
-          <div class="carry-top">
+        
+        <div class="cty-carry-card">
+          <div class="cty-carry-head">
+            <span class="carry-country">美國</span>
+            
+            
+          </div>
+          
+          <hr class="cty-carry-sep">
+          <div class="cty-gears">
+            
+            <div class="cty-row"><b>按兵不動，不降息</b>　市場預期Fed因通膨僵固而按兵不動；未定價降息。</div>
+            
+            <div class="cty-row"><b>風險偏好流入</b>　資金流入股票和信用；美元小幅走弱；流動性充足。</div>
+            
+            <div class="cty-row"><b>隱藏謹慎</b>　尾部風險保護變貴；投資人在平靜表面下買進下行保險。</div>
+            
+          </div>
+        </div>
+        
+        
+        <div class="cty-carry-card">
+          <div class="cty-carry-head">
             <span class="carry-country">日本</span>
+            <span class="cty-vs diverging">與美國分歧</span>
             <span class="carry-role role-funding">funding 端</span>
           </div>
+          
           <div class="carry-stats">
             <span>美債利差 +194bp</span>
             <span class="sp">·</span><span>匯率1m -1.98%</span>
             <span class="sp">·</span><span class="ep">持有美債 +28bn</span>
           </div>
           <div class="carry-note">美債高 +194bp · 當地為 funding 端（借當地→投美元）</div>
+          
+          <hr class="cty-carry-sep">
+          <div class="cty-gears">
+            
+            <div class="cty-row"><b>寬鬆傾向</b>　市場預期日本央行維持寬鬆；日圓因利差交易走弱。</div>
+            
+            <div class="cty-row"><b>資金外流</b>　資金外流，投資人追求較高美債殖利率；日圓承壓。</div>
+            
+            <div class="cty-row"><b>軋空風險</b>　日圓空頭極端；擁擠交易易劇烈反轉。</div>
+            
+          </div>
         </div>
         
-        <div class="carry-cell">
-          <div class="carry-top">
+        
+        <div class="cty-carry-card">
+          <div class="cty-carry-head">
             <span class="carry-country">歐洲</span>
+            <span class="cty-vs mixed">部分分歧</span>
             <span class="carry-role role-funding">funding 端</span>
           </div>
+          
           <div class="carry-stats">
             <span>美債利差 +146bp</span>
             <span class="sp">·</span><span>匯率1m -0.82%</span>
             
           </div>
           <div class="carry-note">美債高 +146bp · 當地為 funding 端（借當地→投美元）</div>
+          
+          <hr class="cty-carry-sep">
+          <div class="cty-gears">
+            
+            <div class="cty-row"><b>按兵不動，歐元弱</b>　市場預期ECB按兵不動；歐元因利差兌美元走弱。</div>
+            
+            <div class="cty-row"><b>資金流出紅燈</b>　資金外流；歐元淨多單減少；資金流動紅燈。</div>
+            
+            <div class="cty-row"><b>對沖成本高</b>　尾部風險保護昂貴；類似美國的對沖異常。</div>
+            
+          </div>
         </div>
         
-        <div class="carry-cell">
-          <div class="carry-top">
+        
+        <div class="cty-carry-card">
+          <div class="cty-carry-head">
             <span class="carry-country">中國</span>
+            <span class="cty-vs mixed">部分分歧</span>
             <span class="carry-role role-managed">管制/政策</span>
           </div>
+          
           <div class="carry-stats">
             
             <span class="sp">·</span><span>匯率1m +0.96%</span>
             <span class="sp">·</span><span class="ep">外匯儲備 +69bn</span>
           </div>
           <div class="carry-note">資本管制 · 看政策分化/人民幣，非 carry</div>
+          
+          <hr class="cty-carry-sep">
+          <div class="cty-gears">
+            
+            <div class="cty-row"><b>人民幣穩定</b>　市場預期中國央行管理人民幣穩定；透過外匯儲備資金流入。</div>
+            
+            <div class="cty-row"><b>資金流入綠燈</b>　人民幣升值；外匯儲備增加690億美元；資金流入壓力。</div>
+            
+            <div class="cty-row"><b>對沖成本高</b>　尾部風險保護昂貴；全球對沖成本異常適用。</div>
+            
+          </div>
         </div>
         
-        <div class="carry-cell">
-          <div class="carry-top">
+        
+        <div class="cty-carry-card">
+          <div class="cty-carry-head">
             <span class="carry-country">台灣</span>
+            <span class="cty-vs limited">資料有限</span>
             <span class="carry-role role-flow">外資流向主導</span>
           </div>
+          
           <div class="carry-stats">
             
             <span class="sp">·</span><span>匯率1m +0.26%</span>
             <span class="sp">·</span><span class="ep">外資20日 +212bn TWD</span>
           </div>
           <div class="carry-note">小型開放經濟 · 看外資進出與匯率，非利差 carry</div>
+          
+          <hr class="cty-carry-sep">
+          <div class="cty-gears">
+            
+            <div class="cty-row"><b>科技帶動增長</b>　市場預期科技驅動的強勁增長；外資流入支持新台幣。</div>
+            
+            <div class="cty-row"><b>資金流入火熱</b>　外資大量流入（20日2120億新台幣）；新台幣穩定至強勢。</div>
+            
+            <div class="cty-row"><b>對沖成本高</b>　尾部風險保護昂貴；全球對沖成本異常適用。</div>
+            
+          </div>
         </div>
         
       </div>
+      
       <div class="tilt-legend">利差 = 美債 − 當地 10Y · carry 開關看 VIX · 攤開不評分（美國為原點，中國資本管制走政策分化）</div>
       
-
+      </div>
+      
 
       
+      <div class="zone-divider zone-hist">
+        <div class="zone-title">歷史借鏡</div>
+        <div class="zone-sub">最相似歷史環境與其後資產表現</div>
+      </div>
       <div class="modcard">
-        <div class="mod-label">歷史借鏡</div>
         <div class="det-inner">
           
           <div class="an-sub">美國體制借鏡 — 最相似歷史環境與其後美股表現</div>
@@ -664,7 +758,7 @@
             
             <div class="an-card">
               <div class="an-per">2007-11</div>
-              <div class="an-desc">金融危機前——曲線平坦、波動率低、信貸自滿</div>
+              <div class="an-desc">金融危機前——曲線平坦，波動率低，信貸自滿</div>
               <div class="an-ret">
                 <div class="an-stat neg"><span class="an-l">美股 12m</span><span class="an-v">-39%</span></div>
                 <div class="an-stat neg"><span class="an-l">3m</span><span class="an-v">-9%</span></div>
@@ -675,7 +769,7 @@
             
             <div class="an-card">
               <div class="an-per">2000-10</div>
-              <div class="an-desc">網路泡沫高峰——勞動市場緊俏、估值偏高</div>
+              <div class="an-desc">網路泡沫高峰——勞動力市場緊俏，估值偏高</div>
               <div class="an-ret">
                 <div class="an-stat neg"><span class="an-l">美股 12m</span><span class="an-v">-26%</span></div>
                 <div class="an-stat neg"><span class="an-l">3m</span><span class="an-v">-4%</span></div>
@@ -686,7 +780,7 @@
             
             <div class="an-card">
               <div class="an-per">2014-08</div>
-              <div class="an-desc">週期中段放緩——波動率低、美元走強、油價開始下跌</div>
+              <div class="an-desc">週期中段放緩——波動率低，美元走強，油價開始下跌</div>
               <div class="an-ret">
                 <div class="an-stat neg"><span class="an-l">美股 12m</span><span class="an-v">-1%</span></div>
                 <div class="an-stat pos"><span class="an-l">3m</span><span class="an-v">+3%</span></div>
@@ -719,7 +813,7 @@
             
             <div class="an-card">
               <div class="an-per">2006-11</div>
-              <div class="an-desc">金融海嘯前流動性高峰 — 利差交易盛行，全球波動率低</div>
+              <div class="an-desc">金融危機前流動性高峰 — 利差交易盛行，全球波動率低</div>
               <div class="an-ret">
                 
                 
@@ -736,7 +830,7 @@
             
             <div class="an-card">
               <div class="an-per">2021-02</div>
-              <div class="an-desc">再通膨 — 同步復甦，新興市場短暫領先</div>
+              <div class="an-desc">再通膨 — 同步復甦，新興市場短暫表現優異</div>
               <div class="an-ret">
                 
                 
@@ -758,71 +852,7 @@
       </div>
       
 
-      
-      <div class="modcard">
-        <div class="mod-label">各國佐證（5 國）</div>
-        <div class="det-inner cty-wrap">
-          
-          <div class="cty">
-            <div class="cty-h">美國</div>
-            
-            <div class="cty-row"><b>按兵不動，不降息</b>　市場預期Fed因通膨僵固而按兵不動；未定價降息。</div>
-            
-            <div class="cty-row"><b>風險偏好流入</b>　資金流入股票和信用；美元小幅走弱；流動性充足。</div>
-            
-            <div class="cty-row"><b>隱藏謹慎</b>　尾部風險保護變貴；投資人在平靜表面下買進下行保險。</div>
-            
-          </div>
-          
-          <div class="cty">
-            <div class="cty-h">日本<span class="cty-vs diverging">與美國分歧</span></div>
-            
-            <div class="cty-row"><b>寬鬆傾向</b>　市場預期日本央行維持寬鬆；日圓因利差交易走弱。</div>
-            
-            <div class="cty-row"><b>資金外流</b>　資金外流，投資人追求較高美債殖利率；日圓承壓。</div>
-            
-            <div class="cty-row"><b>軋空風險</b>　日圓空頭極端；擁擠交易易劇烈反轉。</div>
-            
-          </div>
-          
-          <div class="cty">
-            <div class="cty-h">歐洲<span class="cty-vs mixed">部分分歧</span></div>
-            
-            <div class="cty-row"><b>按兵不動，歐元弱</b>　市場預期ECB按兵不動；歐元因利差兌美元走弱。</div>
-            
-            <div class="cty-row"><b>資金流出紅燈</b>　資金外流；歐元淨多單減少；資金流動紅燈。</div>
-            
-            <div class="cty-row"><b>對沖成本高</b>　尾部風險保護昂貴；類似美國的對沖異常。</div>
-            
-          </div>
-          
-          <div class="cty">
-            <div class="cty-h">中國<span class="cty-vs mixed">部分分歧</span></div>
-            
-            <div class="cty-row"><b>人民幣穩定</b>　市場預期中國央行管理人民幣穩定；透過外匯儲備資金流入。</div>
-            
-            <div class="cty-row"><b>資金流入綠燈</b>　人民幣升值；外匯儲備增加690億美元；資金流入壓力。</div>
-            
-            <div class="cty-row"><b>對沖成本高</b>　尾部風險保護昂貴；全球對沖成本異常適用。</div>
-            
-          </div>
-          
-          <div class="cty">
-            <div class="cty-h">台灣<span class="cty-vs limited">資料有限</span></div>
-            
-            <div class="cty-row"><b>科技帶動增長</b>　市場預期科技驅動的強勁增長；外資流入支持新台幣。</div>
-            
-            <div class="cty-row"><b>資金流入火熱</b>　外資大量流入（20日2120億新台幣）；新台幣穩定至強勢。</div>
-            
-            <div class="cty-row"><b>對沖成本高</b>　尾部風險保護昂貴；全球對沖成本異常適用。</div>
-            
-          </div>
-          
-        </div>
-      </div>
-      
-
-      <div class="foot">THE DAILY REGIME · 量化計算「是什麼」，分析解讀「代表什麼」 · 2026-06-03</div>
+      <div class="foot">THE DAILY REGIME · Translating data into macro narratives · 2026-06-03</div>
     </div>
     
     <div class="lang-block" data-lang="en">
@@ -1116,71 +1146,155 @@
       </div>
 
       
-      <div class="section-head">Capital Flow · Rate-Differential Map
+      <div class="modcard">
+      
+      <div class="section-head" style="margin-top:0;">Rate-Differential Map
         <span class="carry-switch warning">VIX 46th · neutral</span>
       </div>
-      <div class="carry-grid">
+      
+      <div class="cty-carry-grid">
         
-        <div class="carry-cell">
-          <div class="carry-top">
+        
+        <div class="cty-carry-card">
+          <div class="cty-carry-head">
+            <span class="carry-country">US</span>
+            
+            
+          </div>
+          
+          <hr class="cty-carry-sep">
+          <div class="cty-gears">
+            
+            <div class="cty-row"><b>On hold, no cuts</b>　Market expects the Fed to stay on hold with inflation sticky; no rate cuts priced in.</div>
+            
+            <div class="cty-row"><b>Risk-on flows</b>　Money flowing into equities and credit; dollar weakening slightly; liquidity ample.</div>
+            
+            <div class="cty-row"><b>Hidden caution</b>　Tail-risk protection getting expensive; investors buying downside insurance despite calm surface.</div>
+            
+          </div>
+        </div>
+        
+        
+        <div class="cty-carry-card">
+          <div class="cty-carry-head">
             <span class="carry-country">Japan</span>
+            <span class="cty-vs diverging">Diverging from US</span>
             <span class="carry-role role-funding">funding leg</span>
           </div>
+          
           <div class="carry-stats">
             <span>UST spread +194bp</span>
             <span class="sp">·</span><span>FX 1m -1.98%</span>
             <span class="sp">·</span><span class="ep">持有美債 +28bn</span>
           </div>
           
+          
+          <hr class="cty-carry-sep">
+          <div class="cty-gears">
+            
+            <div class="cty-row"><b>Accommodative bias</b>　Market expects BoJ to stay accommodative; yen weakening on carry trade.</div>
+            
+            <div class="cty-row"><b>Capital outflows</b>　Capital outflows as investors seek higher US yields; yen under pressure.</div>
+            
+            <div class="cty-row"><b>Squeeze risk</b>　Yen short extreme; crowded trade vulnerable to violent unwind.</div>
+            
+          </div>
         </div>
         
-        <div class="carry-cell">
-          <div class="carry-top">
+        
+        <div class="cty-carry-card">
+          <div class="cty-carry-head">
             <span class="carry-country">Europe</span>
+            <span class="cty-vs mixed">Partially diverging</span>
             <span class="carry-role role-funding">funding leg</span>
           </div>
+          
           <div class="carry-stats">
             <span>UST spread +146bp</span>
             <span class="sp">·</span><span>FX 1m -0.82%</span>
             
           </div>
           
+          
+          <hr class="cty-carry-sep">
+          <div class="cty-gears">
+            
+            <div class="cty-row"><b>On hold, weak euro</b>　Market expects ECB on hold; euro weakening vs USD on rate differential.</div>
+            
+            <div class="cty-row"><b>Outflow red</b>　Capital outflows; euro bullish bets declining; caution signal on flows.</div>
+            
+            <div class="cty-row"><b>Hedging costly</b>　Tail-risk protection expensive; similar to US hedging anomaly.</div>
+            
+          </div>
         </div>
         
-        <div class="carry-cell">
-          <div class="carry-top">
+        
+        <div class="cty-carry-card">
+          <div class="cty-carry-head">
             <span class="carry-country">China</span>
+            <span class="cty-vs mixed">Partially diverging</span>
             <span class="carry-role role-managed">managed/policy</span>
           </div>
+          
           <div class="carry-stats">
             
             <span class="sp">·</span><span>FX 1m +0.96%</span>
             <span class="sp">·</span><span class="ep">外匯儲備 +69bn</span>
           </div>
           
+          
+          <hr class="cty-carry-sep">
+          <div class="cty-gears">
+            
+            <div class="cty-row"><b>Stable yuan</b>　Market expects PBOC to manage yuan stability; capital inflows via FX reserves.</div>
+            
+            <div class="cty-row"><b>Inflow green</b>　Yuan strengthening; FX reserves up $69bn; capital inflow pressure.</div>
+            
+            <div class="cty-row"><b>Hedging costly</b>　Tail-risk protection expensive; global hedging cost anomaly applies.</div>
+            
+          </div>
         </div>
         
-        <div class="carry-cell">
-          <div class="carry-top">
+        
+        <div class="cty-carry-card">
+          <div class="cty-carry-head">
             <span class="carry-country">Taiwan</span>
+            <span class="cty-vs limited">Limited data</span>
             <span class="carry-role role-flow">flow-driven</span>
           </div>
+          
           <div class="carry-stats">
             
             <span class="sp">·</span><span>FX 1m +0.26%</span>
             <span class="sp">·</span><span class="ep">外資20日 +212bn TWD</span>
           </div>
           
+          
+          <hr class="cty-carry-sep">
+          <div class="cty-gears">
+            
+            <div class="cty-row"><b>Tech-led growth</b>　Market expects strong tech-driven growth; foreign inflows supporting TWD.</div>
+            
+            <div class="cty-row"><b>Inflow hot</b>　Heavy foreign inflows (TWD 212bn in 20 days); TWD stable to strong.</div>
+            
+            <div class="cty-row"><b>Hedging costly</b>　Tail-risk protection expensive; global hedging cost anomaly applies.</div>
+            
+          </div>
         </div>
         
       </div>
+      
       <div class="tilt-legend">Spread = UST − local 10Y · carry switch = VIX · parts shown, not scored (US is origin; China is capital-controlled → policy/FX)</div>
       
-
+      </div>
+      
 
       
+      <div class="zone-divider zone-hist">
+        <div class="zone-title">Historical Analogues</div>
+        <div class="zone-sub">Closest historical setups and subsequent asset returns</div>
+      </div>
       <div class="modcard">
-        <div class="mod-label">Historical Analogues</div>
         <div class="det-inner">
           
           <div class="an-sub">US regime analogues — closest historical setups and subsequent S&P returns</div>
@@ -1283,71 +1397,7 @@
       </div>
       
 
-      
-      <div class="modcard">
-        <div class="mod-label">Country Evidence (5 markets)</div>
-        <div class="det-inner cty-wrap">
-          
-          <div class="cty">
-            <div class="cty-h">US</div>
-            
-            <div class="cty-row"><b>On hold, no cuts</b>　Market expects the Fed to stay on hold with inflation sticky; no rate cuts priced in.</div>
-            
-            <div class="cty-row"><b>Risk-on flows</b>　Money flowing into equities and credit; dollar weakening slightly; liquidity ample.</div>
-            
-            <div class="cty-row"><b>Hidden caution</b>　Tail-risk protection getting expensive; investors buying downside insurance despite calm surface.</div>
-            
-          </div>
-          
-          <div class="cty">
-            <div class="cty-h">Japan<span class="cty-vs diverging">Diverging from US</span></div>
-            
-            <div class="cty-row"><b>Accommodative bias</b>　Market expects BoJ to stay accommodative; yen weakening on carry trade.</div>
-            
-            <div class="cty-row"><b>Capital outflows</b>　Capital outflows as investors seek higher US yields; yen under pressure.</div>
-            
-            <div class="cty-row"><b>Squeeze risk</b>　Yen short extreme; crowded trade vulnerable to violent unwind.</div>
-            
-          </div>
-          
-          <div class="cty">
-            <div class="cty-h">Europe<span class="cty-vs mixed">Partially diverging</span></div>
-            
-            <div class="cty-row"><b>On hold, weak euro</b>　Market expects ECB on hold; euro weakening vs USD on rate differential.</div>
-            
-            <div class="cty-row"><b>Outflow red</b>　Capital outflows; euro bullish bets declining; caution signal on flows.</div>
-            
-            <div class="cty-row"><b>Hedging costly</b>　Tail-risk protection expensive; similar to US hedging anomaly.</div>
-            
-          </div>
-          
-          <div class="cty">
-            <div class="cty-h">China<span class="cty-vs mixed">Partially diverging</span></div>
-            
-            <div class="cty-row"><b>Stable yuan</b>　Market expects PBOC to manage yuan stability; capital inflows via FX reserves.</div>
-            
-            <div class="cty-row"><b>Inflow green</b>　Yuan strengthening; FX reserves up $69bn; capital inflow pressure.</div>
-            
-            <div class="cty-row"><b>Hedging costly</b>　Tail-risk protection expensive; global hedging cost anomaly applies.</div>
-            
-          </div>
-          
-          <div class="cty">
-            <div class="cty-h">Taiwan<span class="cty-vs limited">Limited data</span></div>
-            
-            <div class="cty-row"><b>Tech-led growth</b>　Market expects strong tech-driven growth; foreign inflows supporting TWD.</div>
-            
-            <div class="cty-row"><b>Inflow hot</b>　Heavy foreign inflows (TWD 212bn in 20 days); TWD stable to strong.</div>
-            
-            <div class="cty-row"><b>Hedging costly</b>　Tail-risk protection expensive; global hedging cost anomaly applies.</div>
-            
-          </div>
-          
-        </div>
-      </div>
-      
-
-      <div class="foot">THE DAILY REGIME · Quant defines what is; analysis explains what it means · 2026-06-03</div>
+      <div class="foot">THE DAILY REGIME · Translating data into macro narratives · 2026-06-03</div>
     </div>
     
   </div>
