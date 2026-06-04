@@ -1617,35 +1617,50 @@ def _build_carry_relative(l2b: dict) -> dict:
         sp = spreads.get(c)
         fx = fx1.get(c)
 
-        # Capital flow direction (reused fields)
+        # Capital flow direction (reused fields) — bilingual labels
         if c == "Japan":
             v = fp.get("japan_tic_mom_change_bn")
-            flow = (f"持有美債 {v:+.0f}bn", "supportive" if (v or 0) > 0 else "drag") if v is not None else None
+            flow = ((f"持有美債 {v:+.0f}bn", f"UST holdings {v:+.0f}bn",
+                     "supportive" if (v or 0) > 0 else "drag")) if v is not None else None
         elif c == "China":
             v = fp.get("china_fx_reserves_mom_change_bn")
-            flow = (f"外匯儲備 {v:+.0f}bn", "supportive" if (v or 0) > 0 else "drag") if v is not None else None
+            flow = ((f"外匯儲備 {v:+.0f}bn", f"FX reserves {v:+.0f}bn",
+                     "supportive" if (v or 0) > 0 else "drag")) if v is not None else None
         elif c == "Taiwan":
             tw = fp.get("taiwan_foreign_flow") or {}
             v = tw.get("cum_20d_bn_twd")
-            flow = (f"外資20日 {v:+.0f}bn TWD", "supportive" if (v or 0) > 0 else "drag") if v is not None else None
+            flow = ((f"外資20日 {v:+.0f}bn TWD", f"Foreign 20d {v:+.0f}bn TWD",
+                     "supportive" if (v or 0) > 0 else "drag")) if v is not None else None
         else:
             flow = None
 
         # carry role + note (China = capital-controlled → policy/FX, not carry;
         # Taiwan = small open economy → foreign-flow driven, not a rate-carry leg)
         if c == "China":
-            role, note_zh = "managed", "資本管制 · 看政策分化/人民幣，非 carry"
+            role = "managed"
+            note_zh = "資本管制 · 看政策分化/人民幣，非 carry"
+            note_en = "Capital-controlled · watch policy/FX, not carry"
         elif c == "Taiwan":
-            role, note_zh = "flow", "小型開放經濟 · 看外資進出與匯率，非利差 carry"
+            role = "flow"
+            note_zh = "小型開放經濟 · 看外資進出與匯率，非利差 carry"
+            note_en = "Small open economy · watch foreign flows & FX, not rate carry"
         elif sp is not None:
             if sp > 50:
-                role, note_zh = "funding", f"美債高 {sp:+.0f}bp · 當地為 funding 端（借當地→投美元）"
+                role = "funding"
+                note_zh = f"美債高 {sp:+.0f}bp · 當地為 funding 端（借當地→投美元）"
+                note_en = f"UST higher {sp:+.0f}bp · local is funding leg (borrow local → buy USD)"
             elif sp < -50:
-                role, note_zh = "target", f"當地利率高 {sp:+.0f}bp · carry 目的地"
+                role = "target"
+                note_zh = f"當地利率高 {sp:+.0f}bp · carry 目的地"
+                note_en = f"Local higher {sp:+.0f}bp · carry destination"
             else:
-                role, note_zh = "neutral", f"利差 {sp:+.0f}bp · 接近平價"
+                role = "neutral"
+                note_zh = f"利差 {sp:+.0f}bp · 接近平價"
+                note_en = f"Spread {sp:+.0f}bp · near parity"
         else:
-            role, note_zh = "na", "利差資料不足"
+            role = "na"
+            note_zh = "利差資料不足"
+            note_en = "Insufficient spread data"
 
         rows.append({
             "country": c,
@@ -1653,9 +1668,11 @@ def _build_carry_relative(l2b: dict) -> dict:
             "spread_bp": None if sp is None else round(float(sp), 0),
             "fx_1m": None if fx is None else round(float(fx), 2),
             "flow_label": flow[0] if flow else None,
-            "flow_dir": flow[1] if flow else None,
+            "flow_label_en": flow[1] if flow else None,
+            "flow_dir": flow[2] if flow else None,
             "role": role,
             "note_zh": note_zh,
+            "note_en": note_en,
         })
 
     return {
@@ -1907,7 +1924,7 @@ def _carry_rows_for_lang(carry: dict, lang: str) -> dict:
             "country_code": r["country"],
             "spread_bp": r.get("spread_bp"),
             "fx_1m": r.get("fx_1m"),
-            "flow_label": r.get("flow_label"),
+            "flow_label": r.get("flow_label") if is_zh else (r.get("flow_label_en") or r.get("flow_label")),
             "flow_dir": r.get("flow_dir"),
             "role": r.get("role"),
             "role_label": (_CARRY_ROLE_ZH if is_zh else _CARRY_ROLE_EN).get(r.get("role"), ""),
@@ -2097,7 +2114,7 @@ HTML_TMPL_LITE = """<!doctype html>
     /* Reading measure — keep prose at a comfortable width even on a wide sheet */
     .measure { max-width:680px; }
     /* Kicker / section heads — Economist furniture */
-    .kicker { font-family:var(--sans); font-size:0.78rem; font-weight:700; text-transform:uppercase; letter-spacing:0.09em; color:var(--red); margin-bottom:0.35rem; }
+    .kicker { font-family:var(--sans); font-size:0.82rem; font-weight:700; text-transform:uppercase; letter-spacing:0.09em; color:var(--red); margin-bottom:0.35rem; }
     .section-head { font-family:var(--sans); font-size:0.82rem; font-weight:700; text-transform:uppercase; letter-spacing:0.09em; color:var(--red); margin:1.6rem 0 0.9rem; }
     /* No divider lines — blocks define the sections. Zone header is just a big title. */
     .zone-divider { margin:2.4rem 0 1rem; padding:0; border:none; }
@@ -2192,7 +2209,7 @@ HTML_TMPL_LITE = """<!doctype html>
     .det-inner { padding:0; }
     .narr-p { font-size:0.98rem; line-height:1.72; color:#1d1d1b; margin:0 0 0.8rem; }
     /* Analogues */
-    .an-sub { font-family:var(--sans); font-size:0.7rem; font-weight:700; text-transform:uppercase; color:var(--red); margin:0.3rem 0 0.1rem; letter-spacing:0.1em; }
+    .an-sub { font-family:var(--sans); font-size:0.82rem; font-weight:700; text-transform:uppercase; color:var(--red); margin:0.3rem 0 0.1rem; letter-spacing:0.09em; }
     .an-sub2 { font-family:var(--sans); font-size:0.68rem; color:var(--muted); margin:0 0 0.6rem; letter-spacing:0.01em; }
     .an-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(195px,1fr)); gap:0.7rem; margin-bottom:0.5rem; }
     .an-card { border:none; border-radius:12px; padding:0.85rem 0.95rem; background:var(--block); }
@@ -2213,7 +2230,7 @@ HTML_TMPL_LITE = """<!doctype html>
     .cty-vs.aligned { background:var(--cream); color:var(--ink); } .cty-vs.diverging { background:#fdeee4; color:var(--red); }
     .cty-vs.mixed { background:var(--cream); color:var(--muted); } .cty-vs.limited { background:var(--cream); color:var(--muted); }
     .cty-row { font-size:0.92rem; line-height:1.55; color:#1d1d1b; margin:0.55rem 0 0; display:flex; flex-direction:column; gap:0.1rem; }
-    .cty-row b { font-family:var(--sans); color:var(--red); font-weight:700; font-size:0.65rem; text-transform:uppercase; letter-spacing:0.06em; }
+    .cty-row b { font-family:var(--sans); color:var(--red); font-weight:700; font-size:0.65rem; text-transform:uppercase; letter-spacing:0.07em; }
     /* Merged country+carry cards */
     .cty-carry-grid { display:grid; grid-template-columns:1fr 1fr; gap:0.9rem; }
     @media (max-width:680px) { .cty-carry-grid { grid-template-columns:1fr; } }
@@ -2237,7 +2254,7 @@ HTML_TMPL_LITE = """<!doctype html>
     .viz-section { margin:1.1rem 0; }
     .viz-card { border:none; border-radius:16px; padding:1.1rem 1rem 0.7rem; background:var(--paper); overflow-x:auto; }
     @media (max-width:600px) { .viz-card [id^="chart-zscore"] { min-width:560px; } }
-    .viz-label { font-family:var(--sans); font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:var(--red); margin-bottom:0.5rem; }
+    .viz-label { font-family:var(--sans); font-size:0.82rem; font-weight:700; text-transform:uppercase; letter-spacing:0.09em; color:var(--red); margin-bottom:0.5rem; }
     .edition-kicker { font-family:var(--sans); font-size:0.7rem; text-transform:uppercase; letter-spacing:0.14em; color:var(--muted); font-weight:600; margin-bottom:0.35rem; }
     .today-line-wrap { padding-bottom:0.6rem; margin-bottom:0.15rem; }
     .today-line-k { font-family:var(--sans); font-size:0.62rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:var(--red); margin-bottom:0.35rem; }
