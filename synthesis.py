@@ -1272,13 +1272,14 @@ def _build_regime_quadrant_plotly() -> dict:
         "margin": {"l": 55, "r": 20, "t": 28, "b": 50},
         "paper_bgcolor": "#ffffff", "plot_bgcolor": "#ffffff",
         "font": {"family": "Inter, sans-serif", "size": 11},
+        "dragmode": False,
         "xaxis": {
-            "title": "Growth (z-score)", "range": [-2.8, 2.8],
+            "title": "Growth (z-score)", "range": [-2.8, 2.8], "fixedrange": True,
             "zeroline": True, "zerolinecolor": "#333", "zerolinewidth": 1.5,
             "gridcolor": "#F0F0F0", "tickvals": [-2, -1, 0, 1, 2],
         },
         "yaxis": {
-            "title": "Inflation (z-score)", "range": [-2.8, 2.8],
+            "title": "Inflation (z-score)", "range": [-2.8, 2.8], "fixedrange": True,
             "zeroline": True, "zerolinecolor": "#333", "zerolinewidth": 1.5,
             "gridcolor": "#F0F0F0", "tickvals": [-2, -1, 0, 1, 2],
         },
@@ -1467,6 +1468,7 @@ def _build_zscore_plotly(lang: str = "zh-Hant") -> dict:
         "paper_bgcolor": "#ffffff", "plot_bgcolor": "#ffffff",
         "font": {"family": "Inter, sans-serif"},
         "showlegend": False,
+        "dragmode": False,
         "annotations": annotations,
         "grid": {"rows": 1, "columns": 5, "pattern": "independent", "xgap": 0.07},
     }
@@ -1478,9 +1480,11 @@ def _build_zscore_plotly(lang: str = "zh-Hant") -> dict:
             "zeroline": True, "zerolinecolor": "#E5E5E5", "zerolinewidth": 1,
             "showgrid": False, "nticks": 4,
             "tickformat": ".0f",
+            "fixedrange": True,
         }
         layout[f"yaxis{sfx}"] = {
             "showticklabels": False, "showgrid": False, "zeroline": False,
+            "fixedrange": True,
         }
 
     return {"traces": traces, "layout": layout}
@@ -2467,7 +2471,7 @@ HTML_TMPL_LITE = """<!doctype html>
         <script>
         (function(){
           var d = {{ regime_quadrant_data | safe }};
-          if(d.traces) Plotly.newPlot('chart-regime-{{ block.lang }}', d.traces, d.layout, {responsive:true,displayModeBar:false,scrollZoom:false,doubleClick:false});
+          if(d.traces) Plotly.newPlot('chart-regime-{{ block.lang }}', d.traces, d.layout, {responsive:true,displayModeBar:false,scrollZoom:false,doubleClick:false,editable:false});
         })();
         </script>
       </div>
@@ -2480,7 +2484,7 @@ HTML_TMPL_LITE = """<!doctype html>
         <script>
         (function(){
           var d = {{ (zscore_data_zh if block.lang == 'zh-Hant' else zscore_data_en) | safe }};
-          if(d.traces) Plotly.newPlot('chart-zscore-{{ block.lang }}', d.traces, d.layout, {responsive:true,displayModeBar:false,scrollZoom:false,doubleClick:false});
+          if(d.traces) Plotly.newPlot('chart-zscore-{{ block.lang }}', d.traces, d.layout, {responsive:true,displayModeBar:false,scrollZoom:false,doubleClick:false,editable:false});
         })();
         </script>
       </div>

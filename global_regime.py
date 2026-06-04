@@ -824,12 +824,13 @@ def render_html(output_path: Path, payload: dict, report_date: date, cache_age_d
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Global structural regime monitor")
+    parser.add_argument("--date", type=str, default=None, help="Report date YYYY-MM-DD (default: today)")
     parser.add_argument("--force-refresh", action="store_true", help="Ignore cache and fetch all modules")
     parser.add_argument("--output", type=str, default=None, help="Output HTML path")
     args = parser.parse_args()
 
     now = datetime.now(timezone.utc)
-    report_date = date.today()
+    report_date = date.fromisoformat(args.date) if args.date else date.today()
     html_path = Path(args.output) if args.output else OUTPUT_DIR / "global_regime.html"
 
     cache_payload = _read_cache()

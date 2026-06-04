@@ -867,10 +867,11 @@ def _render_html(
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Global cross-border flow monitor")
+    parser.add_argument("--date", type=str, default=None, help="Report date YYYY-MM-DD (default: today)")
     parser.add_argument("--output", type=str, default=None, help="Output html path")
     args = parser.parse_args()
 
-    report_date = date.today()
+    report_date = date.fromisoformat(args.date) if args.date else date.today()
     output_path = Path(args.output) if args.output else OUTPUT_DIR / "flow_brief.html"
     output_path.parent.mkdir(parents=True, exist_ok=True)
 

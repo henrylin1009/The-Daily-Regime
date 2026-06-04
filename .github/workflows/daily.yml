@@ -2,7 +2,7 @@ name: Daily Report
 
 on:
   schedule:
-    - cron: '0 16 * * *'  # 16:00 UTC = 00:00 台灣時間（次日）
+    - cron: '0 16 * * *'  # 16:00 UTC = 00:00 Asia/Taipei
   workflow_dispatch:      # 手動觸發
 
 jobs:
@@ -27,21 +27,30 @@ jobs:
 
       - name: Run pipeline
         env:
+          TZ: Asia/Taipei
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
           FMP_API_KEY: ${{ secrets.FMP_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
-          python flow_run.py
-          python run.py
-          python global_regime.py
-          python synthesis.py
+          REPORT_DATE=$(date +%Y-%m-%d)
+          echo "Report date (Asia/Taipei): ${REPORT_DATE}"
+          echo "REPORT_DATE=${REPORT_DATE}" >> "$GITHUB_ENV"
+          python flow_run.py --date "${REPORT_DATE}"
+          python run.py --date "${REPORT_DATE}" --skip-hmm
+          python global_regime.py --force-refresh --date "${REPORT_DATE}"
+          python synthesis.py --date "${REPORT_DATE}"
+          python layer_pages.py --date "${REPORT_DATE}"
 
       - name: Commit report
+        env:
+          TZ: Asia/Taipei
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add output/synthesis_lite.html data/raw/ || true
-          git diff --staged --quiet || git commit -m "Daily report $(date -u +%Y-%m-%d)"
-          git push
+          git diff --staged --quiet || git commit -m "Daily report ${REPORT_DATE}"
+
+      - name: Push report
+        run: git push
