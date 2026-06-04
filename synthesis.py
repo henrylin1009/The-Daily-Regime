@@ -2014,11 +2014,17 @@ HTML_TMPL_LITE = """<!doctype html>
     }
     * { box-sizing:border-box; }
     body { margin:0; background:var(--block); color:var(--ink); font-family:var(--serif); -webkit-font-smoothing:antialiased; }
-    /* Scroll snap — zone-level only (proximity = doesn't trap you in long sections) */
+    /* Scroll snap — single boundary at US Anchor (editorial above / quant below) */
     @media (prefers-reduced-motion: no-preference) {
       html { scroll-snap-type: y mandatory; }
-      .hero, .zone-divider { scroll-snap-align: start; scroll-snap-stop: always; }
+      .snap-anchor { scroll-snap-align: start; scroll-snap-stop: always; scroll-margin-top: 0; }
     }
+    /* Section break divider before US Anchor */
+    .section-break { display:flex; flex-direction:column; align-items:center; gap:0.5rem; margin:2.8rem 0 0; padding:1.2rem 0 0; border-top:1px solid var(--rule); }
+    .section-break-label { font-family:var(--sans); font-size:0.65rem; font-weight:700; text-transform:uppercase; letter-spacing:0.12em; color:var(--muted); }
+    .section-break-arrow { color:var(--muted); font-size:1rem; line-height:1; animation:bob 1.8s ease-in-out infinite; }
+    @keyframes bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(4px)} }
+    @media (prefers-reduced-motion: reduce) { .section-break-arrow { animation:none; } }
     /* Sheet title (white header with red rule) */
     .sheet-title { display:flex; align-items:center; justify-content:space-between; gap:0.75rem; flex-wrap:wrap; padding:0.3rem 0.2rem 1rem; margin-bottom:0; }
     /* Hero — today's stance as a white card, integrated with the block system */
@@ -2331,7 +2337,11 @@ HTML_TMPL_LITE = """<!doctype html>
       </div>
       {% endif %}
 
-      <div class="zone-divider zone-1">
+      <div class="section-break">
+        <span class="section-break-label">{% if block.lang == 'zh-Hant' %}量化分析{% else %}Quant Analysis{% endif %}</span>
+        <span class="section-break-arrow">↓</span>
+      </div>
+      <div class="zone-divider zone-1 snap-anchor">
         <div class="zone-title">{{ block.ui.zone_us_anchor }}</div>
         <div class="zone-sub">{{ block.ui.zone_us_anchor_sub }}</div>
       </div>
