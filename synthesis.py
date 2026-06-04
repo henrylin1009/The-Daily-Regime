@@ -2327,7 +2327,6 @@ HTML_TMPL_LITE = """<!doctype html>
     {% for block in lite_lang_blocks %}
     <div class="lang-block" data-lang="{{ block.lang }}">
       <div class="hero">
-        <div class="hero-meta">
         <div class="hero-kicker">{{ block.ui.today_line_kicker }}{{ info(block.directive.the_narrative | join(' '), 'tip-right') }}</div>
         <h1 class="hero-stance">{{ block.directive.the_stance }}</h1>
       </div>
