@@ -10,12 +10,16 @@ Features (all z-scored, monthly):
   2. fed_boj_spread      — Fed minus BOJ rate (carry-trade pressure / JPY risk)
   3. fed_kr_spread       — Fed minus Korea rate (US vs EM policy divergence)
   4. us_eu_cpi_spread    — US CPI YoY minus Euro Area CPI YoY (inflation divergence)
-  5. cn_cpi_yoy          — China CPI YoY (deflation / reflation pressure)
-  6. eem_vs_spy_12m      — EEM 12-month return minus SPY 12-month return (EM appeal)
-  7. cn_fx_reserves_12m  — China FX reserves 12-month change (capital pressure signal)
-  8. usdjpy_12m          — USD/JPY 12-month trend (yen pressure / carry unwind risk)
-  9. eurusd_12m          — EUR/USD 12-month trend (dollar strength vs Europe)
-  10. credit_spread_hy   — US HY credit spread (global risk appetite anchor)
+  5. eem_vs_spy_12m      — EEM 12-month return minus SPY 12-month return (EM appeal)
+  6. cn_fx_reserves_12m  — China FX reserves 12-month change (capital pressure signal)
+  7. usdjpy_12m          — USD/JPY 12-month trend (yen pressure / carry unwind risk)
+  8. eurusd_12m          — EUR/USD 12-month trend (dollar strength vs Europe)
+  9. credit_spread_hy    — US HY credit spread (global risk appetite anchor)
+
+NOTE: China CPI YoY (FRED CHNCPIALLMINMEI) was dropped from the feature set —
+FRED stopped updating it (frozen ~2025-04), which previously truncated the whole
+matrix via dropna() and froze the "current" match vector ~14 months in the past.
+It is still collected; re-add here if/when FRED resumes timely updates.
 
 Common history starts ~1999 (EUR/USD, ECB rate, Euro CPI). Effective candidate
 pool after excluding recent 24 months: ~1999–2023 ≈ 288 months.
@@ -36,7 +40,6 @@ DIVERGENCE_FEATURES = [
     "fed_boj_spread",
     "fed_kr_spread",
     "us_eu_cpi_spread",
-    "cn_cpi_yoy",
     "eem_vs_spy_12m",
     "cn_fx_reserves_12m",
     "usdjpy_12m",
@@ -103,7 +106,7 @@ def build_divergence_matrix(data: dict[str, pd.DataFrame]) -> pd.DataFrame:
     """
     required = [
         "fed_funds_rate", "ecb_deposit_rate", "boj_policy_rate", "kr_policy_rate",
-        "cpi_yoy", "eu_cpi_yoy", "cn_cpi_yoy",
+        "cpi_yoy", "eu_cpi_yoy",
         "eem", "spy",
         "cn_fx_reserves",
         "fx_usdjpy", "fx_eurusd",
@@ -120,7 +123,6 @@ def build_divergence_matrix(data: dict[str, pd.DataFrame]) -> pd.DataFrame:
 
     us_cpi  = _monthly_level(data["cpi_yoy"])
     eu_cpi  = _monthly_level(data["eu_cpi_yoy"])
-    cn_cpi  = _monthly_level(data["cn_cpi_yoy"])
 
     eem_12m = _monthly_return_series(data["eem"], 12)
     spy_12m = _monthly_return_series(data["spy"], 12)
@@ -135,7 +137,6 @@ def build_divergence_matrix(data: dict[str, pd.DataFrame]) -> pd.DataFrame:
         "fed_boj_spread":     fed - boj,
         "fed_kr_spread":      fed - kr,
         "us_eu_cpi_spread":   us_cpi - eu_cpi,
-        "cn_cpi_yoy":         cn_cpi,
         "eem_vs_spy_12m":     eem_12m - spy_12m,
         "cn_fx_reserves_12m": cn_fx,
         "usdjpy_12m":         usdjpy,
