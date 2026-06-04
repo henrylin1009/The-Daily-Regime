@@ -6,6 +6,12 @@
       "runtimeExecutable": "/Users/henrylin/Desktop/analysis copy 3/.venv/bin/python",
       "runtimeArgs": ["-m", "src.web"],
       "port": 8080
+    },
+    {
+      "name": "synthesis-preview",
+      "runtimeExecutable": "/Users/henrylin/Desktop/analysis copy 3/.venv/bin/python",
+      "runtimeArgs": ["-m", "http.server", "8081", "--directory", "output"],
+      "port": 8081
     }
   ]
 }
