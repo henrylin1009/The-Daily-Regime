@@ -2758,42 +2758,44 @@ HTML_TMPL_LITE = """<!doctype html>
         </script>
       </div>
 
-      {% if rrg_sector_stats %}
-      {% set sorted_stats = rrg_sector_stats | sort(attribute='rank_score', reverse=True) %}
+      {% if sector_performance %}
       <div class="modcard" style="margin-top:0.4rem;">
-        <div class="mod-label"><span class="ai-zh">所有板塊 · 象限停留統計</span><span class="ai-en">ALL SECTORS · Quadrant history</span></div>
+        <div class="mod-label"><span class="ai-zh">板塊表現 · 對 SPY</span><span class="ai-en">Sector performance · vs SPY</span></div>
         <div style="overflow-x:auto;">
-        <table class="data-table" style="width:100%;min-width:480px;margin-top:0.4rem;">
+        <table class="data-table" style="width:100%;min-width:420px;margin-top:0.4rem;">
           <thead>
             <tr>
               <th><span class="ai-zh">板塊</span><span class="ai-en">Sector</span></th>
-              <th><span class="ai-zh">現在</span><span class="ai-en">Now</span></th>
-              <th style="text-align:right"><span class="ai-zh">已停留</span><span class="ai-en">Weeks in</span></th>
-              <th style="text-align:right"><span class="ai-zh">歷史均值</span><span class="ai-en">Avg stay</span></th>
-              <th><span class="ai-zh">離開後最常去</span><span class="ai-en">On exit, tends to</span></th>
+              <th style="text-align:right"><span class="ai-zh">1 週</span><span class="ai-en">1W</span></th>
+              <th style="text-align:right"><span class="ai-zh">1 月</span><span class="ai-en">1M</span></th>
+              <th style="text-align:right"><span class="ai-zh">1 年</span><span class="ai-en">1Y</span></th>
             </tr>
           </thead>
           <tbody>
-          {% for s in sorted_stats %}
-          <tr>
-            <td><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:{{ s.color }};margin-right:6px;vertical-align:middle;"></span><strong>{{ s.label }}</strong></td>
-            <td style="font-size:0.78rem;color:var(--muted);">
-              <span class="ai-zh">{{ s.quadrant_zh }}</span>
-              <span class="ai-en">{{ s.quadrant_en }}</span>
+          {% for r in sector_performance %}
+          <tr{% if r.is_benchmark %} style="background:#f8f9fb;"{% endif %}>
+            <td>
+              <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:{{ r.color }};margin-right:6px;vertical-align:middle;"></span>
+              <strong{% if r.is_benchmark %} style="color:var(--ink);"{% endif %}>{{ r.label }}</strong>
             </td>
-            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;">{{ s.weeks_current }}w</td>
-            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;color:var(--muted);">{% if s.avg_stay %}{{ s.avg_stay }}w{% else %}—{% endif %}</td>
-            <td style="font-size:0.78rem;">
-              {% for e in (s.exits_en if block.lang == 'en' else s.exits_zh) %}
-              <span style="white-space:nowrap;">→ {{ e.label }} <strong>{{ e.pct }}%</strong>{% if not loop.last %}&ensp;{% endif %}</span>
-              {% endfor %}
+            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;white-space:nowrap;">
+              {% if r.ret_1w is not none %}<span class="tilt-ret {% if r.ret_1w >= 0 %}pos{% else %}neg{% endif %}">{{ "%+.1f"|format(r.ret_1w) }}%</span>{% if r.excess_1w is not none %} <span style="font-size:0.78rem;color:var(--muted);">({{ "%+.1f"|format(r.excess_1w) }}%)</span>{% endif %}{% else %}—{% endif %}
+            </td>
+            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;white-space:nowrap;">
+              {% if r.ret_1m is not none %}<span class="tilt-ret {% if r.ret_1m >= 0 %}pos{% else %}neg{% endif %}">{{ "%+.1f"|format(r.ret_1m) }}%</span>{% if r.excess_1m is not none %} <span style="font-size:0.78rem;color:var(--muted);">({{ "%+.1f"|format(r.excess_1m) }}%)</span>{% endif %}{% else %}—{% endif %}
+            </td>
+            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;white-space:nowrap;">
+              {% if r.ret_1y is not none %}<span class="tilt-ret {% if r.ret_1y >= 0 %}pos{% else %}neg{% endif %}">{{ "%+.1f"|format(r.ret_1y) }}%</span>{% if r.excess_1y is not none %} <span style="font-size:0.78rem;color:var(--muted);">({{ "%+.1f"|format(r.excess_1y) }}%)</span>{% endif %}{% else %}—{% endif %}
             </td>
           </tr>
           {% endfor %}
           </tbody>
         </table>
         </div>
-        <div style="margin-top:0.5rem;font-size:0.7rem;color:var(--muted);"><span class="ai-zh">歷史統計描述過去規律，不構成預測。</span><span class="ai-en">Historical frequencies describe past patterns only — not a forecast.</span></div>
+        <div style="margin-top:0.5rem;font-size:0.7rem;color:var(--muted);line-height:1.45;">
+          <span class="ai-zh">SPY 為基準；板塊括號內為相對 SPY 超額。板塊依 1 週超額排序。</span>
+          <span class="ai-en">SPY is the benchmark; sector parentheses show excess vs SPY. Sectors sorted by 1W excess.</span>
+        </div>
       </div>
       {% endif %}
 
@@ -4437,15 +4439,17 @@ def _write_synthesis_lite_html(
         from src.sector_rotation import build_rrg_plotly as _build_rrg
         from src.collect import load_all_from_cache as _load_cache
         _rrg = _build_rrg(_load_cache())
-        rrg_data = {k: v for k, v in _rrg.items() if k not in ("summary", "sector_stats", "rank_trans")}
+        rrg_data = {k: v for k, v in _rrg.items() if k not in ("summary", "sector_stats", "sector_performance", "rank_trans")}
         rrg_summary = _rrg.get("summary", {})
         rrg_sector_stats = _rrg.get("sector_stats", [])
+        sector_performance = _rrg.get("sector_performance", [])
         rrg_rank_trans = _rrg.get("rank_trans", {})
     except Exception as exc:
         print(f"  Warning: RRG chart failed ({exc})", file=sys.stderr)
         rrg_data = {}
         rrg_summary = {}
         rrg_sector_stats = []
+        sector_performance = []
         rrg_rank_trans = {}
     try:
         regime_quadrant_data = _build_regime_quadrant_plotly()
@@ -4481,6 +4485,7 @@ def _write_synthesis_lite_html(
             rrg_data=json.dumps(rrg_data),
             rrg_summary=rrg_summary,
             rrg_sector_stats=rrg_sector_stats,
+            sector_performance=sector_performance,
             rrg_rank_trans=rrg_rank_trans,
         ),
         encoding="utf-8",

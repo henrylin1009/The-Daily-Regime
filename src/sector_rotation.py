@@ -37,6 +37,77 @@ _SMOOTH = 10   # weeks for RS smoothing
 _NORM = 52     # weeks for z-score normalisation window
 _TRAIL = 12    # weeks of tail to draw
 _ARROW_WEEKS = 3  # weeks back to compute trajectory vector
+_RET_1W = 5
+_RET_1M = 21
+_RET_1Y = 252
+_SPY_COLOR = "#6b7280"
+
+
+def _pct_return(series: pd.Series, periods: int) -> float | None:
+    s = series.dropna()
+    if len(s) <= periods:
+        return None
+    prev = float(s.iloc[-1 - periods])
+    if prev == 0:
+        return None
+    return (float(s.iloc[-1]) / prev - 1.0) * 100.0
+
+
+def _build_sector_performance(data: dict) -> list[dict]:
+    """SPY benchmark row + sector ETFs sorted by 1W excess vs SPY."""
+    spy = _series(data, "spy")
+    if spy.empty:
+        return []
+
+    spy_rets = {
+        "1w": _pct_return(spy, _RET_1W),
+        "1m": _pct_return(spy, _RET_1M),
+        "1y": _pct_return(spy, _RET_1Y),
+    }
+    def _rnd(v: float | None) -> float | None:
+        return None if v is None else round(v, 1)
+
+    rows: list[dict] = [
+        {
+            "label": "SPY",
+            "color": _SPY_COLOR,
+            "is_benchmark": True,
+            "ret_1w": _rnd(spy_rets["1w"]),
+            "ret_1m": _rnd(spy_rets["1m"]),
+            "ret_1y": _rnd(spy_rets["1y"]),
+            "excess_1w": None,
+            "excess_1m": None,
+            "excess_1y": None,
+            "sort_key": 10_000.0,
+        }
+    ]
+
+    for ticker, label in SECTORS.items():
+        s = _series(data, ticker)
+        if s.empty:
+            continue
+        r1w = _pct_return(s, _RET_1W)
+        r1m = _pct_return(s, _RET_1M)
+        r1y = _pct_return(s, _RET_1Y)
+        ex1w = None if r1w is None or spy_rets["1w"] is None else round(r1w - spy_rets["1w"], 1)
+        ex1m = None if r1m is None or spy_rets["1m"] is None else round(r1m - spy_rets["1m"], 1)
+        ex1y = None if r1y is None or spy_rets["1y"] is None else round(r1y - spy_rets["1y"], 1)
+        rows.append({
+            "label": label,
+            "color": _COLORS[ticker],
+            "is_benchmark": False,
+            "ret_1w": None if r1w is None else round(r1w, 1),
+            "ret_1m": None if r1m is None else round(r1m, 1),
+            "ret_1y": None if r1y is None else round(r1y, 1),
+            "excess_1w": ex1w,
+            "excess_1m": ex1m,
+            "excess_1y": ex1y,
+            "sort_key": ex1w if ex1w is not None else -999.0,
+        })
+
+    bench = rows[0]
+    sectors = sorted(rows[1:], key=lambda r: r["sort_key"], reverse=True)
+    return [bench] + sectors
 
 
 def _series(data: dict, key: str) -> pd.Series:
@@ -436,5 +507,6 @@ def build_rrg_plotly(data: dict) -> dict:
         "layout": layout,
         "summary": summary,
         "sector_stats": sector_stats,
+        "sector_performance": _build_sector_performance(data),
         "rank_trans": rank_trans,
     }
