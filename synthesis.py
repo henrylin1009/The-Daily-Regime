@@ -2779,13 +2779,13 @@ HTML_TMPL_LITE = """<!doctype html>
               <strong{% if r.is_benchmark %} style="color:var(--ink);"{% endif %}>{{ r.label }}</strong>
             </td>
             <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;white-space:nowrap;">
-              {% if r.ret_1w is not none %}<span class="tilt-ret {% if r.ret_1w >= 0 %}pos{% else %}neg{% endif %}">{{ "%+.1f"|format(r.ret_1w) }}%</span>{% if r.excess_1w is not none %} <span style="font-size:0.78rem;color:var(--muted);">({{ "%+.1f"|format(r.excess_1w) }}%)</span>{% endif %}{% else %}—{% endif %}
+              {% if r.ret_1w is not none %}<span class="tilt-ret {% if r.ret_1w >= 0 %}pos{% else %}neg{% endif %}">{{ "%+.1f"|format(r.ret_1w) }}%</span>{% if r.excess_1w is not none %} <span class="tilt-ret {% if r.excess_1w >= 0 %}pos{% else %}neg{% endif %}" style="font-size:0.78rem;">({{ "%+.1f"|format(r.excess_1w) }}%)</span>{% endif %}{% else %}—{% endif %}
             </td>
             <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;white-space:nowrap;">
-              {% if r.ret_1m is not none %}<span class="tilt-ret {% if r.ret_1m >= 0 %}pos{% else %}neg{% endif %}">{{ "%+.1f"|format(r.ret_1m) }}%</span>{% if r.excess_1m is not none %} <span style="font-size:0.78rem;color:var(--muted);">({{ "%+.1f"|format(r.excess_1m) }}%)</span>{% endif %}{% else %}—{% endif %}
+              {% if r.ret_1m is not none %}<span class="tilt-ret {% if r.ret_1m >= 0 %}pos{% else %}neg{% endif %}">{{ "%+.1f"|format(r.ret_1m) }}%</span>{% if r.excess_1m is not none %} <span class="tilt-ret {% if r.excess_1m >= 0 %}pos{% else %}neg{% endif %}" style="font-size:0.78rem;">({{ "%+.1f"|format(r.excess_1m) }}%)</span>{% endif %}{% else %}—{% endif %}
             </td>
             <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;white-space:nowrap;">
-              {% if r.ret_1y is not none %}<span class="tilt-ret {% if r.ret_1y >= 0 %}pos{% else %}neg{% endif %}">{{ "%+.1f"|format(r.ret_1y) }}%</span>{% if r.excess_1y is not none %} <span style="font-size:0.78rem;color:var(--muted);">({{ "%+.1f"|format(r.excess_1y) }}%)</span>{% endif %}{% else %}—{% endif %}
+              {% if r.ret_1y is not none %}<span class="tilt-ret {% if r.ret_1y >= 0 %}pos{% else %}neg{% endif %}">{{ "%+.1f"|format(r.ret_1y) }}%</span>{% if r.excess_1y is not none %} <span class="tilt-ret {% if r.excess_1y >= 0 %}pos{% else %}neg{% endif %}" style="font-size:0.78rem;">({{ "%+.1f"|format(r.excess_1y) }}%)</span>{% endif %}{% else %}—{% endif %}
             </td>
           </tr>
           {% endfor %}
