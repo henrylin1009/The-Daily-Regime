@@ -2014,7 +2014,12 @@ HTML_TMPL_LITE = """<!doctype html>
     }
     * { box-sizing:border-box; }
     body { margin:0; background:var(--block); color:var(--ink); font-family:var(--serif); -webkit-font-smoothing:antialiased; }
-    /* No snap tricks — section-break IS the full-screen boundary */
+    /* Proximity snap: two points only — top (hero) + US Anchor */
+    @media (prefers-reduced-motion: no-preference) {
+      html { scroll-snap-type: y proximity; }
+      .hero { scroll-snap-align: start; }
+      .snap-anchor { scroll-snap-align: start; scroll-margin-top: 0.5rem; }
+    }
     /* Section break divider before US Anchor */
     /* Full-screen section break — the editorial/quant boundary */
     .section-break { height:20vh; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0.75rem; margin:0; border-top:1px solid var(--rule); }
@@ -2339,7 +2344,7 @@ HTML_TMPL_LITE = """<!doctype html>
         <span class="section-break-arrow">↓</span>
       </div>
 
-      <div class="zone-divider zone-1">
+      <div class="zone-divider zone-1 snap-anchor">
         <div class="zone-title">{{ block.ui.zone_us_anchor }}</div>
         <div class="zone-sub">{{ block.ui.zone_us_anchor_sub }}</div>
       </div>

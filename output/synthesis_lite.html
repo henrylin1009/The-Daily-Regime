@@ -20,7 +20,12 @@
     }
     * { box-sizing:border-box; }
     body { margin:0; background:var(--block); color:var(--ink); font-family:var(--serif); -webkit-font-smoothing:antialiased; }
-    /* No snap tricks — section-break IS the full-screen boundary */
+    /* Proximity snap: two points only — top (hero) + US Anchor */
+    @media (prefers-reduced-motion: no-preference) {
+      html { scroll-snap-type: y proximity; }
+      .hero { scroll-snap-align: start; }
+      .snap-anchor { scroll-snap-align: start; scroll-margin-top: 0.5rem; }
+    }
     /* Section break divider before US Anchor */
     /* Full-screen section break — the editorial/quant boundary */
     .section-break { height:20vh; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0.75rem; margin:0; border-top:1px solid var(--rule); }
@@ -353,18 +358,45 @@
         <span class="section-break-arrow">↓</span>
       </div>
 
-      <div class="zone-divider zone-1">
+      <div class="zone-divider zone-1 snap-anchor">
         <div class="zone-title">美國基準 · US Anchor</div>
         <div class="zone-sub">全球定價的錨與開關 — 美國週期、金融條件、資產配置</div>
       </div>
 
       <div class="modcard">
-        <div class="mod-label">市場體制（美國主導）</div>
+        <div class="mod-label">市場體制（美國主導）<span class="info " tabindex="0" role="button" aria-label="方法說明">i<span class="tip">四象限投資時鐘。成長 z=+0.18（歷史第 64 百分位）、通膨 z=+1.04（歷史第 83 百分位）。成長 = OECD CLI 50%＋工業生產 20%＋初領失業金 15%＋失業率 15%；通膨 = CPI對2%目標 40%＋CPI動能 30%＋產能利用率 30%。皆用 24 月滾動 z 分數（無前視）。判定：成長↑通膨↓→金髮女孩；↑↑→過熱；↓↑→停滯通膨；↓↓→通縮崩潰，並用 0.2σ 滯後帶防止頻繁切換。目前落點：過熱。</span></span></div>
         <div class="lead">
           <div class="stat">
             <div class="stat-val">過熱<span class="info tip-left" tabindex="0" role="button" aria-label="方法說明">i<span class="tip">林奇投資時鐘：過熱象限（G↑ I↑）。成長強勁但通膨升溫，央行趨向緊縮。歷史上實質資產（商品、黃金）跑贏，股票波動加大。</span></span></div>
             <div class="stat-sub"><span class="dot warning"></span>環境轉折，留意風險</div>
             
+            <div class="regime-buffer">判定穩定性：成長↑ 緩衝 +0.38σ（臨界）· 通膨↑ 緩衝 +1.24σ（穩固）</div>
+          </div>
+        </div>
+        
+        <div class="trans-block">
+          <div class="trans-head">體制轉移機率 · 一旦離開最常轉向</div>
+          <div class="trans-stats">
+            <div class="trans-stat ts-stay">
+              <div class="ts-num">84%</div>
+              <div class="ts-lab">留在本象限</div>
+            </div>
+            <div class="trans-div"></div>
+            
+            <div class="trans-stat">
+              <div class="ts-num">53%</div>
+              <div class="ts-lab">→ 停滯通膨</div>
+            </div>
+            
+            <div class="trans-stat">
+              <div class="ts-num">29%</div>
+              <div class="ts-lab">→ 金髮女孩</div>
+            </div>
+            
+            <div class="trans-stat">
+              <div class="ts-num">18%</div>
+              <div class="ts-lab">→ 通縮崩潰</div>
+            </div>
             
           </div>
         </div>
@@ -400,8 +432,8 @@
       
       <div class="modcard">
       <div class="mod-label">資產配置 · ALLOCATION</div>
-      <div class="mod-head">過熱 · 配置傾向</div>
-      
+      <div class="mod-head">過熱 · 配置傾向<span class="info " tabindex="0" role="button" aria-label="方法說明">i<span class="tip">排名（↑↑～↓↓）為 Greetham (2004) 投資時鐘對「過熱」象限的理論加減碼，不隨資料變動。百分比為該象限歷史 117 個月的月報酬均值年化（FactSet／美林慣例：匯總所有月份算月均報酬再年化，不對短期片段各自年化）。「體制效果」＝該象限條件報酬 −全樣本無條件報酬，隔離體制貢獻與背景趨勢；「命中」為正報酬月份占比、「波動」年化標準差、「下行」僅負月份年化標準差。僅供脈絡參考。信心 61%。</span></span></div>
+      <div class="tilt-context">過熱 · 信心 61% · 已持續 7 月（均值 6 月）</div>
       <div class="tilt-grid">
         
         <div class="tilt-cell tilt-overweight">
@@ -409,8 +441,16 @@
           <span class="tilt-mk lv2">↑↑</span>
           <div class="tilt-body">
             <div class="tilt-main-row">
-              <span class="tilt-asset">股票</span>
-              
+              <span class="tilt-asset">商品</span>
+              <span class="tilt-ret pos">+23.0%</span>
+            </div>
+            
+            <div class="tilt-stats">
+              <span>體制效果 <span class="ep">+13.1%</span></span>
+              <span class="sp">·</span>
+              <span>命中 63%</span><span class="sp">·</span>
+              <span>波動 20%</span>
+              <span class="sp">·</span><span>下行 12%</span>
             </div>
             
           </div>
@@ -421,8 +461,16 @@
           <span class="tilt-mk lv2">↑↑</span>
           <div class="tilt-body">
             <div class="tilt-main-row">
-              <span class="tilt-asset">大宗商品</span>
-              
+              <span class="tilt-asset">股票</span>
+              <span class="tilt-ret pos">+18.1%</span>
+            </div>
+            
+            <div class="tilt-stats">
+              <span>體制效果 <span class="ep">+8.0%</span></span>
+              <span class="sp">·</span>
+              <span>命中 70%</span><span class="sp">·</span>
+              <span>波動 12%</span>
+              <span class="sp">·</span><span>下行 7%</span>
             </div>
             
           </div>
@@ -430,35 +478,59 @@
         
         <div class="tilt-cell tilt-overweight">
           <span class="tilt-rank">3</span>
-          <span class="tilt-mk lv1">↑</span>
+          <span class="tilt-mk lv2">↑↑</span>
           <div class="tilt-body">
             <div class="tilt-main-row">
-              <span class="tilt-asset">實質資產</span>
-              
+              <span class="tilt-asset">黃金</span>
+              <span class="tilt-ret pos">+20.6%</span>
+            </div>
+            
+            <div class="tilt-stats">
+              <span>體制效果 <span class="ep">+8.1%</span></span>
+              <span class="sp">·</span>
+              <span>命中 60%</span><span class="sp">·</span>
+              <span>波動 16%</span>
+              <span class="sp">·</span><span>下行 10%</span>
             </div>
             
           </div>
         </div>
         
-        <div class="tilt-cell tilt-overweight">
+        <div class="tilt-cell tilt-neutral">
           <span class="tilt-rank">4</span>
-          <span class="tilt-mk lv1">↑</span>
+          <span class="tilt-mk lv0">—</span>
           <div class="tilt-body">
             <div class="tilt-main-row">
-              <span class="tilt-asset">新興市場資產</span>
-              
+              <span class="tilt-asset">信用債</span>
+              <span class="tilt-ret pos">+1.9%</span>
+            </div>
+            
+            <div class="tilt-stats">
+              <span>體制效果 <span class="ep">+1.5%</span></span>
+              <span class="sp">·</span>
+              <span>命中 57%</span><span class="sp">·</span>
+              <span>波動 6%</span>
+              <span class="sp">·</span><span>下行 4%</span>
             </div>
             
           </div>
         </div>
         
-        <div class="tilt-cell tilt-underweight">
+        <div class="tilt-cell tilt-neutral">
           <span class="tilt-rank">5</span>
-          <span class="tilt-mk lv-2">↓↓</span>
+          <span class="tilt-mk lv0">—</span>
           <div class="tilt-body">
             <div class="tilt-main-row">
-              <span class="tilt-asset">長債</span>
-              
+              <span class="tilt-asset">新興市場</span>
+              <span class="tilt-ret pos">+19.2%</span>
+            </div>
+            
+            <div class="tilt-stats">
+              <span>體制效果 <span class="ep">+8.9%</span></span>
+              <span class="sp">·</span>
+              <span>命中 67%</span><span class="sp">·</span>
+              <span>波動 16%</span>
+              <span class="sp">·</span><span>下行 10%</span>
             </div>
             
           </div>
@@ -470,7 +542,35 @@
           <div class="tilt-body">
             <div class="tilt-main-row">
               <span class="tilt-asset">現金</span>
+              <span class="tilt-ret pos">+3.0%</span>
+            </div>
+            
+            <div class="tilt-stats">
+              <span>體制效果 <span class="ep">+0.3%</span></span>
+              <span class="sp">·</span>
               
+              <span>波動 1%</span>
+              
+            </div>
+            
+          </div>
+        </div>
+        
+        <div class="tilt-cell tilt-underweight">
+          <span class="tilt-rank">7</span>
+          <span class="tilt-mk lv-2">↓↓</span>
+          <div class="tilt-body">
+            <div class="tilt-main-row">
+              <span class="tilt-asset">長債</span>
+              <span class="tilt-ret pos">+2.2%</span>
+            </div>
+            
+            <div class="tilt-stats">
+              <span>體制效果 <span class="en">-3.0%</span></span>
+              <span class="sp">·</span>
+              <span>命中 54%</span><span class="sp">·</span>
+              <span>波動 7%</span>
+              <span class="sp">·</span><span>下行 4%</span>
             </div>
             
           </div>
@@ -571,7 +671,7 @@
             
             <div class="an-card">
               <div class="an-per">2000-10</div>
-              <div class="an-desc">網路泡沫高峰——勞動力市場緊俏，估值偏高</div>
+              <div class="an-desc">網路泡沫高峰——勞動市場緊俏，估值偏高</div>
               <div class="an-ret">
                 <div class="an-stat neg"><span class="an-l">美股 12m</span><span class="an-v">-26%</span></div>
                 <div class="an-stat neg"><span class="an-l">3m</span><span class="an-v">-4%</span></div>
@@ -598,7 +698,7 @@
             
             <div class="an-card">
               <div class="an-per">2018-06</div>
-              <div class="an-desc">聯準會單獨升息 — 美元上漲，新興市場承壓，利差交易平倉</div>
+              <div class="an-desc">聯準會單獨升息 — 美元走強，新興市場承壓，利差交易平倉</div>
               <div class="an-ret">
                 
                 
@@ -615,7 +715,7 @@
             
             <div class="an-card">
               <div class="an-per">2006-11</div>
-              <div class="an-desc">金融危機前流動性高峰 — 利差交易猖獗，全球波動率低</div>
+              <div class="an-desc">金融危機前流動性高峰 — 利差交易盛行，全球波動率低</div>
               <div class="an-ret">
                 
                 
@@ -783,18 +883,45 @@
         <span class="section-break-arrow">↓</span>
       </div>
 
-      <div class="zone-divider zone-1">
+      <div class="zone-divider zone-1 snap-anchor">
         <div class="zone-title">US Anchor</div>
         <div class="zone-sub">The global pricing anchor & switch — US cycle, financial conditions, allocation</div>
       </div>
 
       <div class="modcard">
-        <div class="mod-label">Market Regime (US-led)</div>
+        <div class="mod-label">Market Regime (US-led)<span class="info " tabindex="0" role="button" aria-label="方法說明">i<span class="tip">Four-quadrant Investment Clock. Growth z=+0.18 (64th pct), inflation z=+1.04 (83th pct). Growth = OECD CLI 50% + industrial production 20% + jobless claims 15% + unemployment 15%; inflation = CPI vs 2% target 40% + CPI momentum 30% + capacity utilisation 30%. Both use trailing 24-month rolling z-scores (no look-ahead). G↑I↓→Goldilocks; ↑↑→Overheat; ↓↑→Stagflation; ↓↓→Deflationary Bust, with a 0.2σ hysteresis band to avoid whipsaw. Current: Overheat.</span></span></div>
         <div class="lead">
           <div class="stat">
             <div class="stat-val">Overheat<span class="info tip-left" tabindex="0" role="button" aria-label="方法說明">i<span class="tip">Investment Clock · Overheat (G↑ I↑): strong growth but rising inflation, central banks lean hawkish. Historically real assets (commodities, gold) outperform; equity volatility rises.</span></span></div>
             <div class="stat-sub"><span class="dot warning"></span>Regime shifting — watch risks</div>
             
+            <div class="regime-buffer">Regime stability: G↑ buffer +0.38σ (marginal) · I↑ buffer +1.24σ (firm)</div>
+          </div>
+        </div>
+        
+        <div class="trans-block">
+          <div class="trans-head">Regime transition odds · once it leaves, most often to</div>
+          <div class="trans-stats">
+            <div class="trans-stat ts-stay">
+              <div class="ts-num">84%</div>
+              <div class="ts-lab">stays in regime</div>
+            </div>
+            <div class="trans-div"></div>
+            
+            <div class="trans-stat">
+              <div class="ts-num">53%</div>
+              <div class="ts-lab">→ Stagflation</div>
+            </div>
+            
+            <div class="trans-stat">
+              <div class="ts-num">29%</div>
+              <div class="ts-lab">→ Goldilocks</div>
+            </div>
+            
+            <div class="trans-stat">
+              <div class="ts-num">18%</div>
+              <div class="ts-lab">→ Deflationary Bust</div>
+            </div>
             
           </div>
         </div>
@@ -830,8 +957,8 @@
       
       <div class="modcard">
       <div class="mod-label">ASSET ALLOCATION</div>
-      <div class="mod-head">Overheat tilt</div>
-      
+      <div class="mod-head">Overheat tilt<span class="info " tabindex="0" role="button" aria-label="方法說明">i<span class="tip">Ranks (↑↑–↓↓) are Greetham (2004) Investment Clock's theoretical over/under-weights for the Overheat quadrant — fixed, not data-derived. The % is the annualised mean monthly return across the 117 historical months in this regime (FactSet/Merrill convention: pool all months, take the mean monthly return, annualise — no per-episode annualising). 'Regime effect' = conditional return − all-months unconditional return, isolating the regime's contribution from the background trend; 'hit' = share of positive months, 'vol' = annualised std, 'downside' = annualised std of negative months only. Context only. Conviction 61%.</span></span></div>
+      <div class="tilt-context">Overheat · conviction 61% · in regime 7m (avg 6m)</div>
       <div class="tilt-grid">
         
         <div class="tilt-cell tilt-overweight">
@@ -839,8 +966,16 @@
           <span class="tilt-mk lv2">↑↑</span>
           <div class="tilt-body">
             <div class="tilt-main-row">
-              <span class="tilt-asset">Equities</span>
-              
+              <span class="tilt-asset">Commodities</span>
+              <span class="tilt-ret pos">+23.0%</span>
+            </div>
+            
+            <div class="tilt-stats">
+              <span>regime effect <span class="ep">+13.1%</span></span>
+              <span class="sp">·</span>
+              <span>hit 63%</span><span class="sp">·</span>
+              <span>vol 20%</span>
+              <span class="sp">·</span><span>dside 12%</span>
             </div>
             
           </div>
@@ -851,8 +986,16 @@
           <span class="tilt-mk lv2">↑↑</span>
           <div class="tilt-body">
             <div class="tilt-main-row">
-              <span class="tilt-asset">Commodities</span>
-              
+              <span class="tilt-asset">Equities</span>
+              <span class="tilt-ret pos">+18.1%</span>
+            </div>
+            
+            <div class="tilt-stats">
+              <span>regime effect <span class="ep">+8.0%</span></span>
+              <span class="sp">·</span>
+              <span>hit 70%</span><span class="sp">·</span>
+              <span>vol 12%</span>
+              <span class="sp">·</span><span>dside 7%</span>
             </div>
             
           </div>
@@ -860,35 +1003,59 @@
         
         <div class="tilt-cell tilt-overweight">
           <span class="tilt-rank">3</span>
-          <span class="tilt-mk lv1">↑</span>
+          <span class="tilt-mk lv2">↑↑</span>
           <div class="tilt-body">
             <div class="tilt-main-row">
-              <span class="tilt-asset">Real Assets</span>
-              
+              <span class="tilt-asset">Gold</span>
+              <span class="tilt-ret pos">+20.6%</span>
+            </div>
+            
+            <div class="tilt-stats">
+              <span>regime effect <span class="ep">+8.1%</span></span>
+              <span class="sp">·</span>
+              <span>hit 60%</span><span class="sp">·</span>
+              <span>vol 16%</span>
+              <span class="sp">·</span><span>dside 10%</span>
             </div>
             
           </div>
         </div>
         
-        <div class="tilt-cell tilt-overweight">
+        <div class="tilt-cell tilt-neutral">
           <span class="tilt-rank">4</span>
-          <span class="tilt-mk lv1">↑</span>
+          <span class="tilt-mk lv0">—</span>
+          <div class="tilt-body">
+            <div class="tilt-main-row">
+              <span class="tilt-asset">Credit</span>
+              <span class="tilt-ret pos">+1.9%</span>
+            </div>
+            
+            <div class="tilt-stats">
+              <span>regime effect <span class="ep">+1.5%</span></span>
+              <span class="sp">·</span>
+              <span>hit 57%</span><span class="sp">·</span>
+              <span>vol 6%</span>
+              <span class="sp">·</span><span>dside 4%</span>
+            </div>
+            
+          </div>
+        </div>
+        
+        <div class="tilt-cell tilt-neutral">
+          <span class="tilt-rank">5</span>
+          <span class="tilt-mk lv0">—</span>
           <div class="tilt-body">
             <div class="tilt-main-row">
               <span class="tilt-asset">EM Assets</span>
-              
+              <span class="tilt-ret pos">+19.2%</span>
             </div>
             
-          </div>
-        </div>
-        
-        <div class="tilt-cell tilt-underweight">
-          <span class="tilt-rank">5</span>
-          <span class="tilt-mk lv-2">↓↓</span>
-          <div class="tilt-body">
-            <div class="tilt-main-row">
-              <span class="tilt-asset">Long Bonds</span>
-              
+            <div class="tilt-stats">
+              <span>regime effect <span class="ep">+8.9%</span></span>
+              <span class="sp">·</span>
+              <span>hit 67%</span><span class="sp">·</span>
+              <span>vol 16%</span>
+              <span class="sp">·</span><span>dside 10%</span>
             </div>
             
           </div>
@@ -900,7 +1067,35 @@
           <div class="tilt-body">
             <div class="tilt-main-row">
               <span class="tilt-asset">Cash</span>
+              <span class="tilt-ret pos">+3.0%</span>
+            </div>
+            
+            <div class="tilt-stats">
+              <span>regime effect <span class="ep">+0.3%</span></span>
+              <span class="sp">·</span>
               
+              <span>vol 1%</span>
+              
+            </div>
+            
+          </div>
+        </div>
+        
+        <div class="tilt-cell tilt-underweight">
+          <span class="tilt-rank">7</span>
+          <span class="tilt-mk lv-2">↓↓</span>
+          <div class="tilt-body">
+            <div class="tilt-main-row">
+              <span class="tilt-asset">Long Bonds</span>
+              <span class="tilt-ret pos">+2.2%</span>
+            </div>
+            
+            <div class="tilt-stats">
+              <span>regime effect <span class="en">-3.0%</span></span>
+              <span class="sp">·</span>
+              <span>hit 54%</span><span class="sp">·</span>
+              <span>vol 7%</span>
+              <span class="sp">·</span><span>dside 4%</span>
             </div>
             
           </div>
