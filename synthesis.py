@@ -2097,8 +2097,18 @@ HTML_TMPL_LITE = """<!doctype html>
     .section-break-arrow { color:var(--muted); font-size:1.4rem; line-height:1; animation:bob 1.8s ease-in-out infinite; }
     @keyframes bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(6px)} }
     @media (prefers-reduced-motion: reduce) { .section-break-arrow { animation:none; } }
+    /* Sticky masthead + tab nav */
+    .sticky-masthead { position:sticky; top:0; z-index:100; background:var(--block); border-bottom:1px solid var(--rule); margin:0 -2rem; padding:0 2rem; }
+    @media (max-width:560px) { .sticky-masthead { margin:0 -1.1rem; padding:0 1.1rem; } }
     /* Sheet title (white header with red rule) */
-    .sheet-title { display:flex; align-items:center; justify-content:space-between; gap:0.75rem; flex-wrap:wrap; padding:0.3rem 0.2rem 1rem; margin-bottom:0; }
+    .sheet-title { display:flex; align-items:center; justify-content:space-between; gap:0.75rem; flex-wrap:wrap; padding:0.9rem 0 0; margin-bottom:0; }
+    .tab-nav { display:flex; overflow-x:auto; scrollbar-width:none; gap:0; margin:0; }
+    .tab-nav::-webkit-scrollbar { display:none; }
+    .tab-btn { font-family:var(--sans); font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; padding:0.65rem 1.1rem; border:none; background:none; color:var(--muted); cursor:pointer; border-bottom:2px solid transparent; white-space:nowrap; flex-shrink:0; transition:color 0.15s,border-color 0.15s; }
+    .tab-btn.active { color:var(--red); border-bottom-color:var(--red); }
+    .tab-btn:hover:not(.active) { color:var(--ink); }
+    .tab-pane { display:none; }
+    .tab-pane.active { display:block; }
     /* Hero — today's stance as a white card, integrated with the block system */
     .hero { background:var(--paper); border-radius:18px; padding:1.8rem 2rem; margin:0.2rem 0 1.3rem; }
     @media (max-width:560px) { .hero { padding:1.35rem 1.3rem; } }
@@ -2359,18 +2369,26 @@ HTML_TMPL_LITE = """<!doctype html>
   <div class="scroll-progress" aria-hidden="true"></div>
   {% macro info(t, side='') %}{% if t %}<span class="info {{ side }}" tabindex="0" role="button" aria-label="方法說明">i<span class="tip">{{ t }}</span></span>{% endif %}{% endmacro %}
   <div class="sheet">
-    <div class="sheet-title">
-      <div>
-        <div class="logo"><span class="logo-the">The Daily </span><span class="logo-regime">Regime</span><span class="logo-dot">.</span></div>
-        <div class="tagline">Translating data into macro narratives</div>
-      </div>
-      <div class="sheet-title-right">
-        <div class="sheet-meta">{{ report_date }}{% if not llm_placeholder %} <span class="ok ai-badge"><span class="ai-zh">· AI 分析已更新</span><span class="ai-en">· AI analysis up to date</span></span>{% endif %}</div>
-        <div class="lang-switch" role="group" aria-label="Language">
-          <button type="button" data-lang="zh-Hant">中文</button>
-          <button type="button" data-lang="en" class="is-active">EN</button>
+    <div class="sticky-masthead">
+      <div class="sheet-title">
+        <div>
+          <div class="logo"><span class="logo-the">The Daily </span><span class="logo-regime">Regime</span><span class="logo-dot">.</span></div>
+          <div class="tagline">Translating data into macro narratives</div>
+        </div>
+        <div class="sheet-title-right">
+          <div class="sheet-meta">{{ report_date }}{% if not llm_placeholder %} <span class="ok ai-badge"><span class="ai-zh">· AI 分析已更新</span><span class="ai-en">· AI analysis up to date</span></span>{% endif %}</div>
+          <div class="lang-switch" role="group" aria-label="Language">
+            <button type="button" data-lang="zh-Hant">中文</button>
+            <button type="button" data-lang="en" class="is-active">EN</button>
+          </div>
         </div>
       </div>
+      <nav class="tab-nav" role="tablist">
+        <button class="tab-btn active" data-pane="today" role="tab"><span class="ai-zh">今日主題</span><span class="ai-en">Today</span></button>
+        <button class="tab-btn" data-pane="us" role="tab"><span class="ai-zh">美國基準</span><span class="ai-en">US Anchor</span></button>
+        <button class="tab-btn" data-pane="global" role="tab"><span class="ai-zh">國際承接面</span><span class="ai-en">Global</span></button>
+        <button class="tab-btn" data-pane="history" role="tab"><span class="ai-zh">歷史借鏡</span><span class="ai-en">History</span></button>
+      </nav>
     </div>
 
     {% if llm_placeholder %}
@@ -2383,6 +2401,7 @@ HTML_TMPL_LITE = """<!doctype html>
 
     {% for block in lite_lang_blocks %}
     <div class="lang-block" data-lang="{{ block.lang }}">
+      <div class="tab-pane active" data-pane="today">
       <div class="hero">
         <div class="hero-kicker">{{ block.ui.today_line_kicker }}{{ info(block.directive.the_narrative | join(' '), 'tip-right') }}</div>
         <h1 class="hero-stance">{{ block.directive.the_stance }}</h1>
@@ -2423,12 +2442,9 @@ HTML_TMPL_LITE = """<!doctype html>
         </div>
       </div>
       {% endif %}
+      </div><!-- /tab-pane today -->
 
-      <div class="section-break">
-        <span class="section-break-label">{% if block.lang == 'zh-Hant' %}量化分析{% else %}Quant Analysis{% endif %}</span>
-        <span class="section-break-arrow">↓</span>
-      </div>
-
+      <div class="tab-pane" data-pane="us">
       <div class="zone-divider zone-1 snap-anchor">
         <div class="zone-title">{{ block.ui.zone_us_anchor }}</div>
         <div class="zone-sub">{{ block.ui.zone_us_anchor_sub }}</div>
@@ -2522,6 +2538,9 @@ HTML_TMPL_LITE = """<!doctype html>
       </div>
       {% endif %}
 
+      </div><!-- /tab-pane us -->
+
+      <div class="tab-pane" data-pane="global">
       <div class="zone-divider zone-2">
         <div class="zone-title">{{ block.ui.zone_global }}</div>
         <div class="zone-sub">{{ block.ui.zone_global_sub }}</div>
@@ -2569,6 +2588,9 @@ HTML_TMPL_LITE = """<!doctype html>
       </div>
       {% endif %}
 
+      </div><!-- /tab-pane global -->
+
+      <div class="tab-pane" data-pane="history">
       {% if block.historical_matches or block.divergence_matches %}
       <div class="zone-divider zone-hist">
         <div class="zone-title">{{ block.ui.zone_history }}</div>
@@ -2617,12 +2639,32 @@ HTML_TMPL_LITE = """<!doctype html>
       </div>
       {% endif %}
 
+      </div><!-- /tab-pane history -->
+
       <div class="foot">THE DAILY REGIME · {{ block.ui.footer }} · {{ block.report_date }}</div>
     </div>
     {% endfor %}
   </div>
   <script>
     (function () {
+      // Tab navigation
+      (function () {
+        var tabBtns = Array.prototype.slice.call(document.querySelectorAll('.tab-btn'));
+        function switchTab(pane) {
+          tabBtns.forEach(function (b) { b.classList.toggle('active', b.getAttribute('data-pane') === pane); });
+          document.querySelectorAll('.tab-pane').forEach(function (p) { p.classList.toggle('active', p.getAttribute('data-pane') === pane); });
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          // Trigger Plotly resize for charts in newly visible pane
+          setTimeout(function () {
+            if (window.Plotly) {
+              document.querySelectorAll('.tab-pane.active .js-plotly-plot').forEach(function (g) { Plotly.Plots.resize(g); });
+            }
+          }, 50);
+        }
+        tabBtns.forEach(function (btn) {
+          btn.addEventListener('click', function () { switchTab(btn.getAttribute('data-pane')); });
+        });
+      })();
       var sel = '.hero, .zone-divider, .modcard, .viz-card, .story, .carry-cell';
       var targets = Array.prototype.slice.call(document.querySelectorAll(sel));
       targets.forEach(function (el) { el.classList.add('reveal'); });
