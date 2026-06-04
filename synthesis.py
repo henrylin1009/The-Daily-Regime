@@ -1725,31 +1725,48 @@ def _tilt_rows_for_lang(tilt_result: dict, lang: str) -> list[dict]:
     return rows
 
 
-def _tilt_context_line(tilt_result: dict, lang: str) -> str:
-    """One-line provenance: conviction · regime duration.
+def _regime_stat_sub_line(tilt_result: dict | None, lang: str, fallback: str) -> str:
+    """MARKET REGIME subtitle: G/I direction · months in regime · historical avg episode."""
+    if not tilt_result or tilt_result.get("in_transition"):
+        return fallback
+    cur_dur = int(tilt_result.get("cur_duration") or 0)
+    avg_dur = tilt_result.get("avg_duration")
+    g_r = bool(tilt_result.get("growth_rising", True))
+    i_r = bool(tilt_result.get("infl_rising", True))
+    if lang == "zh":
+        g_dir = "成長↑" if g_r else "成長↓"
+        i_dir = "通膨↑" if i_r else "通膨↓"
+        base = f"{g_dir}{i_dir}"
+        if cur_dur and avg_dur is not None:
+            return f"{base} · 已持續 {cur_dur} 月 · 歷史平均 {avg_dur:g} 月"
+        if cur_dur:
+            return f"{base} · 已持續 {cur_dur} 月"
+        return fallback
+    g_dir = "G↑" if g_r else "G↓"
+    i_dir = "I↑" if i_r else "I↓"
+    base = f"{g_dir} {i_dir}"
+    if cur_dur and avg_dur is not None:
+        return f"{base} · in regime {cur_dur}m · avg {avg_dur:g}m"
+    if cur_dur:
+        return f"{base} · in regime {cur_dur}m"
+    return fallback
 
-    Credit stress is intentionally NOT shown here — it duplicated the BAA spread
-    that the Financial Conditions monitor already displays (with a better method:
-    true historical percentile vs the old full-sample z-score). Credit lives in
-    one place now, the monitor.
-    """
+
+def _tilt_context_line(tilt_result: dict, lang: str) -> str:
+    """One-line provenance: conviction (duration lives on MARKET REGIME stat-sub)."""
     conv = int(round(float(tilt_result.get("conviction") or 0) * 100))
     n = int(tilt_result.get("sample_n") or 0)
     in_transition = tilt_result.get("in_transition", False)
     nearest = tilt_result.get("environment_nearest", "")
-    cur_dur = int(tilt_result.get("cur_duration") or 0)
-    avg_dur = tilt_result.get("avg_duration")
     if lang == "zh":
         if in_transition:
             nearest_zh = {"Goldilocks": "金髮女孩", "Overheat": "過熱",
                           "Stagflation": "停滯通膨", "Deflationary Bust": "通縮崩潰"}.get(nearest, nearest)
             return f"動能尚未確認 · 預備朝{nearest_zh}輕倉布局 · 排名與報酬均為{nearest_zh}象限歷史估計（Fidelity Investment Clock 過渡期做法）"
-        dur_str = f"已持續 {cur_dur} 月（均值 {avg_dur:.0f} 月）" if cur_dur and avg_dur else f"基於 {n} 個同類歷史月份"
-        return f"信心 {conv}% · {dur_str}"
+        return f"信心 {conv}% · 基於 {n} 個同類歷史月份"
     if in_transition:
         return f"momentum not yet confirmed · pre-position lightly toward {nearest} (Fidelity Investment Clock transition approach)"
-    dur_str = f"in regime {cur_dur}m (avg {avg_dur:.0f}m)" if cur_dur and avg_dur else f"{n} analogous months"
-    return f"conviction {conv}% · {dur_str}"
+    return f"conviction {conv}% · {n} analogous months"
 
 
 _PENALTY_LABEL_ZH = {
@@ -2024,7 +2041,11 @@ def _build_lite_lang_blocks(
                 "regime_alt_label": regime_alt_label,
                 "regime_gauge_tone": regime_tone,
                 "in_transition": in_transition,
-                "regime_subtext": "" if in_transition else _regime_subtext_ui(regime_tone, ui),
+                "regime_subtext": _regime_stat_sub_line(
+                    tilt_result if use_tilt else None,
+                    lang_key,
+                    "" if in_transition else _regime_subtext_ui(regime_tone, ui),
+                ),
                 "regime_asset_tilt": asset_tilt,
                 "tilt_context": tilt_context,
                 "regime_buffer": _regime_buffer_line(tilt_result, lang_key) if use_tilt and tilt_result else "",
