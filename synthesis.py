@@ -2508,6 +2508,19 @@ HTML_TMPL_LITE = """<!doctype html>
       </div>
       {% endif %}
 
+      {% if regime_prob_ts_data and regime_prob_ts_data != '{}' %}
+      <div class="viz-card" style="margin-top:0.6rem;">
+        <div class="viz-label">{% if block.lang == 'zh-Hant' %}Regime 轉移機率 · 市場在哪、要去哪（HMM 月度）{% else %}Regime Probability · Where the market is & where it's heading (HMM monthly){% endif %}</div>
+        <div id="chart-regime-prob-{{ block.lang }}" style="width:100%;"></div>
+        <script>
+        (function(){
+          var d = {{ regime_prob_ts_data | safe }};
+          if(d.traces) Plotly.newPlot('chart-regime-prob-{{ block.lang }}', d.traces, d.layout, {responsive:true,displayModeBar:false,scrollZoom:false,doubleClick:false,editable:false});
+        })();
+        </script>
+      </div>
+      {% endif %}
+
       {% if block.regime_asset_tilt %}
       <div class="modcard">
       <div class="mod-label">{% if block.lang == 'zh-Hant' %}資產配置{% else %}ASSET ALLOCATION{% endif %}</div>
@@ -4280,6 +4293,14 @@ def _write_synthesis_lite_html(
     except Exception as exc:
         print(f"  Warning: z-score chart failed ({exc})", file=sys.stderr)
         zscore_data_zh = zscore_data_en = {}
+    try:
+        from src.config import PROCESSED_DIR as _PDIR
+        _hmm_path = _PDIR / "regime_hmm_summary.json"
+        _hmm_summary = json.loads(_hmm_path.read_text()) if _hmm_path.exists() else {}
+        regime_prob_ts_data = _hmm_summary.get("prob_timeseries", {})
+    except Exception as exc:
+        print(f"  Warning: regime prob timeseries failed ({exc})", file=sys.stderr)
+        regime_prob_ts_data = {}
     out_html_lite = OUTPUT_DIR / "synthesis_lite.html"
     meta = llm_meta if isinstance(llm_meta, dict) else {}
     out_html_lite.write_text(
@@ -4291,6 +4312,7 @@ def _write_synthesis_lite_html(
             regime_quadrant_data=json.dumps(regime_quadrant_data),
             zscore_data_zh=json.dumps(zscore_data_zh),
             zscore_data_en=json.dumps(zscore_data_en),
+            regime_prob_ts_data=json.dumps(regime_prob_ts_data),
         ),
         encoding="utf-8",
     )

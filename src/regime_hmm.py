@@ -241,6 +241,44 @@ def current_regime_summary(
     }
 
 
+def regime_prob_timeseries(
+    model: hmm.GaussianHMM,
+    z_matrix: pd.DataFrame,
+    state_labels: dict[int, str],
+) -> dict:
+    """Return Plotly-ready JSON for regime probability time series (predict_proba over history)."""
+    X_df = z_matrix[REGIME_FEATURES].dropna()
+    if X_df.empty:
+        return {}
+    probs = model.predict_proba(X_df.values)  # shape (T, n_states)
+    dates = [str(d.date()) for d in X_df.index]
+
+    colors = ["#c0392b", "#2980b9", "#27ae60", "#f39c12"]
+    traces = []
+    for s in range(model.n_components):
+        traces.append({
+            "type": "scatter",
+            "mode": "lines",
+            "name": state_labels.get(s, f"State {s}"),
+            "x": dates,
+            "y": [round(float(p), 4) for p in probs[:, s]],
+            "line": {"width": 2, "color": colors[s % len(colors)]},
+            "hovertemplate": "%{fullData.name}: %{y:.0%}<extra></extra>",
+        })
+
+    layout = {
+        "margin": {"t": 10, "b": 36, "l": 36, "r": 10},
+        "height": 220,
+        "paper_bgcolor": "rgba(0,0,0,0)",
+        "plot_bgcolor": "rgba(0,0,0,0)",
+        "legend": {"orientation": "h", "y": -0.18, "font": {"size": 10}},
+        "xaxis": {"showgrid": False, "tickfont": {"size": 10}},
+        "yaxis": {"range": [0, 1], "tickformat": ".0%", "showgrid": True,
+                  "gridcolor": "#f0f0f0", "tickfont": {"size": 10}},
+    }
+    return {"traces": traces, "layout": layout}
+
+
 def run_regime_analysis(spy_monthly_return_pct: pd.Series) -> dict:
     """End-to-end pipeline: load → train → decode → stats → summarize → persist."""
     _raw, z = load_feature_matrix()
@@ -249,6 +287,7 @@ def run_regime_analysis(spy_monthly_return_pct: pd.Series) -> dict:
     regime_series = decode_regimes(model, z)
     spy_stats = regime_spy_stats(regime_series, spy_monthly_return_pct, state_labels)
     summary = current_regime_summary(model, z, regime_series, spy_stats, state_labels)
+    summary["prob_timeseries"] = regime_prob_timeseries(model, z, state_labels)
 
     out_path = PROCESSED_DIR / "regime_hmm_summary.json"
     out_path.write_text(json.dumps(summary, indent=2, default=str))
