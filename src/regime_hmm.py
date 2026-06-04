@@ -310,6 +310,7 @@ def regime_prob_timeseries(
         "xaxis": {"showgrid": False, "tickfont": {"size": 10}, "type": "date"},
         "yaxis": {"visible": False, "range": [0, 1]},
         "hovermode": "closest",
+        "hoverlabel": {"bgcolor": "#121212", "font": {"color": "#f3f1ea", "size": 11, "family": "Inter, sans-serif"}, "bordercolor": "#121212"},
     }
     return {"traces": traces, "layout": layout}
 
