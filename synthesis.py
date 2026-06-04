@@ -2400,15 +2400,15 @@ HTML_TMPL_LITE = """<!doctype html>
           <div class="tilt-body">
             <div class="tilt-main-row">
               <span class="tilt-asset">{{ item.asset }}</span>
-              {% if item.hist_return is not none %}<span class="tilt-ret {% if item.hist_return >= 0 %}pos{% else %}neg{% endif %}">{{ "%+.1f"|format(item.hist_return) }}%</span>{% endif %}
+              {% if item.hist_return is defined and item.hist_return is not none %}<span class="tilt-ret {% if item.hist_return >= 0 %}pos{% else %}neg{% endif %}">{{ "%+.1f"|format(item.hist_return) }}%</span>{% endif %}
             </div>
-            {% if item.effect is not none %}
+            {% if item.effect is defined and item.effect is not none %}
             <div class="tilt-stats">
               <span>{% if block.lang == 'zh-Hant' %}體制效果{% else %}regime effect{% endif %} <span class="{% if item.effect_pos %}ep{% else %}en{% endif %}">{{ "%+.1f"|format(item.effect) }}%</span></span>
               <span class="sp">·</span>
-              {% if item.hit_rate is not none %}<span>{% if block.lang == 'zh-Hant' %}命中{% else %}hit{% endif %} {{ item.hit_rate }}%</span><span class="sp">·</span>{% endif %}
+              {% if item.hit_rate is defined and item.hit_rate is not none %}<span>{% if block.lang == 'zh-Hant' %}命中{% else %}hit{% endif %} {{ item.hit_rate }}%</span><span class="sp">·</span>{% endif %}
               <span>{% if block.lang == 'zh-Hant' %}波動{% else %}vol{% endif %} {{ item.volatility }}%</span>
-              {% if item.downside_vol is not none %}<span class="sp">·</span><span>{% if block.lang == 'zh-Hant' %}下行{% else %}dside{% endif %} {{ item.downside_vol }}%</span>{% endif %}
+              {% if item.downside_vol is defined and item.downside_vol is not none %}<span class="sp">·</span><span>{% if block.lang == 'zh-Hant' %}下行{% else %}dside{% endif %} {{ item.downside_vol }}%</span>{% endif %}
             </div>
             {% endif %}
           </div>

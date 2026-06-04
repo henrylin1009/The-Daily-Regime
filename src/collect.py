@@ -397,7 +397,7 @@ def collect_all(
             cache = _cache_path(name)
             if cache.exists():
                 try:
-                    data[name] = pd.read_csv(cache, index_col=0, parse_dates=True)
+                    data[name] = _load_cache(name)
                     print(f"  collect: {name} fetch failed, using cache ({exc})", file=sys.stderr)
                 except Exception:
                     print(f"  collect: {name} failed and no cache ({exc})", file=sys.stderr)

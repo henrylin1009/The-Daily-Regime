@@ -119,6 +119,30 @@ Z_SCORE_COLUMNS = [
 
 
 def _fred_series(series_id: str) -> pd.Series:
+    # Official FRED JSON API first (reliable from CI IPs), CSV as fallback.
+    import os
+    api_key = os.getenv("FRED_API_KEY") or os.getenv("fred_api_key")
+    if api_key:
+        import time
+        import requests
+        url = (
+            f"https://api.stlouisfed.org/fred/series/observations"
+            f"?series_id={series_id}&api_key={api_key}&file_type=json"
+        )
+        for attempt in range(3):
+            resp = requests.get(url, timeout=60)
+            if resp.status_code == 429:
+                time.sleep(5 * (attempt + 1))
+                continue
+            resp.raise_for_status()
+            obs = resp.json().get("observations", [])
+            if obs:
+                df2 = pd.DataFrame(obs)[["date", "value"]]
+                df2["value"] = pd.to_numeric(df2["value"], errors="coerce")
+                out = pd.Series(df2["value"].values, index=pd.to_datetime(df2["date"])).dropna()
+                out.index = out.index.tz_localize(None) if hasattr(out.index, "tz") and out.index.tz is not None else out.index
+                return out.sort_index()
+            break
     url = f"https://fred.stlouisfed.org/graph/fredgraph.csv?id={series_id}"
     df = pd.read_csv(url)
     date_col = "DATE" if "DATE" in df.columns else "observation_date"
