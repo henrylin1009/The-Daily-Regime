@@ -771,7 +771,7 @@ LITE_UI: dict[str, dict[str, str]] = {
         "country_summary": "各國佐證",
         "country_suffix": "國",
         "full_link": "→ 看完整版（含 3-gear 細節）",
-        "footer": "量化計算「是什麼」，分析解讀「代表什麼」",
+        "footer": "Translating data into macro narratives",
         "details_open": "展開 +",
         "details_close": "收起 −",
         "lang_zh": "中文",
@@ -819,7 +819,7 @@ LITE_UI: dict[str, dict[str, str]] = {
         "country_summary": "Country Evidence",
         "country_suffix": " markets",
         "full_link": "→ Full version (3-gear detail)",
-        "footer": "Quant defines what is; analysis explains what it means",
+        "footer": "Translating data into macro narratives",
         "details_open": "Expand +",
         "details_close": "Collapse −",
         "lang_zh": "中文",
@@ -2051,6 +2051,7 @@ HTML_TMPL_LITE = """<!doctype html>
     .hero-stance { font-family:var(--serif); font-size:2.05rem; font-weight:700; line-height:1.2; letter-spacing:-0.02em; margin:0; color:var(--ink); }
     @media (max-width:560px) { .hero-stance { font-size:1.55rem; } }
     .logo { font-family:'Playfair Display',Georgia,serif; font-size:2rem; line-height:1; color:var(--ink); }
+    .tagline { font-family:var(--sans); font-size:0.78rem; color:var(--muted); margin-top:0.35rem; letter-spacing:0.01em; }
     .logo .logo-the { font-weight:700; }
     .logo .logo-regime { font-weight:700; }
     .logo .logo-dot { color:var(--red); }
@@ -2300,6 +2301,7 @@ HTML_TMPL_LITE = """<!doctype html>
     <div class="sheet-title">
       <div>
         <div class="logo"><span class="logo-the">The Daily </span><span class="logo-regime">Regime</span><span class="logo-dot">.</span></div>
+        <div class="tagline">Translating data into macro narratives</div>
       </div>
       <div class="sheet-title-right">
         <div class="sheet-meta">{{ report_date }}</div>
