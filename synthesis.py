@@ -2683,22 +2683,6 @@ HTML_TMPL_LITE = """<!doctype html>
         </h1>
       </div>
       {% endif %}
-      <div class="viz-card" style="margin-top:0.4rem;">
-        <div class="viz-label"><span class="ai-zh">相對輪動圖 (RRG) · 以 SPY 為基準</span><span class="ai-en">Relative Rotation Graph (RRG) · Benchmark: SPY</span></div>
-        <div id="chart-rrg-{{ block.lang }}" style="width:100%;"></div>
-        <div style="display:flex;flex-wrap:wrap;gap:0.55rem 1.4rem;margin-top:0.55rem;">
-          <span style="display:flex;align-items:center;gap:0.35rem;font-size:0.72rem;color:#5a5550;"><span style="width:11px;height:11px;background:#d4ede4;border-radius:2px;flex-shrink:0;display:inline-block;"></span><span class="ai-zh">Leading — 強且加速</span><span class="ai-en">Leading — strong &amp; accelerating</span></span>
-          <span style="display:flex;align-items:center;gap:0.35rem;font-size:0.72rem;color:#5a5550;"><span style="width:11px;height:11px;background:#f5e9cf;border-radius:2px;flex-shrink:0;display:inline-block;"></span><span class="ai-zh">Weakening — 強但放緩</span><span class="ai-en">Weakening — strong but slowing</span></span>
-          <span style="display:flex;align-items:center;gap:0.35rem;font-size:0.72rem;color:#5a5550;"><span style="width:11px;height:11px;background:#dbeafe;border-radius:2px;flex-shrink:0;display:inline-block;"></span><span class="ai-zh">Improving — 弱但轉強</span><span class="ai-en">Improving — weak but turning</span></span>
-          <span style="display:flex;align-items:center;gap:0.35rem;font-size:0.72rem;color:#5a5550;"><span style="width:11px;height:11px;background:#f5dada;border-radius:2px;flex-shrink:0;display:inline-block;"></span><span class="ai-zh">Lagging — 弱且減速</span><span class="ai-en">Lagging — weak &amp; decelerating</span></span>
-        </div>
-        <script>
-        (function(){
-          var d = {{ rrg_data | safe }};
-          if(d.traces) Plotly.newPlot('chart-rrg-{{ block.lang }}', d.traces, d.layout, {responsive:true,displayModeBar:false,scrollZoom:false,doubleClick:false,editable:false});
-        })();
-        </script>
-      </div>
       {% if rrg_sector_stats %}
       {% set sorted_stats = rrg_sector_stats | sort(attribute='rank_score', reverse=True) %}
       {% set top = sorted_stats[0] %}
@@ -2734,7 +2718,27 @@ HTML_TMPL_LITE = """<!doctype html>
         </div>
       </div>
       {% endif %}
+      {% endif %}
 
+      <div class="viz-card" style="margin-top:0.4rem;">
+        <div class="viz-label"><span class="ai-zh">相對輪動圖 (RRG) · 以 SPY 為基準</span><span class="ai-en">Relative Rotation Graph (RRG) · Benchmark: SPY</span></div>
+        <div id="chart-rrg-{{ block.lang }}" style="width:100%;"></div>
+        <div style="display:flex;flex-wrap:wrap;gap:0.55rem 1.4rem;margin-top:0.55rem;">
+          <span style="display:flex;align-items:center;gap:0.35rem;font-size:0.72rem;color:#5a5550;"><span style="width:11px;height:11px;background:#d4ede4;border-radius:2px;flex-shrink:0;display:inline-block;"></span><span class="ai-zh">Leading — 強且加速</span><span class="ai-en">Leading — strong &amp; accelerating</span></span>
+          <span style="display:flex;align-items:center;gap:0.35rem;font-size:0.72rem;color:#5a5550;"><span style="width:11px;height:11px;background:#f5e9cf;border-radius:2px;flex-shrink:0;display:inline-block;"></span><span class="ai-zh">Weakening — 強但放緩</span><span class="ai-en">Weakening — strong but slowing</span></span>
+          <span style="display:flex;align-items:center;gap:0.35rem;font-size:0.72rem;color:#5a5550;"><span style="width:11px;height:11px;background:#dbeafe;border-radius:2px;flex-shrink:0;display:inline-block;"></span><span class="ai-zh">Improving — 弱但轉強</span><span class="ai-en">Improving — weak but turning</span></span>
+          <span style="display:flex;align-items:center;gap:0.35rem;font-size:0.72rem;color:#5a5550;"><span style="width:11px;height:11px;background:#f5dada;border-radius:2px;flex-shrink:0;display:inline-block;"></span><span class="ai-zh">Lagging — 弱且減速</span><span class="ai-en">Lagging — weak &amp; decelerating</span></span>
+        </div>
+        <script>
+        (function(){
+          var d = {{ rrg_data | safe }};
+          if(d.traces) Plotly.newPlot('chart-rrg-{{ block.lang }}', d.traces, d.layout, {responsive:true,displayModeBar:false,scrollZoom:false,doubleClick:false,editable:false});
+        })();
+        </script>
+      </div>
+
+      {% if rrg_sector_stats %}
+      {% set sorted_stats = rrg_sector_stats | sort(attribute='rank_score', reverse=True) %}
       <div class="modcard" style="margin-top:0.4rem;">
         <div class="mod-label"><span class="ai-zh">所有板塊 · 象限停留統計</span><span class="ai-en">ALL SECTORS · Quadrant history</span></div>
         <div style="overflow-x:auto;">
