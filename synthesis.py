@@ -2184,7 +2184,6 @@ HTML_TMPL_LITE = """<!doctype html>
     .cty-carry-head .carry-country { font-size:1.02rem; font-weight:700; }
     .cty-carry-sep { border:none; border-top:1px solid var(--rule); margin:0.5rem 0 0.45rem; }
     .cty-gears .cty-row { margin:0.15rem 0; }
-    .zone-hist { border-left:3px solid #78716c; }
     .full-link { font-family:var(--sans); display:inline-block; margin-top:0.5rem; font-size:0.78rem; color:var(--ink); text-decoration:underline; font-weight:700; }
     .full-link:hover { text-decoration:underline; }
     .foot { font-family:var(--sans); text-align:center; font-size:0.66rem; color:var(--muted); margin-top:1.8rem; letter-spacing:0.04em; }
@@ -2467,8 +2466,9 @@ HTML_TMPL_LITE = """<!doctype html>
       </div>
 
       {% if block.country_matrix %}
+      <div class="modcard">
       {% if block.carry_relative %}
-      <div class="section-head" style="margin-top:0.6rem;">{% if block.lang == 'zh-Hant' %}利差承接面{% else %}Rate-Differential Map{% endif %}
+      <div class="section-head" style="margin-top:0;">{% if block.lang == 'zh-Hant' %}利差承接面{% else %}Rate-Differential Map{% endif %}
         {% if block.carry_relative.vix_pct is not none %}<span class="carry-switch {{ block.carry_relative.switch_tone }}">VIX {{ block.carry_relative.vix_pct }}{% if block.lang == 'zh-Hant' %} 百分位{% else %}th{% endif %} · {{ block.carry_relative.switch }}</span>{% endif %}
       </div>
       {% endif %}
@@ -2501,6 +2501,7 @@ HTML_TMPL_LITE = """<!doctype html>
       {% if block.carry_relative %}
       <div class="tilt-legend">{% if block.lang == 'zh-Hant' %}利差 = 美債 − 當地 10Y · carry 開關看 VIX · 攤開不評分（美國為原點，中國資本管制走政策分化）{% else %}Spread = UST − local 10Y · carry switch = VIX · parts shown, not scored (US is origin; China is capital-controlled → policy/FX){% endif %}</div>
       {% endif %}
+      </div>
       {% endif %}
 
       {% if block.historical_matches or block.divergence_matches %}
