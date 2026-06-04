@@ -358,10 +358,7 @@ def build_rrg_plotly(data: dict) -> dict:
             "zeroline": True, "zerolinecolor": "#333", "zerolinewidth": 1.5,
             "gridcolor": "#F0F0F0", "tickvals": [-2, -1, 0, 1, 2],
         },
-        "legend": {
-            "x": 0.99, "y": 0.01, "xanchor": "right", "yanchor": "bottom",
-            "bgcolor": "rgba(255,255,255,0.8)", "borderwidth": 0,
-        },
+        "showlegend": False,
         "shapes": [
             {"type": "rect", "x0": 0,  "x1": R,  "y0": 0,  "y1": R,
              "fillcolor": "#d4ede4", "opacity": 0.5, "line": {"width": 0}},
