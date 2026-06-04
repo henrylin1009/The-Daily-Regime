@@ -246,35 +246,87 @@ def regime_prob_timeseries(
     z_matrix: pd.DataFrame,
     state_labels: dict[int, str],
 ) -> dict:
-    """Return Plotly-ready JSON for regime probability time series (predict_proba over history)."""
+    """Return Plotly-ready JSON for regime color-band timeline (full history)."""
     X_df = z_matrix[REGIME_FEATURES].dropna()
     if X_df.empty:
         return {}
-    probs = model.predict_proba(X_df.values)  # shape (T, n_states)
-    dates = [str(d.date()) for d in X_df.index]
 
-    colors = ["#c0392b", "#2980b9", "#27ae60", "#f39c12"]
+    states = model.predict(X_df.values)
+    regime_series = pd.Series(states, index=X_df.index)
+
+    # Map state int → label and color
+    palette = {
+        0: "#e8c5c0",  # Expansionary — soft red
+        1: "#c5d8e8",  # Stress / Contraction — soft blue
+        2: "#c5e8cc",  # Neutral / Transitional — soft green
+        3: "#f5e6c5",  # Restrictive — soft amber
+    }
+    # Build episodes (consecutive runs of same state)
+    episodes = []
+    cur_state = int(regime_series.iloc[0])
+    cur_start = regime_series.index[0]
+    for dt, st in regime_series.items():
+        st_i = int(st)
+        if st_i != cur_state:
+            episodes.append({"state": cur_state, "start": cur_start, "end": dt})
+            cur_state = st_i
+            cur_start = dt
+    episodes.append({"state": cur_state, "start": cur_start, "end": regime_series.index[-1]})
+
+    # One dummy scatter trace per regime for the legend
+    seen: set[int] = set()
     traces = []
-    for s in range(model.n_components):
-        traces.append({
-            "type": "scatter",
-            "mode": "lines",
-            "name": state_labels.get(s, f"State {s}"),
-            "x": dates,
-            "y": [round(float(p), 4) for p in probs[:, s]],
-            "line": {"width": 2, "color": colors[s % len(colors)]},
-            "hovertemplate": "%{fullData.name}: %{y:.0%}<extra></extra>",
+    for ep in episodes:
+        s = ep["state"]
+        if s not in seen:
+            seen.add(s)
+            traces.append({
+                "type": "scatter",
+                "mode": "markers",
+                "name": state_labels.get(s, f"State {s}"),
+                "x": [None], "y": [None],
+                "marker": {"color": palette.get(s, "#cccccc"), "size": 12, "symbol": "square"},
+                "showlegend": True,
+            })
+
+    # Build shapes (colored rectangles) for each episode
+    shapes = []
+    for ep in episodes:
+        shapes.append({
+            "type": "rect",
+            "xref": "x", "yref": "paper",
+            "x0": str(ep["start"].date()),
+            "x1": str(ep["end"].date()),
+            "y0": 0, "y1": 1,
+            "fillcolor": palette.get(ep["state"], "#cccccc"),
+            "opacity": 0.85,
+            "line": {"width": 0},
+            "layer": "below",
         })
 
+    # Hover trace: invisible scatter with regime label per month
+    hover_labels = [state_labels.get(int(s), str(s)) for s in states]
+    traces.append({
+        "type": "scatter",
+        "mode": "markers",
+        "x": [str(d.date()) for d in X_df.index],
+        "y": [0.5] * len(X_df),
+        "marker": {"opacity": 0, "size": 8},
+        "text": hover_labels,
+        "hovertemplate": "%{x}<br>%{text}<extra></extra>",
+        "showlegend": False,
+    })
+
     layout = {
-        "margin": {"t": 10, "b": 36, "l": 36, "r": 10},
-        "height": 220,
+        "margin": {"t": 10, "b": 36, "l": 10, "r": 10},
+        "height": 120,
         "paper_bgcolor": "rgba(0,0,0,0)",
         "plot_bgcolor": "rgba(0,0,0,0)",
-        "legend": {"orientation": "h", "y": -0.18, "font": {"size": 10}},
-        "xaxis": {"showgrid": False, "tickfont": {"size": 10}},
-        "yaxis": {"range": [0, 1], "tickformat": ".0%", "showgrid": True,
-                  "gridcolor": "#f0f0f0", "tickfont": {"size": 10}},
+        "shapes": shapes,
+        "legend": {"orientation": "h", "y": -0.35, "font": {"size": 10}, "x": 0},
+        "xaxis": {"showgrid": False, "tickfont": {"size": 10}, "type": "date"},
+        "yaxis": {"visible": False, "range": [0, 1]},
+        "hovermode": "closest",
     }
     return {"traces": traces, "layout": layout}
 
