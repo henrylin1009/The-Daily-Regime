@@ -2017,7 +2017,7 @@ HTML_TMPL_LITE = """<!doctype html>
     /* Proximity snap: two points only — top (hero) + US Anchor */
     @media (prefers-reduced-motion: no-preference) {
       html { scroll-snap-type: y proximity; }
-      .hero { scroll-snap-align: start; }
+      .sheet-title { scroll-snap-align: start; }
       .snap-anchor { scroll-snap-align: start; scroll-margin-top: 0.5rem; }
     }
     /* Section break divider before US Anchor */
