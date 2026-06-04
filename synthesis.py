@@ -2014,11 +2014,13 @@ HTML_TMPL_LITE = """<!doctype html>
     }
     * { box-sizing:border-box; }
     body { margin:0; background:var(--block); color:var(--ink); font-family:var(--serif); -webkit-font-smoothing:antialiased; }
-    /* Proximity snap: two points only — top (hero) + US Anchor */
+    /* scroll-margin always applies, regardless of motion preference */
+    .snap-anchor { scroll-margin-top: 6rem; }
+    /* Proximity snap: two points only — top + US Anchor */
     @media (prefers-reduced-motion: no-preference) {
       html { scroll-snap-type: y proximity; }
       .snap-top { scroll-snap-align: start; }
-      .snap-anchor { scroll-snap-align: start; scroll-margin-top: 6rem; }
+      .snap-anchor { scroll-snap-align: start; }
     }
     /* Section break divider before US Anchor */
     /* Full-screen section break — the editorial/quant boundary */
