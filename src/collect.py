@@ -247,11 +247,11 @@ def _fetch_futures(symbol: str, start_date: str) -> pd.DataFrame:
 
 
 def _fetch_dxy(start_date: str) -> pd.DataFrame:
-    """Try multiple DXY symbols; return first that works."""
+    """Try multiple DXY symbols via yfinance; return first that works."""
     symbols = ["DX-Y.NYB", "UUP", "^DXY"]
     for sym in symbols:
         try:
-            df = _fetch_equity(sym, start_date)
+            df = _fetch_etf_yfinance(sym, start_date)
             if not df.empty:
                 return df
         except Exception:
@@ -294,12 +294,12 @@ INDICATOR_FETCHERS: dict[str, Callable[[str], pd.DataFrame]] = {
     #
     # NOTE: We keep the key name `uso` for backward compatibility across the pipeline/output.
     "uso": lambda s: _fetch_etf_yfinance("DBO", s),
-    "xlk": lambda s: _fetch_etf("XLK", s),
-    "xlf": lambda s: _fetch_etf("XLF", s),
-    "xlu": lambda s: _fetch_etf("XLU", s),
-    "xle": lambda s: _fetch_etf("XLE", s),
-    "xlv": lambda s: _fetch_etf("XLV", s),
-    "xli": lambda s: _fetch_etf("XLI", s),
+    "xlk": lambda s: _fetch_etf_yfinance("XLK", s),
+    "xlf": lambda s: _fetch_etf_yfinance("XLF", s),
+    "xlu": lambda s: _fetch_etf_yfinance("XLU", s),
+    "xle": lambda s: _fetch_etf_yfinance("XLE", s),
+    "xlv": lambda s: _fetch_etf_yfinance("XLV", s),
+    "xli": lambda s: _fetch_etf_yfinance("XLI", s),
     "zq_futures": lambda s: _fetch_futures("ZQ=F", s),
     # Benchmark (internal — forward returns)
     "spy": lambda s: _fetch_etf("SPY", s),

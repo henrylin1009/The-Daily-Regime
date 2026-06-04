@@ -2107,8 +2107,10 @@ HTML_TMPL_LITE = """<!doctype html>
     .tilt-legend { font-family:var(--sans); font-size:0.66rem; color:var(--muted); margin-top:0.7rem; }
     /* Stories (themes) */
     .story-grid { display:flex; flex-direction:column; gap:1.1rem; margin-top:0.4rem; }
-    .story { background:var(--paper); border-radius:16px; padding:1.5rem 1.7rem; }
-    .headline { font-size:1.4rem; font-weight:700; line-height:1.24; letter-spacing:-0.01em; margin:0.15rem 0 0.5rem; }
+    .story { background:var(--paper); border-radius:16px; padding:1.5rem 1.7rem; overflow:visible; }
+    .headline-row { display:flex; align-items:flex-start; gap:0.4rem; margin:0.15rem 0 0.5rem; }
+    .headline { font-size:1.4rem; font-weight:700; line-height:1.24; letter-spacing:-0.01em; margin:0; flex:1; min-width:0; }
+    .headline-row .info { flex-shrink:0; margin-top:0.3rem; margin-left:0; }
     .story-body { font-size:1rem; line-height:1.62; color:#1d1d1b; margin:0 0 0.55rem; }
     .implication { font-size:0.95rem; font-style:italic; line-height:1.55; color:#3a3a38; margin:0; padding-left:0.85rem; border-left:3px solid var(--ink); }
     .implication b { font-style:normal; }
@@ -2120,7 +2122,7 @@ HTML_TMPL_LITE = """<!doctype html>
     .sect-rule { border:none; border-top:1px solid var(--rule); margin:1.2rem 0 1rem; }
     .watch-k { font-family:var(--sans); font-size:0.66rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--ink); margin-bottom:0.4rem; }
     .watch-list { margin:0; padding:0; list-style:none; }
-    .watch-list li { font-size:0.95rem; line-height:1.55; padding:0.4rem 0 0.4rem 1.1rem; position:relative; }
+    .watch-list li { font-size:0.95rem; line-height:1.55; padding:0.4rem 0 0.4rem 1.1rem; position:relative; display:flex; align-items:baseline; gap:0.3rem; }
     .watch-list li:last-child { border-bottom:none; }
     .watch-list li::before { content:"—"; position:absolute; left:0; color:var(--ink); font-weight:700; }
     /* Expanded detail sections — now plain white cards (no toggle, no rules) */
@@ -2297,7 +2299,7 @@ HTML_TMPL_LITE = """<!doctype html>
       {% for t in block.daily_themes %}
       <article class="story">
         <div class="kicker">{{ t.kicker }}</div>
-        <h2 class="headline">{{ t.title }}{{ info(t.reasoning, 'tip-left') }}</h2>
+        <div class="headline-row"><h2 class="headline">{{ t.title }}</h2>{{ info(t.reasoning, 'tip-left') }}</div>
         <p class="story-body">{{ t.body }}</p>
         {% if t.implication %}<p class="implication"><b>{{ block.ui.implication_label }} ·</b> {{ t.implication }}</p>{% endif %}
       </article>
@@ -2374,7 +2376,7 @@ HTML_TMPL_LITE = """<!doctype html>
 
       {% if zscore_data %}
       <div class="viz-card" style="margin-top:0.6rem;">
-        <div class="viz-label">美國金融條件溫度計 · US Financial Conditions · 實際歷史分布（非理論常態）</div>
+        <div class="viz-label">{% if block.lang == 'zh-Hant' %}美國金融條件溫度計 · 實際歷史分布（非理論常態）{% else %}US Financial Conditions · Empirical distribution{% endif %}</div>
         <div id="chart-zscore-{{ block.lang }}" style="width:100%;"></div>
         <script>
         (function(){
