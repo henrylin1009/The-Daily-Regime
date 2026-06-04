@@ -2096,8 +2096,10 @@ HTML_TMPL_LITE = """<!doctype html>
     @keyframes bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(6px)} }
     @media (prefers-reduced-motion: reduce) { .section-break-arrow { animation:none; } }
     /* Sticky masthead + tab nav */
-    .sticky-masthead { position:sticky; top:0; z-index:100; background:var(--block); border-bottom:1px solid var(--rule); margin:0 -2rem; padding:0 2rem; }
+    .sticky-masthead { margin:0 -2rem; padding:0 2rem; }
     @media (max-width:560px) { .sticky-masthead { margin:0 -1.1rem; padding:0 1.1rem; } }
+    .sticky-tabs { position:sticky; top:0; z-index:100; background:var(--block); border-bottom:1px solid var(--rule); margin:0 -2rem; padding:0 2rem; }
+    @media (max-width:560px) { .sticky-tabs { margin:0 -1.1rem; padding:0 1.1rem; } }
     /* Sheet title (white header with red rule) */
     .sheet-title { display:flex; align-items:center; justify-content:space-between; gap:0.75rem; flex-wrap:wrap; padding:1.3rem 0 0.6rem; margin-bottom:0; }
     .tab-nav { display:flex; overflow-x:auto; scrollbar-width:none; gap:0; margin:0; }
@@ -2381,6 +2383,8 @@ HTML_TMPL_LITE = """<!doctype html>
           </div>
         </div>
       </div>
+    </div>
+    <div class="sticky-tabs">
       <nav class="tab-nav" role="tablist">
         <button class="tab-btn active" data-pane="today" role="tab"><span class="ai-zh">今日主題</span><span class="ai-en">Today</span></button>
         <button class="tab-btn" data-pane="us" role="tab"><span class="ai-zh">美國基準</span><span class="ai-en">US Anchor</span></button>
