@@ -1577,7 +1577,38 @@ def _build_carry_relative(l2b: dict) -> dict:
     else:
         switch_zh, switch_en, switch_tone = "中性（波動居中）", "neutral", "warning"
 
-    rows: list[dict] = []
+    # ── US anchor row: DXY 22d change + US 10Y yield ────────────────────────
+    try:
+        dxy = pd.read_csv(RAW_DIR / "dxy.csv", skiprows=1, header=None,
+                          names=["date", "value"]).dropna()
+        dxy_vals = dxy["value"].astype(float)
+        dxy_cur = float(dxy_vals.iloc[-1])
+        dxy_1m = float((dxy_cur / dxy_vals.iloc[-22] - 1) * 100) if len(dxy_vals) >= 22 else None
+    except Exception:
+        dxy_1m, dxy_cur = None, None
+    try:
+        dgs10 = pd.read_csv(RAW_DIR / "dgs10.csv", skiprows=1, header=None,
+                            names=["date", "value"]).dropna()
+        us10y = float(dgs10["value"].iloc[-1])
+    except Exception:
+        us10y = None
+
+    us_flow = f"DXY {dxy_cur:.1f} · {dxy_1m:+.2f}%" if dxy_cur and dxy_1m is not None else None
+    us_note_zh = f"全球定價錨 · 美債10Y {us10y:.2f}%" if us10y else "全球定價錨"
+    us_note_en = f"Global pricing anchor · US 10Y {us10y:.2f}%" if us10y else "Global pricing anchor"
+    rows: list[dict] = [
+        {
+            "country": "US",
+            "country_zh": "美國",
+            "spread_bp": None,
+            "fx_1m": None,
+            "flow_label": us_flow,
+            "flow_dir": "supportive" if (dxy_1m or 0) < 0 else "drag",
+            "role": "anchor",
+            "note_zh": us_note_zh,
+            "note_en": us_note_en,
+        }
+    ]
     for c in ("Japan", "Europe", "China", "Taiwan"):
         sp = spreads.get(c)
         fx = fx1.get(c)
@@ -1849,12 +1880,12 @@ def _transition_matrix_rows(tilt_result: dict, lang: str) -> dict:
 
 
 _CARRY_ROLE_ZH = {
-    "funding": "funding 端", "target": "carry 目的地",
+    "anchor": "全球錨", "funding": "funding 端", "target": "carry 目的地",
     "managed": "管制/政策", "neutral": "平價", "na": "資料不足",
     "flow": "外資流向主導",
 }
 _CARRY_ROLE_EN = {
-    "funding": "funding leg", "target": "carry target",
+    "anchor": "global anchor", "funding": "funding leg", "target": "carry target",
     "managed": "managed/policy", "neutral": "near parity", "na": "n/a",
     "flow": "flow-driven",
 }
@@ -1876,7 +1907,7 @@ def _carry_rows_for_lang(carry: dict, lang: str) -> dict:
             "flow_dir": r.get("flow_dir"),
             "role": r.get("role"),
             "role_label": (_CARRY_ROLE_ZH if is_zh else _CARRY_ROLE_EN).get(r.get("role"), ""),
-            "note": r.get("note_zh"),
+            "note": r.get("note_en") if not is_zh and r.get("note_en") else r.get("note_zh"),
         })
     return {
         "vix_cur": carry.get("vix_cur"),
@@ -2494,7 +2525,7 @@ HTML_TMPL_LITE = """<!doctype html>
               {% if cr.fx_1m is not none %}<span class="sp">·</span><span>{% if block.lang == 'zh-Hant' %}匯率1m{% else %}FX 1m{% endif %} {{ "%+.2f"|format(cr.fx_1m) }}%</span>{% endif %}
               {% if cr.flow_label %}<span class="sp">·</span><span class="{% if cr.flow_dir == 'supportive' %}ep{% else %}en{% endif %}">{{ cr.flow_label }}</span>{% endif %}
             </div>
-            {% if block.lang == 'zh-Hant' and cr.note %}<div class="carry-note">{{ cr.note }}</div>{% endif %}
+            {% if cr.note %}<div class="carry-note">{{ cr.note }}</div>{% endif %}
             {% endif %}
           </div>
           {% endif %}
