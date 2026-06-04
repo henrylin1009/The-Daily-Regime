@@ -273,35 +273,19 @@ def regime_prob_timeseries(
             cur_start = dt
     episodes.append({"state": cur_state, "start": cur_start, "end": regime_series.index[-1]})
 
-    # Build shapes + text annotations (label inside each band, no separate legend)
+    # Build shapes only — no annotations, no Plotly legend (HTML legend rendered outside)
     shapes = []
-    annotations = []
-    total_months = len(X_df)
-    MIN_BAND_MONTHS = 18  # only label bands wide enough to fit text
-
     for ep in episodes:
-        x0, x1 = ep["start"], ep["end"]
-        duration = len(regime_series.loc[x0:x1])
         shapes.append({
             "type": "rect",
             "xref": "x", "yref": "paper",
-            "x0": str(x0.date()), "x1": str(x1.date()),
+            "x0": str(ep["start"].date()), "x1": str(ep["end"].date()),
             "y0": 0, "y1": 1,
             "fillcolor": palette.get(ep["state"], "#cccccc"),
             "opacity": 0.9,
             "line": {"width": 0},
             "layer": "below",
         })
-        if duration >= MIN_BAND_MONTHS:
-            mid = x0 + (x1 - x0) / 2
-            annotations.append({
-                "xref": "x", "yref": "paper",
-                "x": str(mid.date()), "y": 0.5,
-                "text": state_labels.get(ep["state"], ""),
-                "showarrow": False,
-                "font": {"size": 9, "color": "#5a5550", "family": "Inter, sans-serif"},
-                "xanchor": "center", "yanchor": "middle",
-            })
 
     # Hover trace only
     hover_labels = [state_labels.get(int(s), str(s)) for s in states]
@@ -322,7 +306,6 @@ def regime_prob_timeseries(
         "paper_bgcolor": "rgba(0,0,0,0)",
         "plot_bgcolor": "rgba(0,0,0,0)",
         "shapes": shapes,
-        "annotations": annotations,
         "showlegend": False,
         "xaxis": {"showgrid": False, "tickfont": {"size": 10}, "type": "date"},
         "yaxis": {"visible": False, "range": [0, 1]},

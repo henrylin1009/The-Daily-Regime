@@ -2486,6 +2486,12 @@ HTML_TMPL_LITE = """<!doctype html>
       <div class="viz-card" style="margin-top:0.4rem;">
         <div class="viz-label">{% if block.lang == 'zh-Hant' %}Regime 歷史週期 · HMM 月度分類（1999–今）{% else %}Regime History · HMM monthly classification (1999–present){% endif %}</div>
         <div id="chart-regime-prob-{{ block.lang }}" style="width:100%;"></div>
+        <div style="display:flex;flex-wrap:wrap;gap:0.55rem 1.1rem;margin-top:0.55rem;">
+          <span style="display:flex;align-items:center;gap:0.35rem;font-size:0.72rem;color:#5a5550;"><span style="width:11px;height:11px;background:#d4ede4;border-radius:2px;flex-shrink:0;display:inline-block;"></span>{% if block.lang == 'zh-Hant' %}擴張{% else %}Expansionary{% endif %}</span>
+          <span style="display:flex;align-items:center;gap:0.35rem;font-size:0.72rem;color:#5a5550;"><span style="width:11px;height:11px;background:#f5dada;border-radius:2px;flex-shrink:0;display:inline-block;"></span>{% if block.lang == 'zh-Hant' %}壓力/收縮{% else %}Stress / Contraction{% endif %}</span>
+          <span style="display:flex;align-items:center;gap:0.35rem;font-size:0.72rem;color:#5a5550;"><span style="width:11px;height:11px;background:#ebe7de;border-radius:2px;flex-shrink:0;display:inline-block;"></span>{% if block.lang == 'zh-Hant' %}中性/過渡{% else %}Neutral / Transitional{% endif %}</span>
+          <span style="display:flex;align-items:center;gap:0.35rem;font-size:0.72rem;color:#5a5550;"><span style="width:11px;height:11px;background:#f5e9cf;border-radius:2px;flex-shrink:0;display:inline-block;"></span>{% if block.lang == 'zh-Hant' %}緊縮{% else %}Restrictive{% endif %}</span>
+        </div>
         <script>
         (function(){
           var d = {{ regime_prob_ts_data | safe }};
