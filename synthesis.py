@@ -2482,6 +2482,19 @@ HTML_TMPL_LITE = """<!doctype html>
         {% endif %}
       </div>
 
+      {% if regime_prob_ts_data and regime_prob_ts_data != '{}' %}
+      <div class="viz-card" style="margin-top:0.4rem;">
+        <div class="viz-label">{% if block.lang == 'zh-Hant' %}Regime 歷史週期 · HMM 月度分類（1999–今）{% else %}Regime History · HMM monthly classification (1999–present){% endif %}</div>
+        <div id="chart-regime-prob-{{ block.lang }}" style="width:100%;"></div>
+        <script>
+        (function(){
+          var d = {{ regime_prob_ts_data | safe }};
+          if(d.traces) Plotly.newPlot('chart-regime-prob-{{ block.lang }}', d.traces, d.layout, {responsive:true,displayModeBar:false,scrollZoom:false,doubleClick:false,editable:false});
+        })();
+        </script>
+      </div>
+      {% endif %}
+
       {% if regime_quadrant_data %}
       <div class="viz-card" style="margin-top:0.4rem;">
         <div class="viz-label">{% if block.lang == 'zh-Hant' %}體制軌跡 · 成長 × 通膨（近 12 個月）{% else %}Regime trajectory · Growth × Inflation (12m){% endif %}</div>
@@ -2503,19 +2516,6 @@ HTML_TMPL_LITE = """<!doctype html>
         (function(){
           var d = {{ (zscore_data_zh if block.lang == 'zh-Hant' else zscore_data_en) | safe }};
           if(d.traces) Plotly.newPlot('chart-zscore-{{ block.lang }}', d.traces, d.layout, {responsive:true,displayModeBar:false,scrollZoom:false,doubleClick:false,editable:false});
-        })();
-        </script>
-      </div>
-      {% endif %}
-
-      {% if regime_prob_ts_data and regime_prob_ts_data != '{}' %}
-      <div class="viz-card" style="margin-top:0.6rem;">
-        <div class="viz-label">{% if block.lang == 'zh-Hant' %}Regime 轉移機率 · 市場在哪、要去哪（HMM 月度）{% else %}Regime Probability · Where the market is & where it's heading (HMM monthly){% endif %}</div>
-        <div id="chart-regime-prob-{{ block.lang }}" style="width:100%;"></div>
-        <script>
-        (function(){
-          var d = {{ regime_prob_ts_data | safe }};
-          if(d.traces) Plotly.newPlot('chart-regime-prob-{{ block.lang }}', d.traces, d.layout, {responsive:true,displayModeBar:false,scrollZoom:false,doubleClick:false,editable:false});
         })();
         </script>
       </div>
