@@ -2018,7 +2018,7 @@ HTML_TMPL_LITE = """<!doctype html>
     @media (prefers-reduced-motion: no-preference) {
       html { scroll-snap-type: y proximity; }
       .snap-top { scroll-snap-align: start; }
-      .snap-anchor { scroll-snap-align: start; scroll-margin-top: 3.5rem; }
+      .snap-anchor { scroll-snap-align: start; scroll-margin-top: 6rem; }
     }
     /* Section break divider before US Anchor */
     /* Full-screen section break — the editorial/quant boundary */
