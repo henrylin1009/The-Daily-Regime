@@ -2015,7 +2015,7 @@ HTML_TMPL_LITE = """<!doctype html>
     * { box-sizing:border-box; }
     body { margin:0; background:var(--block); color:var(--ink); font-family:var(--serif); -webkit-font-smoothing:antialiased; }
     /* scroll-margin always applies, regardless of motion preference */
-    .snap-anchor { scroll-margin-top: 6rem; }
+    .snap-anchor { scroll-margin-top: 1.5rem; }
     /* Proximity snap: two points only — top + US Anchor */
     @media (prefers-reduced-motion: no-preference) {
       html { scroll-snap-type: y proximity; }
