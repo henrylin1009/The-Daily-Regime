@@ -2481,6 +2481,7 @@ HTML_TMPL_LITE = """<!doctype html>
         {% for panel in block.country_matrix %}
         {% set cr = block.carry_by_code[panel.country_code] if panel.country_code in block.carry_by_code else none %}
         <div class="cty-carry-card">
+          {% if cr or panel.align_label %}
           <div class="cty-carry-top">
             <div class="cty-carry-head">
               <span class="carry-country">{{ panel.country }}</span>
@@ -2496,6 +2497,7 @@ HTML_TMPL_LITE = """<!doctype html>
             {% if block.lang == 'zh-Hant' and cr.note %}<div class="carry-note">{{ cr.note }}</div>{% endif %}
             {% endif %}
           </div>
+          {% endif %}
           <div class="cty-gears">
             {% for gear in panel.gears %}
             <div class="cty-row"><b>{{ gear.title }}</b>　{{ gear.body }}</div>
