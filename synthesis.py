@@ -2374,7 +2374,7 @@ HTML_TMPL_LITE = """<!doctype html>
           <div class="tagline">Translating data into macro narratives</div>
         </div>
         <div class="sheet-title-right">
-          <div class="sheet-meta">{{ report_date }}{% if not llm_placeholder %} <span class="ok ai-badge"><span class="ai-zh">· AI 分析已更新</span><span class="ai-en">· AI analysis up to date</span></span>{% endif %}</div>
+          <div class="sheet-meta">{{ report_date }}</div>
           <div class="lang-switch" role="group" aria-label="Language">
             <button type="button" data-lang="zh-Hant">中文</button>
             <button type="button" data-lang="en" class="is-active">EN</button>
