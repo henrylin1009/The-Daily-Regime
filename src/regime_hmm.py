@@ -273,57 +273,57 @@ def regime_prob_timeseries(
             cur_start = dt
     episodes.append({"state": cur_state, "start": cur_start, "end": regime_series.index[-1]})
 
-    # One dummy scatter trace per regime for the legend
-    seen: set[int] = set()
-    traces = []
-    for ep in episodes:
-        s = ep["state"]
-        if s not in seen:
-            seen.add(s)
-            traces.append({
-                "type": "scatter",
-                "mode": "markers",
-                "name": state_labels.get(s, f"State {s}"),
-                "x": [None], "y": [None],
-                "marker": {"color": palette.get(s, "#cccccc"), "size": 12, "symbol": "square"},
-                "showlegend": True,
-            })
-
-    # Build shapes (colored rectangles) for each episode
+    # Build shapes + text annotations (label inside each band, no separate legend)
     shapes = []
+    annotations = []
+    total_months = len(X_df)
+    MIN_BAND_MONTHS = 18  # only label bands wide enough to fit text
+
     for ep in episodes:
+        x0, x1 = ep["start"], ep["end"]
+        duration = len(regime_series.loc[x0:x1])
         shapes.append({
             "type": "rect",
             "xref": "x", "yref": "paper",
-            "x0": str(ep["start"].date()),
-            "x1": str(ep["end"].date()),
+            "x0": str(x0.date()), "x1": str(x1.date()),
             "y0": 0, "y1": 1,
             "fillcolor": palette.get(ep["state"], "#cccccc"),
-            "opacity": 0.85,
+            "opacity": 0.9,
             "line": {"width": 0},
             "layer": "below",
         })
+        if duration >= MIN_BAND_MONTHS:
+            mid = x0 + (x1 - x0) / 2
+            annotations.append({
+                "xref": "x", "yref": "paper",
+                "x": str(mid.date()), "y": 0.5,
+                "text": state_labels.get(ep["state"], ""),
+                "showarrow": False,
+                "font": {"size": 9, "color": "#5a5550", "family": "Inter, sans-serif"},
+                "xanchor": "center", "yanchor": "middle",
+            })
 
-    # Hover trace: invisible scatter with regime label per month
+    # Hover trace only
     hover_labels = [state_labels.get(int(s), str(s)) for s in states]
-    traces.append({
+    traces = [{
         "type": "scatter",
         "mode": "markers",
         "x": [str(d.date()) for d in X_df.index],
         "y": [0.5] * len(X_df),
         "marker": {"opacity": 0, "size": 8},
         "text": hover_labels,
-        "hovertemplate": "%{x}<br>%{text}<extra></extra>",
+        "hovertemplate": "%{x}  %{text}<extra></extra>",
         "showlegend": False,
-    })
+    }]
 
     layout = {
-        "margin": {"t": 10, "b": 10, "l": 10, "r": 10},
-        "height": 80,
+        "margin": {"t": 8, "b": 24, "l": 10, "r": 10},
+        "height": 72,
         "paper_bgcolor": "rgba(0,0,0,0)",
         "plot_bgcolor": "rgba(0,0,0,0)",
         "shapes": shapes,
-        "legend": {"orientation": "v", "y": -0.05, "yanchor": "top", "x": 0, "font": {"size": 11}, "tracegroupgap": 4},
+        "annotations": annotations,
+        "showlegend": False,
         "xaxis": {"showgrid": False, "tickfont": {"size": 10}, "type": "date"},
         "yaxis": {"visible": False, "range": [0, 1]},
         "hovermode": "closest",
