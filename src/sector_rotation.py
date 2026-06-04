@@ -180,6 +180,58 @@ def _build_summary(positions: dict) -> dict:
     }
 
 
+_Q_RANK_MULT = {"leading": 3, "improving": 2, "weakening": 1, "lagging": 0}
+
+
+def _rank_score(rx: float, ry: float, q: str) -> float:
+    return _Q_RANK_MULT[q] * 10 + rx + ry
+
+
+def _weekly_rank_score_leaders(all_full: dict[str, pd.DataFrame]) -> pd.Series:
+    """Per week: ticker with highest rank_score (same rule as CURRENT LEADER headline)."""
+    cols: dict[str, pd.Series] = {}
+    for ticker, full in all_full.items():
+        qs = full.apply(lambda row: _quadrant(row["r"], row["m"]), axis=1)
+        cols[ticker] = qs.map(_Q_RANK_MULT) * 10 + full["r"] + full["m"]
+    mat = pd.concat(cols, axis=1).dropna()
+    if len(mat) < 2:
+        return pd.Series(dtype=object)
+    return mat.idxmax(axis=1)
+
+
+def _avg_weeks_when_rank1(leader_series: pd.Series, ticker: str) -> float | None:
+    """Mean run length (weeks) when *ticker* was rank_score #1."""
+    runs: list[int] = []
+    vals = leader_series.tolist()
+    i = 0
+    while i < len(vals):
+        if vals[i] == ticker:
+            j = i
+            while j < len(vals) and vals[j] == ticker:
+                j += 1
+            runs.append(j - i)
+            i = j
+        else:
+            i += 1
+    if not runs:
+        return None
+    return round(sum(runs) / len(runs), 1)
+
+
+def _attach_avg_weeks_as_rank1(sector_stats: list[dict], all_full: dict[str, pd.DataFrame]) -> None:
+    leader_series = _weekly_rank_score_leaders(all_full)
+    if leader_series.empty:
+        return
+    label_to_ticker = {label: t for t, label in SECTORS.items()}
+    for row in sector_stats:
+        ticker = label_to_ticker.get(row.get("label", ""))
+        if not ticker:
+            continue
+        avg = _avg_weeks_when_rank1(leader_series, ticker)
+        if avg is not None:
+            row["avg_weeks_as_rank1"] = avg
+
+
 def _rank_transitions(all_full: dict[str, pd.DataFrame]) -> dict:
     """
     Compute historical #1 rank transitions across all sectors.
@@ -319,9 +371,7 @@ def build_rrg_plotly(data: dict) -> dict:
         avg = stats["avg_stay"].get(q)
         stay = stats["stay_pct"].get(q)
         exits = stats["exits"].get(q, [])
-        # Rank score: top-right = best (Leading with high rs_ratio+rs_mom)
-        _q_rank = {"leading": 3, "improving": 2, "weakening": 1, "lagging": 0}
-        rank_score = _q_rank[q] * 10 + rx + ry
+        rank_score = _rank_score(rx, ry, q)
         sector_stats.append({
             "label": label,
             "color": col,
@@ -338,6 +388,7 @@ def build_rrg_plotly(data: dict) -> dict:
     if not traces:
         return {}
 
+    _attach_avg_weeks_as_rank1(sector_stats, all_full)
     rank_trans = _rank_transitions(all_full)
     summary = _build_summary(positions)
 

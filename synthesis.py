@@ -2695,8 +2695,8 @@ HTML_TMPL_LITE = """<!doctype html>
               <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:{{ top.color }};margin-right:6px;vertical-align:middle;"></span>{{ top.label }}
             </div>
             <div class="stat-sub">
-              <span class="ai-zh">{{ top.quadrant_zh }} · 已領先 {{ top.weeks_current }} 週</span>
-              <span class="ai-en">{{ top.quadrant_en }} · leading for {{ top.weeks_current }}w</span>
+              <span class="ai-zh">{{ top.quadrant_zh }} · 已領先 {{ top.weeks_current }} 週{% if top.avg_weeks_as_rank1 %} · 當第一時歷史平均 {{ top.avg_weeks_as_rank1 }} 週{% endif %}</span>
+              <span class="ai-en">{{ top.quadrant_en }} · leading for {{ top.weeks_current }}w{% if top.avg_weeks_as_rank1 %} · avg {{ top.avg_weeks_as_rank1 }}w as #1{% endif %}</span>
             </div>
           </div>
         </div>
