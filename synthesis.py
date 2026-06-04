@@ -2016,8 +2016,8 @@ HTML_TMPL_LITE = """<!doctype html>
     body { margin:0; background:var(--block); color:var(--ink); font-family:var(--serif); -webkit-font-smoothing:antialiased; }
     /* Scroll snap — zone-level only (proximity = doesn't trap you in long sections) */
     @media (prefers-reduced-motion: no-preference) {
-      html { scroll-snap-type: y proximity; }
-      .hero, .zone-divider { scroll-snap-align: start; scroll-snap-stop: normal; }
+      html { scroll-snap-type: y mandatory; }
+      .hero, .zone-divider { scroll-snap-align: start; scroll-snap-stop: always; }
     }
     /* Sheet title (white header with red rule) */
     .sheet-title { display:flex; align-items:center; justify-content:space-between; gap:0.75rem; flex-wrap:wrap; padding:0.3rem 0.2rem 1rem; margin-bottom:0; }
