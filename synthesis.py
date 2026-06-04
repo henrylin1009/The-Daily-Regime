@@ -2017,7 +2017,7 @@ HTML_TMPL_LITE = """<!doctype html>
     /* Proximity snap: two points only — top (hero) + US Anchor */
     @media (prefers-reduced-motion: no-preference) {
       html { scroll-snap-type: y proximity; }
-      .sheet-title { scroll-snap-align: start; scroll-margin-top: -1.4rem; }
+      .snap-top { scroll-snap-align: start; }
       .snap-anchor { scroll-snap-align: start; scroll-margin-top: 3.5rem; }
     }
     /* Section break divider before US Anchor */
@@ -2271,6 +2271,7 @@ HTML_TMPL_LITE = """<!doctype html>
   </script>
 </head>
 <body>
+  <div class="snap-top" aria-hidden="true"></div>
   <div class="scroll-progress" aria-hidden="true"></div>
   {% macro info(t, side='') %}{% if t %}<span class="info {{ side }}" tabindex="0" role="button" aria-label="方法說明">i<span class="tip">{{ t }}</span></span>{% endif %}{% endmacro %}
   <div class="sheet">
