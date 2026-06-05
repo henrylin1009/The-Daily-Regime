@@ -98,6 +98,7 @@ For each country, translate the raw signals into plain language:
 - plumbing_en / plumbing_zh: How is money flowing? (≤28 words each)
 - hedging_en / hedging_zh: What risk to watch? (≤28 words each)
 - expectation_label_en/zh, plumbing_label_en/zh, hedging_label_en/zh: Short titles (≤6 words each language)
+- expectation_reasoning_en/zh, plumbing_reasoning_en/zh, hedging_reasoning_en/zh: 2-3 sentences each — hover-only "show your work" for that gear row. Cite concrete figures from that country's gear_matrix_raw (signal, drivers, FX %, spread bp, SKEW/VVIX where relevant). Same role as daily_themes.reasoning.
 
 【Bilingual Output — Required】
 Every reader-facing string MUST include BOTH English (_en) and Traditional Chinese (_zh, 繁體白話, same meaning, equally plain).
@@ -159,7 +160,13 @@ Also set legacy unsuffixed keys (title, body, the_stance, expectation, etc.) to 
       "hedging_en": "...", "hedging_zh": "...", "hedging": "...",
       "expectation_label_en": "...", "expectation_label_zh": "...", "expectation_label": "...",
       "plumbing_label_en": "...", "plumbing_label_zh": "...", "plumbing_label": "...",
-      "hedging_label_en": "...", "hedging_label_zh": "...", "hedging_label": "..."
+      "hedging_label_en": "...", "hedging_label_zh": "...", "hedging_label": "...",
+      "expectation_reasoning_en": "... (numbers welcome)",
+      "expectation_reasoning_zh": "...（可放數字）",
+      "plumbing_reasoning_en": "... (numbers welcome)",
+      "plumbing_reasoning_zh": "...（可放數字）",
+      "hedging_reasoning_en": "... (numbers welcome)",
+      "hedging_reasoning_zh": "...（可放數字）"
     },
     "Japan": { "...": "same shape as US" },
     "Europe": { "...": "same shape as US" },
@@ -1003,7 +1010,96 @@ def _normalize_gear_block_bilingual(block: dict) -> dict:
         out[f"{base}_en"] = en
         out[f"{base}_zh"] = zh
         out[base] = en
+    for base in ("expectation_reasoning", "plumbing_reasoning", "hedging_reasoning"):
+        en, zh = _bilingual_pair(out, base)
+        out[f"{base}_en"] = _sanitize_jargon(en) if en and en != FALLBACK else ""
+        out[f"{base}_zh"] = _sanitize_jargon(zh) if zh and zh != FALLBACK else ""
+        out[base] = out[f"{base}_en"]
     return out
+
+
+_GEAR_SIGNAL_ZH = {"GREEN": "綠燈（資金流入）", "RED": "紅燈（需留意）", "YELLOW": "黃燈（中性）"}
+_GEAR_SIGNAL_EN = {"GREEN": "GREEN (inflows)", "RED": "RED (caution)", "YELLOW": "YELLOW (neutral)"}
+
+
+def _build_gear_quant_reasoning(
+    country: str,
+    field: str,
+    l2b: dict | None,
+    quant_context_json: dict | None,
+    lang: str,
+) -> str:
+    """Quant fallback tooltip for lite gear rows (formula + today's values, no LLM)."""
+    zh = lang == "zh"
+    flow = l2b if isinstance(l2b, dict) else {}
+    sig = flow.get("signals") or {}
+    country_sig = sig.get(country, {}) if isinstance(sig, dict) else {}
+    reasons = country_sig.get("reasons") if isinstance(country_sig.get("reasons"), list) else []
+    fp = flow.get("flow_payload") if isinstance(flow.get("flow_payload"), dict) else {}
+    fx1 = (fp.get("fx_1m_local_vs_usd") or {}).get(country) if isinstance(fp.get("fx_1m_local_vs_usd"), dict) else None
+    spread = (fp.get("bond_spreads_bp") or {}).get(country) if isinstance(fp.get("bond_spreads_bp"), dict) else None
+
+    ra = (quant_context_json or {}).get("Risk_Analytics") if isinstance(quant_context_json, dict) else {}
+    l2r = (ra or {}).get("layer2_risk") if isinstance(ra, dict) else {}
+    skew = l2r.get("SKEW") if isinstance(l2r, dict) else {}
+    vvix = l2r.get("VVIX") if isinstance(l2r, dict) else {}
+    skew_level = skew.get("latest_level", skew.get("level")) if isinstance(skew, dict) else None
+    skew_sig = (skew.get("signal") or skew.get("label") or "") if isinstance(skew, dict) else ""
+    vvix_sig = (vvix.get("signal") or vvix.get("label") or "") if isinstance(vvix, dict) else ""
+
+    if field == "expectation":
+        signal = str(country_sig.get("signal") or "").strip().upper()
+        drivers = ", ".join(str(r) for r in reasons[:4]) or ("—" if zh else "n/a")
+        sig_disp = (_GEAR_SIGNAL_ZH if zh else _GEAR_SIGNAL_EN).get(signal, signal or ("—" if zh else "n/a"))
+        if zh:
+            return (
+                f"戰術預期來自 Layer 2 國別訊號燈號與驅動因子（flow signals）。"
+                f"目前 {country}：{sig_disp}。"
+                f"驅動：{drivers}。"
+                f"LLM 將上述 raw 訊號翻譯為白話標題與正文。"
+            )
+        return (
+            f"Tactical expectation from Layer 2 country signal + drivers (flow signals). "
+            f"Current {country}: {sig_disp}. Drivers: {drivers}. "
+            f"The visible headline/body is the LLM translation of this raw input."
+        )
+
+    if field == "plumbing":
+        fx_txt = f"{float(fx1):+.2f}%" if fx1 is not None else ("—" if zh else "n/a")
+        spread_txt = f"{float(spread):+.1f} bp" if spread is not None else ("—" if zh else "n/a")
+        if zh:
+            return (
+                f"資金／水管面：當地貨幣對美元 1 個月變化 {fx_txt}；"
+                f"10Y 利差（美債 − 當地）{spread_txt}。"
+                f"資料來自 flow_brief bond_spreads_bp 與 fx_1m_local_vs_usd。"
+            )
+        return (
+            f"Plumbing / flows: local FX vs USD 1-month change {fx_txt}; "
+            f"10Y spread (UST − local) {spread_txt}. "
+            f"Sourced from flow_brief bond_spreads_bp and fx_1m_local_vs_usd."
+        )
+
+    # hedging — global SKEW/VVIX switch (same for all countries in build_l2_gear_columns)
+    skew_txt = f"{float(skew_level):.1f}" if skew_level is not None else ("—" if zh else "n/a")
+    vvix_txt = str(vvix_sig).strip() or ("—" if zh else "n/a")
+    skew_hot = (
+        (skew_level is not None and float(skew_level) > 130)
+        or str(skew_sig).lower() in ("elevated", "high", "extreme")
+        or str(vvix_sig).lower() in ("elevated", "high", "extreme")
+    )
+    if zh:
+        state = "尾部風險保護偏貴（隱藏謹慎）" if skew_hot else "避險成本正常"
+        return (
+            f"避險異常為全球 Layer 2 風險開關（各國共用）。"
+            f"SKEW 水準 {skew_txt}（>130 視為偏高）；VVIX 訊號 {vvix_txt}。"
+            f"判定：{state}。與 build_l2_gear_columns hedging 規則一致。"
+        )
+    state = "tail protection expensive (hidden caution)" if skew_hot else "hedging costs normal"
+    return (
+        f"Hedging row uses the global Layer 2 risk switch (shared across countries). "
+        f"SKEW level {skew_txt} (>130 = elevated); VVIX signal {vvix_txt}. "
+        f"Verdict: {state}. Matches build_l2_gear_columns hedging rule."
+    )
 
 
 def _gear_semantic_text(semantics: dict, field: str, lang: str) -> str | None:
@@ -1020,6 +1116,8 @@ def _lite_country_matrix(
     gear_semantics: dict,
     lang: str,
     vs_us_alignment: dict | None = None,
+    l2b: dict | None = None,
+    quant_context_json: dict | None = None,
 ) -> list[dict]:
     semantic_keys = ("expectation", "plumbing", "hedging")
     label_keys = ("expectation_label", "plumbing_label", "hedging_label")
@@ -1048,7 +1146,11 @@ def _lite_country_matrix(
             body = _gear_semantic_text(semantics, field, lang)
             if not body:
                 body = str(gear.get("cio") or gear.get("l2") or FALLBACK)
-            gears_out.append({"title": title, "body": body})
+            reasoning = (
+                _gear_semantic_text(semantics, f"{field}_reasoning", lang)
+                or _build_gear_quant_reasoning(country, field, l2b, quant_context_json, lang)
+            )
+            gears_out.append({"title": title, "body": body, "reasoning": reasoning})
         align = (vs_us_alignment or {}).get(country) if vs_us_alignment else None
         panels.append(
             {
@@ -1985,6 +2087,8 @@ def _build_lite_lang_blocks(
     tilt_result: dict | None = None,
     carry_relative: dict | None = None,
     risk_analytics: dict | None = None,
+    l2b: dict | None = None,
+    quant_context_json: dict | None = None,
 ) -> list[dict]:
     hist_zh = _localize_historical_matches(historical_matches_en, historical_descriptions_zh)
     div_zh = _localize_historical_matches(divergence_matches_en, divergence_descriptions_zh)
@@ -2061,7 +2165,12 @@ def _build_lite_lang_blocks(
                 "historical_matches": hist,
                 "divergence_matches": divm,
                 "country_matrix": _lite_country_matrix(
-                    country_matrix, gear_semantics, lang_key, vs_us_alignment
+                    country_matrix,
+                    gear_semantics,
+                    lang_key,
+                    vs_us_alignment,
+                    l2b=l2b,
+                    quant_context_json=quant_context_json,
                 ),
                 "vs_us_alignment": vs_us_alignment,
                 "history_translation_fallback": history_translation_fallback and lang_key == "zh",
@@ -2269,6 +2378,9 @@ HTML_TMPL_LITE = """<!doctype html>
     .cty-vs.aligned { background:var(--cream); color:var(--ink); } .cty-vs.diverging { background:#fdeee4; color:var(--red); }
     .cty-vs.mixed { background:var(--cream); color:var(--muted); } .cty-vs.limited { background:var(--cream); color:var(--muted); }
     .cty-row { font-size:0.92rem; line-height:1.55; color:#1d1d1b; margin:0.55rem 0 0; display:flex; flex-direction:column; gap:0.1rem; }
+    .cty-row-head { display:flex; align-items:flex-start; gap:0.4rem; }
+    .cty-row-head .info { flex-shrink:0; margin-top:0.05rem; margin-left:0; }
+    .cty-row-body { display:block; }
     .cty-row b { font-family:var(--sans); color:var(--red); font-weight:700; font-size:0.65rem; text-transform:uppercase; letter-spacing:0.07em; }
     /* Merged country+carry cards */
     .cty-carry-grid { display:grid; grid-template-columns:1fr 1fr; gap:0.9rem; }
@@ -2754,7 +2866,10 @@ HTML_TMPL_LITE = """<!doctype html>
           {% endif %}
           <div class="cty-gears">
             {% for gear in panel.gears %}
-            <div class="cty-row"><b>{{ gear.title }}</b>{{ gear.body }}</div>
+            <div class="cty-row">
+              <div class="cty-row-head"><b>{{ gear.title }}</b>{{ info(gear.reasoning, 'tip-left') }}</div>
+              <span class="cty-row-body">{{ gear.body }}</span>
+            </div>
             {% endfor %}
           </div>
         </div>
@@ -3652,6 +3767,15 @@ def _empty_gear_matrix_semantics() -> dict[str, dict[str, str]]:
         "hedging_label": "",
         "hedging_label_en": "",
         "hedging_label_zh": "",
+        "expectation_reasoning": "",
+        "expectation_reasoning_en": "",
+        "expectation_reasoning_zh": "",
+        "plumbing_reasoning": "",
+        "plumbing_reasoning_en": "",
+        "plumbing_reasoning_zh": "",
+        "hedging_reasoning": "",
+        "hedging_reasoning_en": "",
+        "hedging_reasoning_zh": "",
     }
     return {country: dict(block) for country in COUNTRY_CYCLE_KEYS}
 
@@ -4122,7 +4246,7 @@ Instructions:
 - Zone 1: flash_bullets (capital_flows from the carry/relative surface, volatility from US VIX, macro_sentiment) aligned with macro_regime_label.
 - Zone 2: decisive, cold, contrarian; NO digits, %, Z-scores, tickers, bn.
 - Zone 3: pure_alpha three sections (expectation_arbitrage, crowdedness_leverage, hedging_cost_anomaly); cite macro_regime_label, divergence_score, penalty_reason, SKEW, VVIX, SHY/TLT, MOVE/VIX/DXY/JPY/TWD/SPY/HYG.
-- gear_matrix_semantics: all six countries; expectation/plumbing/hedging sentences plus threat/opportunity labels (see system Step 3).
+- gear_matrix_semantics: all six countries; expectation/plumbing/hedging sentences plus labels and *_reasoning hover text (see system Step 5).
 - relationship_analysis.status must match convergence_divergence.status (likely {div_ctx.get("likely_status")}).
 - Failure mode: generic prose with no named indicators from the payloads above.
 
@@ -4462,6 +4586,8 @@ def _write_synthesis_lite_html(
         tilt_result=tilt_result,
         carry_relative=carry_relative,
         risk_analytics=(quant_context_json.get("Risk_Analytics") if isinstance(quant_context_json, dict) else None),
+        l2b=l2b,
+        quant_context_json=quant_context_json,
     )
     try:
         from src.sector_rotation import build_rrg_plotly as _build_rrg

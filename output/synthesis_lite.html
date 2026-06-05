@@ -183,6 +183,9 @@
     .cty-vs.aligned { background:var(--cream); color:var(--ink); } .cty-vs.diverging { background:#fdeee4; color:var(--red); }
     .cty-vs.mixed { background:var(--cream); color:var(--muted); } .cty-vs.limited { background:var(--cream); color:var(--muted); }
     .cty-row { font-size:0.92rem; line-height:1.55; color:#1d1d1b; margin:0.55rem 0 0; display:flex; flex-direction:column; gap:0.1rem; }
+    .cty-row-head { display:flex; align-items:flex-start; gap:0.4rem; }
+    .cty-row-head .info { flex-shrink:0; margin-top:0.05rem; margin-left:0; }
+    .cty-row-body { display:block; }
     .cty-row b { font-family:var(--sans); color:var(--red); font-weight:700; font-size:0.65rem; text-transform:uppercase; letter-spacing:0.07em; }
     /* Merged country+carry cards */
     .cty-carry-grid { display:grid; grid-template-columns:1fr 1fr; gap:0.9rem; }
@@ -685,11 +688,20 @@
           
           <div class="cty-gears">
             
-            <div class="cty-row"><b>穩定增長，低波動</b>市場預期穩定增長與低波動，但債市開始排除降息。</div>
+            <div class="cty-row">
+              <div class="cty-row-head"><b>穩定增長，低波動</b><span class="info tip-left" tabindex="0" role="button" aria-label="方法說明">i<span class="tip">戰術預期來自 Layer 2 國別訊號燈號與驅動因子（flow signals）。目前 US：綠燈（資金流入）。驅動：USD broad 1m, USD broad 3m, Equity 1m。LLM 將上述 raw 訊號翻譯為白話標題與正文。</span></span></div>
+              <span class="cty-row-body">市場預期穩定增長與低波動，但債市開始排除降息。</span>
+            </div>
             
-            <div class="cty-row"><b>風險偏好資金流入</b>資金流入股市，信用利差緊縮，美元走強。</div>
+            <div class="cty-row">
+              <div class="cty-row-head"><b>風險偏好資金流入</b><span class="info tip-left" tabindex="0" role="button" aria-label="方法說明">i<span class="tip">資金／水管面：當地貨幣對美元 1 個月變化 —；10Y 利差（美債 − 當地）—。資料來自 flow_brief bond_spreads_bp 與 fx_1m_local_vs_usd。</span></span></div>
+              <span class="cty-row-body">資金流入股市，信用利差緊縮，美元走強。</span>
+            </div>
             
-            <div class="cty-row"><b>隱藏謹慎</b>即使表面波動平靜，尾部風險保護成本正在上升。</div>
+            <div class="cty-row">
+              <div class="cty-row-head"><b>隱藏謹慎</b><span class="info tip-left" tabindex="0" role="button" aria-label="方法說明">i<span class="tip">避險異常為全球 Layer 2 風險開關（各國共用）。SKEW 水準 143.2（>130 視為偏高）；VVIX 訊號 Improving。判定：尾部風險保護偏貴（隱藏謹慎）。與 build_l2_gear_columns hedging 規則一致。</span></span></div>
+              <span class="cty-row-body">即使表面波動平靜，尾部風險保護成本正在上升。</span>
+            </div>
             
           </div>
         </div>
@@ -715,11 +727,20 @@
           
           <div class="cty-gears">
             
-            <div class="cty-row"><b>日圓弱勢，利差交易持續</b>日圓貶值，利差交易具吸引力，但部位極端。</div>
+            <div class="cty-row">
+              <div class="cty-row-head"><b>日圓弱勢，利差交易持續</b><span class="info tip-left" tabindex="0" role="button" aria-label="方法說明">i<span class="tip">戰術預期來自 Layer 2 國別訊號燈號與驅動因子（flow signals）。目前 Japan：黃燈（中性）。驅動：FX 1m, FX 3m, Equity 1m, Japan TIC MoM。LLM 將上述 raw 訊號翻譯為白話標題與正文。</span></span></div>
+              <span class="cty-row-body">日圓貶值，利差交易具吸引力，但部位極端。</span>
+            </div>
             
-            <div class="cty-row"><b>資金外流，賣日圓</b>資本外流，日圓被賣出，買入美債。</div>
+            <div class="cty-row">
+              <div class="cty-row-head"><b>資金外流，賣日圓</b><span class="info tip-left" tabindex="0" role="button" aria-label="方法說明">i<span class="tip">資金／水管面：當地貨幣對美元 1 個月變化 -1.98%；10Y 利差（美債 − 當地）+194.0 bp。資料來自 flow_brief bond_spreads_bp 與 fx_1m_local_vs_usd。</span></span></div>
+              <span class="cty-row-body">資本外流，日圓被賣出，買入美債。</span>
+            </div>
             
-            <div class="cty-row"><b>軋空風險</b>擁擠空頭可能劇烈回補；尾部風險高。</div>
+            <div class="cty-row">
+              <div class="cty-row-head"><b>軋空風險</b><span class="info tip-left" tabindex="0" role="button" aria-label="方法說明">i<span class="tip">避險異常為全球 Layer 2 風險開關（各國共用）。SKEW 水準 143.2（>130 視為偏高）；VVIX 訊號 Improving。判定：尾部風險保護偏貴（隱藏謹慎）。與 build_l2_gear_columns hedging 規則一致。</span></span></div>
+              <span class="cty-row-body">擁擠空頭可能劇烈回補；尾部風險高。</span>
+            </div>
             
           </div>
         </div>
@@ -745,11 +766,20 @@
           
           <div class="cty-gears">
             
-            <div class="cty-row"><b>歐元弱勢，利差交易持續</b>歐元走弱，利差擴大，但淨多頭部位極端。</div>
+            <div class="cty-row">
+              <div class="cty-row-head"><b>歐元弱勢，利差交易持續</b><span class="info tip-left" tabindex="0" role="button" aria-label="方法說明">i<span class="tip">戰術預期來自 Layer 2 國別訊號燈號與驅動因子（flow signals）。目前 Europe：紅燈（需留意）。驅動：FX 1m, FX 3m, Equity 1m。LLM 將上述 raw 訊號翻譯為白話標題與正文。</span></span></div>
+              <span class="cty-row-body">歐元走弱，利差擴大，但淨多頭部位極端。</span>
+            </div>
             
-            <div class="cty-row"><b>資金外流，賣歐元</b>資本外流，歐元被賣出，買入美債。</div>
+            <div class="cty-row">
+              <div class="cty-row-head"><b>資金外流，賣歐元</b><span class="info tip-left" tabindex="0" role="button" aria-label="方法說明">i<span class="tip">資金／水管面：當地貨幣對美元 1 個月變化 -0.82%；10Y 利差（美債 − 當地）+145.9 bp。資料來自 flow_brief bond_spreads_bp 與 fx_1m_local_vs_usd。</span></span></div>
+              <span class="cty-row-body">資本外流，歐元被賣出，買入美債。</span>
+            </div>
             
-            <div class="cty-row"><b>謹慎信號</b>尾部風險保護成本上升；紅燈信號。</div>
+            <div class="cty-row">
+              <div class="cty-row-head"><b>謹慎信號</b><span class="info tip-left" tabindex="0" role="button" aria-label="方法說明">i<span class="tip">避險異常為全球 Layer 2 風險開關（各國共用）。SKEW 水準 143.2（>130 視為偏高）；VVIX 訊號 Improving。判定：尾部風險保護偏貴（隱藏謹慎）。與 build_l2_gear_columns hedging 規則一致。</span></span></div>
+              <span class="cty-row-body">尾部風險保護成本上升；紅燈信號。</span>
+            </div>
             
           </div>
         </div>
@@ -775,11 +805,20 @@
           
           <div class="cty-gears">
             
-            <div class="cty-row"><b>人民幣強勢，穩定</b>人民幣升值，外匯儲備增加，政策按兵不動。</div>
+            <div class="cty-row">
+              <div class="cty-row-head"><b>人民幣強勢，穩定</b><span class="info tip-left" tabindex="0" role="button" aria-label="方法說明">i<span class="tip">戰術預期來自 Layer 2 國別訊號燈號與驅動因子（flow signals）。目前 China：綠燈（資金流入）。驅動：FX 1m, FX 3m, Equity 1m, FX reserves MoM。LLM 將上述 raw 訊號翻譯為白話標題與正文。</span></span></div>
+              <span class="cty-row-body">人民幣升值，外匯儲備增加，政策按兵不動。</span>
+            </div>
             
-            <div class="cty-row"><b>資金流入，買人民幣</b>資金流入，買入人民幣，銅需求強勁。</div>
+            <div class="cty-row">
+              <div class="cty-row-head"><b>資金流入，買人民幣</b><span class="info tip-left" tabindex="0" role="button" aria-label="方法說明">i<span class="tip">資金／水管面：當地貨幣對美元 1 個月變化 +0.96%；10Y 利差（美債 − 當地）—。資料來自 flow_brief bond_spreads_bp 與 fx_1m_local_vs_usd。</span></span></div>
+              <span class="cty-row-body">資金流入，買入人民幣，銅需求強勁。</span>
+            </div>
             
-            <div class="cty-row"><b>可控風險</b>尾部風險保護成本上升；資本管制限制風險。</div>
+            <div class="cty-row">
+              <div class="cty-row-head"><b>可控風險</b><span class="info tip-left" tabindex="0" role="button" aria-label="方法說明">i<span class="tip">避險異常為全球 Layer 2 風險開關（各國共用）。SKEW 水準 143.2（>130 視為偏高）；VVIX 訊號 Improving。判定：尾部風險保護偏貴（隱藏謹慎）。與 build_l2_gear_columns hedging 規則一致。</span></span></div>
+              <span class="cty-row-body">尾部風險保護成本上升；資本管制限制風險。</span>
+            </div>
             
           </div>
         </div>
@@ -805,11 +844,20 @@
           
           <div class="cty-gears">
             
-            <div class="cty-row"><b>資金流入，科技股上漲</b>外資強勁流入，科技股上漲，台幣穩定。</div>
+            <div class="cty-row">
+              <div class="cty-row-head"><b>資金流入，科技股上漲</b><span class="info tip-left" tabindex="0" role="button" aria-label="方法說明">i<span class="tip">戰術預期來自 Layer 2 國別訊號燈號與驅動因子（flow signals）。目前 Taiwan：綠燈（資金流入）。驅動：FX 1m, FX 3m, Equity 1m, TW foreign 5d。LLM 將上述 raw 訊號翻譯為白話標題與正文。</span></span></div>
+              <span class="cty-row-body">外資強勁流入，科技股上漲，台幣穩定。</span>
+            </div>
             
-            <div class="cty-row"><b>資金流入，買台幣</b>資金流入，外資買股，台幣有買盤。</div>
+            <div class="cty-row">
+              <div class="cty-row-head"><b>資金流入，買台幣</b><span class="info tip-left" tabindex="0" role="button" aria-label="方法說明">i<span class="tip">資金／水管面：當地貨幣對美元 1 個月變化 +0.26%；10Y 利差（美債 − 當地）—。資料來自 flow_brief bond_spreads_bp 與 fx_1m_local_vs_usd。</span></span></div>
+              <span class="cty-row-body">資金流入，外資買股，台幣有買盤。</span>
+            </div>
             
-            <div class="cty-row"><b>強勁動能</b>尾部風險保護成本上升；但資金動能強勁。</div>
+            <div class="cty-row">
+              <div class="cty-row-head"><b>強勁動能</b><span class="info tip-left" tabindex="0" role="button" aria-label="方法說明">i<span class="tip">避險異常為全球 Layer 2 風險開關（各國共用）。SKEW 水準 143.2（>130 視為偏高）；VVIX 訊號 Improving。判定：尾部風險保護偏貴（隱藏謹慎）。與 build_l2_gear_columns hedging 規則一致。</span></span></div>
+              <span class="cty-row-body">尾部風險保護成本上升；但資金動能強勁。</span>
+            </div>
             
           </div>
         </div>
@@ -839,7 +887,7 @@
             
             <div class="an-card">
               <div class="an-per">2007-11</div>
-              <div class="an-desc">金融海嘯前——殖利率曲線平坦、波動率低、信貸市場自滿</div>
+              <div class="an-desc">金融危機前——曲線平坦，波動率低，信貸自滿</div>
               <div class="an-ret">
                 <div class="an-stat neg"><span class="an-l">美股 12m</span><span class="an-v">-39%</span></div>
                 <div class="an-stat neg"><span class="an-l">3m</span><span class="an-v">-9%</span></div>
@@ -850,7 +898,7 @@
             
             <div class="an-card">
               <div class="an-per">2000-10</div>
-              <div class="an-desc">網路泡沫高峰——勞動市場緊繃、估值偏高</div>
+              <div class="an-desc">網路泡沫高峰——勞動力市場緊俏，估值偏高</div>
               <div class="an-ret">
                 <div class="an-stat neg"><span class="an-l">美股 12m</span><span class="an-v">-26%</span></div>
                 <div class="an-stat neg"><span class="an-l">3m</span><span class="an-v">-4%</span></div>
@@ -861,7 +909,7 @@
             
             <div class="an-card">
               <div class="an-per">2014-08</div>
-              <div class="an-desc">週期中段放緩——波動率低、美元走強、油價開始下跌</div>
+              <div class="an-desc">週期中段放緩——波動率低，美元走強，油價開始下跌</div>
               <div class="an-ret">
                 <div class="an-stat neg"><span class="an-l">美股 12m</span><span class="an-v">-1%</span></div>
                 <div class="an-stat pos"><span class="an-l">3m</span><span class="an-v">+3%</span></div>
@@ -895,7 +943,7 @@
             
             <div class="an-card">
               <div class="an-per">2006-11</div>
-              <div class="an-desc">金融危機前流動性高峰 — 利差交易盛行，全球波動率偏低</div>
+              <div class="an-desc">金融危機前流動性高峰 — 利差交易盛行，全球波動率低</div>
               <div class="an-ret">
                 
                 
@@ -1724,11 +1772,20 @@
           
           <div class="cty-gears">
             
-            <div class="cty-row"><b>Steady growth, low vol</b>Market pricing steady growth and low volatility, but bond market is starting to price out rate cuts.</div>
+            <div class="cty-row">
+              <div class="cty-row-head"><b>Steady growth, low vol</b><span class="info tip-left" tabindex="0" role="button" aria-label="方法說明">i<span class="tip">Tactical expectation from Layer 2 country signal + drivers (flow signals). Current US: GREEN (inflows). Drivers: USD broad 1m, USD broad 3m, Equity 1m. The visible headline/body is the LLM translation of this raw input.</span></span></div>
+              <span class="cty-row-body">Market pricing steady growth and low volatility, but bond market is starting to price out rate cuts.</span>
+            </div>
             
-            <div class="cty-row"><b>Risk-on flows</b>Money flowing into equities, credit spreads tight, dollar strengthening.</div>
+            <div class="cty-row">
+              <div class="cty-row-head"><b>Risk-on flows</b><span class="info tip-left" tabindex="0" role="button" aria-label="方法說明">i<span class="tip">Plumbing / flows: local FX vs USD 1-month change n/a; 10Y spread (UST − local) n/a. Sourced from flow_brief bond_spreads_bp and fx_1m_local_vs_usd.</span></span></div>
+              <span class="cty-row-body">Money flowing into equities, credit spreads tight, dollar strengthening.</span>
+            </div>
             
-            <div class="cty-row"><b>Hidden caution</b>Tail-risk protection getting expensive even as surface volatility looks calm.</div>
+            <div class="cty-row">
+              <div class="cty-row-head"><b>Hidden caution</b><span class="info tip-left" tabindex="0" role="button" aria-label="方法說明">i<span class="tip">Hedging row uses the global Layer 2 risk switch (shared across countries). SKEW level 143.2 (>130 = elevated); VVIX signal Improving. Verdict: tail protection expensive (hidden caution). Matches build_l2_gear_columns hedging rule.</span></span></div>
+              <span class="cty-row-body">Tail-risk protection getting expensive even as surface volatility looks calm.</span>
+            </div>
             
           </div>
         </div>
@@ -1754,11 +1811,20 @@
           
           <div class="cty-gears">
             
-            <div class="cty-row"><b>Yen weakness, carry on</b>Yen weakening, carry trade attractive, but positioning extreme.</div>
+            <div class="cty-row">
+              <div class="cty-row-head"><b>Yen weakness, carry on</b><span class="info tip-left" tabindex="0" role="button" aria-label="方法說明">i<span class="tip">Tactical expectation from Layer 2 country signal + drivers (flow signals). Current Japan: YELLOW (neutral). Drivers: FX 1m, FX 3m, Equity 1m, Japan TIC MoM. The visible headline/body is the LLM translation of this raw input.</span></span></div>
+              <span class="cty-row-body">Yen weakening, carry trade attractive, but positioning extreme.</span>
+            </div>
             
-            <div class="cty-row"><b>Outflow, sell yen</b>Capital outflows, yen sold, US bonds bought.</div>
+            <div class="cty-row">
+              <div class="cty-row-head"><b>Outflow, sell yen</b><span class="info tip-left" tabindex="0" role="button" aria-label="方法說明">i<span class="tip">Plumbing / flows: local FX vs USD 1-month change -1.98%; 10Y spread (UST − local) +194.0 bp. Sourced from flow_brief bond_spreads_bp and fx_1m_local_vs_usd.</span></span></div>
+              <span class="cty-row-body">Capital outflows, yen sold, US bonds bought.</span>
+            </div>
             
-            <div class="cty-row"><b>Squeeze risk</b>Crowded short could unwind violently; tail risk high.</div>
+            <div class="cty-row">
+              <div class="cty-row-head"><b>Squeeze risk</b><span class="info tip-left" tabindex="0" role="button" aria-label="方法說明">i<span class="tip">Hedging row uses the global Layer 2 risk switch (shared across countries). SKEW level 143.2 (>130 = elevated); VVIX signal Improving. Verdict: tail protection expensive (hidden caution). Matches build_l2_gear_columns hedging rule.</span></span></div>
+              <span class="cty-row-body">Crowded short could unwind violently; tail risk high.</span>
+            </div>
             
           </div>
         </div>
@@ -1784,11 +1850,20 @@
           
           <div class="cty-gears">
             
-            <div class="cty-row"><b>Euro weakness, carry on</b>Euro weakening, rate spread wide, but bullish bets extreme.</div>
+            <div class="cty-row">
+              <div class="cty-row-head"><b>Euro weakness, carry on</b><span class="info tip-left" tabindex="0" role="button" aria-label="方法說明">i<span class="tip">Tactical expectation from Layer 2 country signal + drivers (flow signals). Current Europe: RED (caution). Drivers: FX 1m, FX 3m, Equity 1m. The visible headline/body is the LLM translation of this raw input.</span></span></div>
+              <span class="cty-row-body">Euro weakening, rate spread wide, but bullish bets extreme.</span>
+            </div>
             
-            <div class="cty-row"><b>Outflow, sell euro</b>Capital outflows, euro sold, US bonds bought.</div>
+            <div class="cty-row">
+              <div class="cty-row-head"><b>Outflow, sell euro</b><span class="info tip-left" tabindex="0" role="button" aria-label="方法說明">i<span class="tip">Plumbing / flows: local FX vs USD 1-month change -0.82%; 10Y spread (UST − local) +145.9 bp. Sourced from flow_brief bond_spreads_bp and fx_1m_local_vs_usd.</span></span></div>
+              <span class="cty-row-body">Capital outflows, euro sold, US bonds bought.</span>
+            </div>
             
-            <div class="cty-row"><b>Caution signal</b>Tail-risk protection getting expensive; caution signal.</div>
+            <div class="cty-row">
+              <div class="cty-row-head"><b>Caution signal</b><span class="info tip-left" tabindex="0" role="button" aria-label="方法說明">i<span class="tip">Hedging row uses the global Layer 2 risk switch (shared across countries). SKEW level 143.2 (>130 = elevated); VVIX signal Improving. Verdict: tail protection expensive (hidden caution). Matches build_l2_gear_columns hedging rule.</span></span></div>
+              <span class="cty-row-body">Tail-risk protection getting expensive; caution signal.</span>
+            </div>
             
           </div>
         </div>
@@ -1814,11 +1889,20 @@
           
           <div class="cty-gears">
             
-            <div class="cty-row"><b>Yuan strength, stable</b>Yuan strengthening, FX reserves rising, policy on hold.</div>
+            <div class="cty-row">
+              <div class="cty-row-head"><b>Yuan strength, stable</b><span class="info tip-left" tabindex="0" role="button" aria-label="方法說明">i<span class="tip">Tactical expectation from Layer 2 country signal + drivers (flow signals). Current China: GREEN (inflows). Drivers: FX 1m, FX 3m, Equity 1m, FX reserves MoM. The visible headline/body is the LLM translation of this raw input.</span></span></div>
+              <span class="cty-row-body">Yuan strengthening, FX reserves rising, policy on hold.</span>
+            </div>
             
-            <div class="cty-row"><b>Inflow, buy yuan</b>Capital inflows, yuan bought, copper demand strong.</div>
+            <div class="cty-row">
+              <div class="cty-row-head"><b>Inflow, buy yuan</b><span class="info tip-left" tabindex="0" role="button" aria-label="方法說明">i<span class="tip">Plumbing / flows: local FX vs USD 1-month change +0.96%; 10Y spread (UST − local) n/a. Sourced from flow_brief bond_spreads_bp and fx_1m_local_vs_usd.</span></span></div>
+              <span class="cty-row-body">Capital inflows, yuan bought, copper demand strong.</span>
+            </div>
             
-            <div class="cty-row"><b>Controlled risk</b>Tail-risk protection getting expensive; capital controls limit risk.</div>
+            <div class="cty-row">
+              <div class="cty-row-head"><b>Controlled risk</b><span class="info tip-left" tabindex="0" role="button" aria-label="方法說明">i<span class="tip">Hedging row uses the global Layer 2 risk switch (shared across countries). SKEW level 143.2 (>130 = elevated); VVIX signal Improving. Verdict: tail protection expensive (hidden caution). Matches build_l2_gear_columns hedging rule.</span></span></div>
+              <span class="cty-row-body">Tail-risk protection getting expensive; capital controls limit risk.</span>
+            </div>
             
           </div>
         </div>
@@ -1844,11 +1928,20 @@
           
           <div class="cty-gears">
             
-            <div class="cty-row"><b>Inflow, tech rally</b>Strong foreign inflows, tech rally, TWD stable.</div>
+            <div class="cty-row">
+              <div class="cty-row-head"><b>Inflow, tech rally</b><span class="info tip-left" tabindex="0" role="button" aria-label="方法說明">i<span class="tip">Tactical expectation from Layer 2 country signal + drivers (flow signals). Current Taiwan: GREEN (inflows). Drivers: FX 1m, FX 3m, Equity 1m, TW foreign 5d. The visible headline/body is the LLM translation of this raw input.</span></span></div>
+              <span class="cty-row-body">Strong foreign inflows, tech rally, TWD stable.</span>
+            </div>
             
-            <div class="cty-row"><b>Inflow, buy TWD</b>Capital inflows, foreign buying of stocks, TWD bid.</div>
+            <div class="cty-row">
+              <div class="cty-row-head"><b>Inflow, buy TWD</b><span class="info tip-left" tabindex="0" role="button" aria-label="方法說明">i<span class="tip">Plumbing / flows: local FX vs USD 1-month change +0.26%; 10Y spread (UST − local) n/a. Sourced from flow_brief bond_spreads_bp and fx_1m_local_vs_usd.</span></span></div>
+              <span class="cty-row-body">Capital inflows, foreign buying of stocks, TWD bid.</span>
+            </div>
             
-            <div class="cty-row"><b>Strong momentum</b>Tail-risk protection getting expensive; but flow momentum strong.</div>
+            <div class="cty-row">
+              <div class="cty-row-head"><b>Strong momentum</b><span class="info tip-left" tabindex="0" role="button" aria-label="方法說明">i<span class="tip">Hedging row uses the global Layer 2 risk switch (shared across countries). SKEW level 143.2 (>130 = elevated); VVIX signal Improving. Verdict: tail protection expensive (hidden caution). Matches build_l2_gear_columns hedging rule.</span></span></div>
+              <span class="cty-row-body">Tail-risk protection getting expensive; but flow momentum strong.</span>
+            </div>
             
           </div>
         </div>
