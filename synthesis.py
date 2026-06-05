@@ -84,14 +84,6 @@ Example of RIGHT: "The stock rally is broadening out, the dollar is softening, a
 【Step 4b — Watch List】
 Each watch_list item is a short alert (en/zh) PLUS a reasoning_en/reasoning_zh long version (shown only on hover): 1-2 sentences explaining why this matters, citing the concrete trigger and figures (e.g. "yen net shorts are near a record and the carry trade is crowded — an unwind could be violent"). Numbers are welcome in the reasoning fields.
 
-【Step 5 — Gear Matrix (all six countries)】
-For each country, translate the raw signals into plain language:
-- expectation_en / expectation_zh: What is this market pricing in? (≤28 words each, no jargon)
-- plumbing_en / plumbing_zh: How is money flowing? (≤28 words each)
-- hedging_en / hedging_zh: What risk to watch? (≤28 words each)
-- expectation_label_en/zh, plumbing_label_en/zh, hedging_label_en/zh: Short titles (≤6 words each language)
-- expectation_reasoning_en/zh, plumbing_reasoning_en/zh, hedging_reasoning_en/zh: 2-3 sentences each — hover-only "show your work" for that gear row. Cite concrete figures from that country's gear_matrix_raw (signal, drivers, FX %, spread bp, SKEW/VVIX where relevant). Same role as daily_themes.reasoning.
-
 【Bilingual Output — Required】
 Every reader-facing string MUST include BOTH English (_en) and Traditional Chinese (_zh, 繁體白話, same meaning, equally plain).
 Also set legacy unsuffixed keys (title, body, the_stance, expectation, etc.) to the English (_en) value for backward compatibility.
@@ -144,27 +136,7 @@ Also set legacy unsuffixed keys (title, body, the_stance, expectation, etc.) to 
   },
   "convergence_divergence": {"status": "...", "reason": "..."},
   "watch_list": [{"en": "...", "zh": "...", "reasoning_en": "... (numbers welcome)", "reasoning_zh": "...（可放數字）"}],
-  "country_attribution_notes": { "US": "...", "Japan": "...", "Europe": "...", "China": "...", "Taiwan": "..." },
-  "gear_matrix_semantics": {
-    "US": {
-      "expectation_en": "...", "expectation_zh": "...", "expectation": "...",
-      "plumbing_en": "...", "plumbing_zh": "...", "plumbing": "...",
-      "hedging_en": "...", "hedging_zh": "...", "hedging": "...",
-      "expectation_label_en": "...", "expectation_label_zh": "...", "expectation_label": "...",
-      "plumbing_label_en": "...", "plumbing_label_zh": "...", "plumbing_label": "...",
-      "hedging_label_en": "...", "hedging_label_zh": "...", "hedging_label": "...",
-      "expectation_reasoning_en": "... (numbers welcome)",
-      "expectation_reasoning_zh": "...（可放數字）",
-      "plumbing_reasoning_en": "... (numbers welcome)",
-      "plumbing_reasoning_zh": "...（可放數字）",
-      "hedging_reasoning_en": "... (numbers welcome)",
-      "hedging_reasoning_zh": "...（可放數字）"
-    },
-    "Japan": { "...": "same shape as US" },
-    "Europe": { "...": "same shape as US" },
-    "China": { "...": "same shape as US" },
-    "Taiwan": { "...": "same shape as US" }
-  }
+  "country_attribution_notes": { "US": "...", "Japan": "...", "Europe": "...", "China": "...", "Taiwan": "..." }
 }
 """
 
@@ -3683,17 +3655,24 @@ def _call_deepseek(
         return None, str(exc)
 
 
-GEAR_SYSTEM_PROMPT = """You are a macro analyst writing gear matrix entries for a daily brief.
+GEAR_SYSTEM_PROMPT = """You are a macro analyst writing gear matrix entries for a daily brief. Your readers understand macro concepts when explained clearly, but do not know financial jargon or quant metrics. Your language is plain.
 
-【Step 5 — Gear Matrix (all six countries)】
+【No-Jargon Rule — Body Fields Only】
+Never write ticker symbols, Z-scores, basis points, or technical metric names in the expectation/plumbing/hedging body and label fields. Translate everything into plain language.
+Numbers and metric names ARE allowed in the *_reasoning fields (hover-only "show your work").
+
+【Bilingual Output — Required】
+Every reader-facing string MUST include BOTH English (_en) and Traditional Chinese (_zh, 繁體白話, same meaning, equally plain).
+Do NOT leave any _zh field empty or in English. Write _zh naturally in Traditional Chinese — do not just transliterate the English.
+Also set legacy unsuffixed keys (expectation, plumbing, hedging, and *_label) to the English (_en) value for backward compatibility.
+
+【Gear Matrix — All Six Countries】
 For each country, translate the raw signals into plain language:
 - expectation_en / expectation_zh: What is this market pricing in? (≤28 words each, no jargon)
 - plumbing_en / plumbing_zh: How is money flowing? (≤28 words each)
 - hedging_en / hedging_zh: What risk to watch? (≤28 words each)
 - expectation_label_en/zh, plumbing_label_en/zh, hedging_label_en/zh: Short titles (≤6 words each language)
-- expectation_reasoning_en/zh, plumbing_reasoning_en/zh, hedging_reasoning_en/zh: 2-3 sentences each — hover-only "show your work". Cite concrete figures from that country's gear_matrix_raw (signal, drivers, FX %, spread bp, SKEW/VVIX where relevant).
-
-Also set legacy unsuffixed keys (expectation, plumbing, hedging, and *_label) to the English (_en) value for backward compatibility.
+- expectation_reasoning_en/zh, plumbing_reasoning_en/zh, hedging_reasoning_en/zh: 2-3 sentences each — hover-only "show your work". Cite concrete figures from that country's gear_matrix_raw (signal, drivers, FX %, spread bp, SKEW/VVIX where relevant). Numbers welcome here.
 
 Return strict JSON only. No markdown fences. Schema:
 {
