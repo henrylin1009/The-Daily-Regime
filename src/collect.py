@@ -259,6 +259,41 @@ def _fetch_dxy(start_date: str) -> pd.DataFrame:
     raise RuntimeError(f"Could not fetch DXY using symbols: {symbols}")
 
 
+def _finmind_headers() -> dict[str, str]:
+    import os
+
+    token = os.getenv("FINMIND_TOKEN", "").strip()
+    return {"Authorization": f"Bearer {token}"} if token else {}
+
+
+def _fetch_finmind_v4(
+    dataset: str,
+    data_id: str,
+    start_date: str,
+    *,
+    value_col: str = "close",
+) -> pd.DataFrame:
+    """Fetch FinMind v4 daily series (TaiwanStockPrice or TaiwanStockTotalReturnIndex)."""
+    url = "https://api.finmindtrade.com/api/v4/data"
+    params = {
+        "dataset": dataset,
+        "data_id": data_id,
+        "start_date": start_date,
+    }
+    resp = requests.get(url, headers=_finmind_headers(), params=params, timeout=60)
+    resp.raise_for_status()
+    payload = resp.json()
+    if payload.get("status") != 200 or not payload.get("data"):
+        return pd.DataFrame(columns=["date", "value"])
+    df = pd.DataFrame(payload["data"])
+    if df.empty or value_col not in df.columns:
+        return pd.DataFrame(columns=["date", "value"])
+    out = df[["date", value_col]].rename(columns={value_col: "value"})
+    out["date"] = pd.to_datetime(out["date"]).dt.normalize()
+    out["value"] = pd.to_numeric(out["value"], errors="coerce")
+    return out.dropna(subset=["value"]).sort_values("date").reset_index(drop=True)
+
+
 # Registry: name -> fetch function
 INDICATOR_FETCHERS: dict[str, Callable[[str], pd.DataFrame]] = {
     # FRED — inflation (YoY %)
@@ -315,6 +350,13 @@ INDICATOR_FETCHERS: dict[str, Callable[[str], pd.DataFrame]] = {
     "fx_usdjpy": lambda s: _fetch_fred("DEXJPUS", s),
     "fx_eurusd": lambda s: _fetch_fred("DEXUSEU", s),
     "fx_usdcny": lambda s: _fetch_fred("DEXCHUS", s),
+    # Taiwan — FinMind TAIEX total return + sector ETF proxies (00892/0053/0055/00919/00690)
+    "tw_bench": lambda s: _fetch_finmind_v4("TaiwanStockTotalReturnIndex", "TAIEX", s, value_col="price"),
+    "tw_semi": lambda s: _fetch_finmind_v4("TaiwanStockPrice", "00892", s),
+    "tw_comp": lambda s: _fetch_finmind_v4("TaiwanStockPrice", "0053", s),
+    "tw_fin": lambda s: _fetch_finmind_v4("TaiwanStockPrice", "0055", s),
+    "tw_ship": lambda s: _fetch_finmind_v4("TaiwanStockPrice", "00919", s),
+    "tw_mach": lambda s: _fetch_finmind_v4("TaiwanStockPrice", "00690", s),
 }
 
 
@@ -449,6 +491,12 @@ LATE_START_OK: dict[str, str] = {
     "xle": "1999-01-01",
     "xlv": "1999-01-01",
     "xli": "1999-01-01",
+    "tw_bench": "2003-01-01",
+    "tw_semi": "2018-01-01",
+    "tw_comp": "2000-01-01",
+    "tw_fin": "2000-01-01",
+    "tw_ship": "2023-06-01",
+    "tw_mach": "2000-01-01",
 }
 
 

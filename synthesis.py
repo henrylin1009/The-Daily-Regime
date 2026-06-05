@@ -2423,6 +2423,7 @@ HTML_TMPL_LITE = """<!doctype html>
         <button class="tab-btn" data-pane="global" role="tab"><span class="ai-zh">國際承接面</span><span class="ai-en">Global</span></button>
         <button class="tab-btn" data-pane="history" role="tab"><span class="ai-zh">歷史借鏡</span><span class="ai-en">History</span></button>
         <button class="tab-btn" data-pane="sectors" role="tab"><span class="ai-zh">板塊輪動</span><span class="ai-en">Sectors</span></button>
+        <button class="tab-btn" data-pane="sectors-tw" role="tab"><span class="ai-zh">台股板塊</span><span class="ai-en">TW Sectors</span></button>
       </nav>
     </div>
 
@@ -2433,6 +2434,129 @@ HTML_TMPL_LITE = """<!doctype html>
       Run <span style="font-family:monospace;font-size:0.68rem">synthesis.py --date {{ report_date }}</span> without <span style="font-family:monospace;font-size:0.68rem">--skip-llm</span>.
     </div>
     {% endif %}
+
+    {% macro sectors_pane(pane_id, chart_suffix, pdata, psummary, pstats, pperf, prank, zone_zh, zone_en, sub_zh, sub_en, perf_zh, perf_en, rrg_zh, rrg_en, fn_zh, fn_en, lang) %}
+      <div class="tab-pane" data-pane="{{ pane_id }}">
+      <div class="zone-divider zone-1 snap-anchor">
+        <div class="zone-title"><span class="ai-zh">{{ zone_zh }}</span><span class="ai-en">{{ zone_en }}</span></div>
+        <div class="zone-sub"><span class="ai-zh">{{ sub_zh }}</span><span class="ai-en">{{ sub_en }}</span></div>
+      </div>
+
+      {% if pdata and pdata != '{}' %}
+      {% if psummary %}
+      <div class="hero">
+        <div class="hero-kicker"><span class="ai-zh">一句話</span><span class="ai-en">In one line</span></div>
+        <h1 class="hero-stance">
+          <span class="ai-zh">{{ psummary.zh }}</span>
+          <span class="ai-en">{{ psummary.en }}</span>
+        </h1>
+      </div>
+      {% endif %}
+      {% if pstats %}
+      {% set sorted_stats = pstats | sort(attribute='rank_score', reverse=True) %}
+      {% set top = sorted_stats[0] %}
+      {% if prank and prank.stay_pct %}
+      <div class="modcard" style="margin-top:0.4rem;">
+        <div class="mod-label"><span class="ai-zh">現在領先板塊</span><span class="ai-en">CURRENT LEADER</span></div>
+        <div class="lead">
+          <div class="stat">
+            <div class="stat-val" style="color:{{ top.color }};">
+              <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:{{ top.color }};margin-right:6px;vertical-align:middle;"></span>{{ top.label }}
+            </div>
+            <div class="stat-sub">
+              <span class="ai-zh">{{ top.quadrant_zh }} · 已領先 {{ top.weeks_current }} 週{% if top.avg_weeks_as_rank1 %} · 當第一時歷史平均 {{ top.avg_weeks_as_rank1 }} 週{% endif %}</span>
+              <span class="ai-en">{{ top.quadrant_en }} · leading for {{ top.weeks_current }}w{% if top.avg_weeks_as_rank1 %} · avg {{ top.avg_weeks_as_rank1 }}w as #1{% endif %}</span>
+            </div>
+          </div>
+        </div>
+        <div class="trans-block">
+          <div class="trans-head"><span class="ai-zh">領先板塊轉移機率 · 一旦換人最常是誰接班</span><span class="ai-en">Leadership transition odds · once it changes, most often replaced by</span></div>
+          <div class="trans-stats">
+            <div class="trans-stat ts-stay">
+              <div class="ts-num">{{ prank.stay_pct }}%</div>
+              <div class="ts-lab"><span class="ai-zh">繼續領先</span><span class="ai-en">stays leader</span></div>
+            </div>
+            <div class="trans-div"></div>
+            {% for e in prank.exits %}
+            <div class="trans-stat">
+              <div class="ts-num">{{ e.pct }}%</div>
+              <div class="ts-lab">→ {{ e.label }}</div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      {% endif %}
+      {% endif %}
+
+      {% if pperf %}
+      <div class="modcard" style="margin-top:0.4rem;">
+        <div class="mod-label"><span class="ai-zh">{{ perf_zh }}</span><span class="ai-en">{{ perf_en }}</span></div>
+        <div class="sector-perf-scroll">
+        <table class="data-table sector-perf-table">
+          <thead>
+            <tr>
+              <th><span class="ai-zh">板塊</span><span class="ai-en">Sector</span></th>
+              <th style="text-align:right"><span class="ai-zh">1 週</span><span class="ai-en">1W</span></th>
+              <th style="text-align:right"><span class="ai-zh">1 月</span><span class="ai-en">1M</span></th>
+              <th style="text-align:right"><span class="ai-zh">1 年</span><span class="ai-en">1Y</span></th>
+            </tr>
+          </thead>
+          <tbody>
+          {% for r in pperf %}
+          <tr{% if r.is_benchmark %} style="background:#f8f9fb;"{% endif %}>
+            <td>
+              <span class="sector-perf-label">
+                <span class="sector-perf-dot" style="background:{{ r.color }};"></span>
+                <strong{% if r.is_benchmark %} style="color:var(--ink);"{% endif %}>{{ r.label }}</strong>
+              </span>
+            </td>
+            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;">
+              {% if r.ret_1w is not none %}<span class="tilt-ret {% if r.ret_1w >= 0 %}pos{% else %}neg{% endif %}">{{ "%+.1f"|format(r.ret_1w) }}%</span>{% if r.excess_1w is not none %} <span class="sector-perf-excess">({{ "%+.1f"|format(r.excess_1w) }}%)</span>{% endif %}{% else %}—{% endif %}
+            </td>
+            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;">
+              {% if r.ret_1m is not none %}<span class="tilt-ret {% if r.ret_1m >= 0 %}pos{% else %}neg{% endif %}">{{ "%+.1f"|format(r.ret_1m) }}%</span>{% if r.excess_1m is not none %} <span class="sector-perf-excess">({{ "%+.1f"|format(r.excess_1m) }}%)</span>{% endif %}{% else %}—{% endif %}
+            </td>
+            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;">
+              {% if r.ret_1y is not none %}<span class="tilt-ret {% if r.ret_1y >= 0 %}pos{% else %}neg{% endif %}">{{ "%+.1f"|format(r.ret_1y) }}%</span>{% if r.excess_1y is not none %} <span class="sector-perf-excess">({{ "%+.1f"|format(r.excess_1y) }}%)</span>{% endif %}{% else %}—{% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+        </div>
+        <div style="margin-top:0.5rem;font-size:0.7rem;color:var(--muted);line-height:1.45;">
+          <span class="ai-zh">{{ fn_zh }}</span>
+          <span class="ai-en">{{ fn_en }}</span>
+        </div>
+      </div>
+      {% endif %}
+
+      <div class="viz-card" style="margin-top:0.4rem;">
+        <div class="viz-label"><span class="ai-zh">{{ rrg_zh }}</span><span class="ai-en">{{ rrg_en }}</span></div>
+        <div id="chart-rrg{{ chart_suffix }}-{{ lang }}" style="width:100%;"></div>
+        <div style="display:flex;flex-wrap:wrap;gap:0.55rem 1.4rem;margin-top:0.55rem;">
+          <span style="display:flex;align-items:center;gap:0.35rem;font-size:0.72rem;color:#5a5550;"><span style="width:11px;height:11px;background:#d4ede4;border-radius:2px;flex-shrink:0;display:inline-block;"></span><span class="ai-zh">Leading — 強且加速</span><span class="ai-en">Leading — strong &amp; accelerating</span></span>
+          <span style="display:flex;align-items:center;gap:0.35rem;font-size:0.72rem;color:#5a5550;"><span style="width:11px;height:11px;background:#f5e9cf;border-radius:2px;flex-shrink:0;display:inline-block;"></span><span class="ai-zh">Weakening — 強但放緩</span><span class="ai-en">Weakening — strong but slowing</span></span>
+          <span style="display:flex;align-items:center;gap:0.35rem;font-size:0.72rem;color:#5a5550;"><span style="width:11px;height:11px;background:#dbeafe;border-radius:2px;flex-shrink:0;display:inline-block;"></span><span class="ai-zh">Improving — 弱但轉強</span><span class="ai-en">Improving — weak but turning</span></span>
+          <span style="display:flex;align-items:center;gap:0.35rem;font-size:0.72rem;color:#5a5550;"><span style="width:11px;height:11px;background:#f5dada;border-radius:2px;flex-shrink:0;display:inline-block;"></span><span class="ai-zh">Lagging — 弱且減速</span><span class="ai-en">Lagging — weak &amp; decelerating</span></span>
+        </div>
+        <script>
+        (function(){
+          var d = {{ pdata | safe }};
+          if(d.traces) Plotly.newPlot('chart-rrg{{ chart_suffix }}-{{ lang }}', d.traces, d.layout, {responsive:true,displayModeBar:false,scrollZoom:false,doubleClick:false,editable:false});
+        })();
+        </script>
+      </div>
+
+      {% else %}
+      <div class="modcard" style="margin-top:0.4rem;color:var(--muted);font-size:0.82rem;">
+        <span class="ai-zh">板塊資料載入中，請重新整理。</span><span class="ai-en">Sector data unavailable — refresh to retry.</span>
+      </div>
+      {% endif %}
+
+      </div><!-- /tab-pane {{ pane_id }} -->
+    {% endmacro %}
 
     {% for block in lite_lang_blocks %}
     <div class="lang-block" data-lang="{{ block.lang }}">
@@ -2695,126 +2819,9 @@ HTML_TMPL_LITE = """<!doctype html>
 
       </div><!-- /tab-pane history -->
 
-      <div class="tab-pane" data-pane="sectors">
-      <div class="zone-divider zone-1 snap-anchor">
-        <div class="zone-title"><span class="ai-zh">板塊輪動</span><span class="ai-en">Sector Rotation</span></div>
-        <div class="zone-sub"><span class="ai-zh">各板塊相對 SPY 的強弱與動能方向（近 12 週軌跡）</span><span class="ai-en">Relative strength &amp; momentum vs SPY — 12-week trail</span></div>
-      </div>
+      {{ sectors_pane('sectors', '', rrg_data, rrg_summary, rrg_sector_stats, sector_performance, rrg_rank_trans, '板塊輪動', 'Sector Rotation', '各板塊相對 SPY 的強弱與動能方向（近 12 週軌跡）', 'Relative strength & momentum vs SPY — 12-week trail', '板塊表現 · 對 SPY', 'Sector performance · vs SPY', '相對輪動圖 (RRG) · 以 SPY 為基準', 'Relative Rotation Graph (RRG) · Benchmark: SPY', 'SPY 為基準；板塊括號內為相對 SPY 超額。板塊依 1 週超額排序。', 'SPY is the benchmark; sector parentheses show excess vs SPY. Sectors sorted by 1W excess.', block.lang) }}
 
-      {% if rrg_data and rrg_data != '{}' %}
-      {% if rrg_summary %}
-      <div class="hero">
-        <div class="hero-kicker"><span class="ai-zh">一句話</span><span class="ai-en">In one line</span></div>
-        <h1 class="hero-stance">
-          <span class="ai-zh">{{ rrg_summary.zh }}</span>
-          <span class="ai-en">{{ rrg_summary.en }}</span>
-        </h1>
-      </div>
-      {% endif %}
-      {% if rrg_sector_stats %}
-      {% set sorted_stats = rrg_sector_stats | sort(attribute='rank_score', reverse=True) %}
-      {% set top = sorted_stats[0] %}
-      {% if rrg_rank_trans and rrg_rank_trans.stay_pct %}
-      <div class="modcard" style="margin-top:0.4rem;">
-        <div class="mod-label"><span class="ai-zh">現在領先板塊</span><span class="ai-en">CURRENT LEADER</span></div>
-        <div class="lead">
-          <div class="stat">
-            <div class="stat-val" style="color:{{ top.color }};">
-              <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:{{ top.color }};margin-right:6px;vertical-align:middle;"></span>{{ top.label }}
-            </div>
-            <div class="stat-sub">
-              <span class="ai-zh">{{ top.quadrant_zh }} · 已領先 {{ top.weeks_current }} 週{% if top.avg_weeks_as_rank1 %} · 當第一時歷史平均 {{ top.avg_weeks_as_rank1 }} 週{% endif %}</span>
-              <span class="ai-en">{{ top.quadrant_en }} · leading for {{ top.weeks_current }}w{% if top.avg_weeks_as_rank1 %} · avg {{ top.avg_weeks_as_rank1 }}w as #1{% endif %}</span>
-            </div>
-          </div>
-        </div>
-        <div class="trans-block">
-          <div class="trans-head"><span class="ai-zh">領先板塊轉移機率 · 一旦換人最常是誰接班</span><span class="ai-en">Leadership transition odds · once it changes, most often replaced by</span></div>
-          <div class="trans-stats">
-            <div class="trans-stat ts-stay">
-              <div class="ts-num">{{ rrg_rank_trans.stay_pct }}%</div>
-              <div class="ts-lab"><span class="ai-zh">繼續領先</span><span class="ai-en">stays leader</span></div>
-            </div>
-            <div class="trans-div"></div>
-            {% for e in rrg_rank_trans.exits %}
-            <div class="trans-stat">
-              <div class="ts-num">{{ e.pct }}%</div>
-              <div class="ts-lab">→ {{ e.label }}</div>
-            </div>
-            {% endfor %}
-          </div>
-        </div>
-      </div>
-      {% endif %}
-      {% endif %}
-
-      {% if sector_performance %}
-      <div class="modcard" style="margin-top:0.4rem;">
-        <div class="mod-label"><span class="ai-zh">板塊表現 · 對 SPY</span><span class="ai-en">Sector performance · vs SPY</span></div>
-        <div class="sector-perf-scroll">
-        <table class="data-table sector-perf-table">
-          <thead>
-            <tr>
-              <th><span class="ai-zh">板塊</span><span class="ai-en">Sector</span></th>
-              <th style="text-align:right"><span class="ai-zh">1 週</span><span class="ai-en">1W</span></th>
-              <th style="text-align:right"><span class="ai-zh">1 月</span><span class="ai-en">1M</span></th>
-              <th style="text-align:right"><span class="ai-zh">1 年</span><span class="ai-en">1Y</span></th>
-            </tr>
-          </thead>
-          <tbody>
-          {% for r in sector_performance %}
-          <tr{% if r.is_benchmark %} style="background:#f8f9fb;"{% endif %}>
-            <td>
-              <span class="sector-perf-label">
-                <span class="sector-perf-dot" style="background:{{ r.color }};"></span>
-                <strong{% if r.is_benchmark %} style="color:var(--ink);"{% endif %}>{{ r.label }}</strong>
-              </span>
-            </td>
-            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;">
-              {% if r.ret_1w is not none %}<span class="tilt-ret {% if r.ret_1w >= 0 %}pos{% else %}neg{% endif %}">{{ "%+.1f"|format(r.ret_1w) }}%</span>{% if r.excess_1w is not none %} <span class="sector-perf-excess">({{ "%+.1f"|format(r.excess_1w) }}%)</span>{% endif %}{% else %}—{% endif %}
-            </td>
-            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;">
-              {% if r.ret_1m is not none %}<span class="tilt-ret {% if r.ret_1m >= 0 %}pos{% else %}neg{% endif %}">{{ "%+.1f"|format(r.ret_1m) }}%</span>{% if r.excess_1m is not none %} <span class="sector-perf-excess">({{ "%+.1f"|format(r.excess_1m) }}%)</span>{% endif %}{% else %}—{% endif %}
-            </td>
-            <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;">
-              {% if r.ret_1y is not none %}<span class="tilt-ret {% if r.ret_1y >= 0 %}pos{% else %}neg{% endif %}">{{ "%+.1f"|format(r.ret_1y) }}%</span>{% if r.excess_1y is not none %} <span class="sector-perf-excess">({{ "%+.1f"|format(r.excess_1y) }}%)</span>{% endif %}{% else %}—{% endif %}
-            </td>
-          </tr>
-          {% endfor %}
-          </tbody>
-        </table>
-        </div>
-        <div style="margin-top:0.5rem;font-size:0.7rem;color:var(--muted);line-height:1.45;">
-          <span class="ai-zh">SPY 為基準；板塊括號內為相對 SPY 超額。板塊依 1 週超額排序。</span>
-          <span class="ai-en">SPY is the benchmark; sector parentheses show excess vs SPY. Sectors sorted by 1W excess.</span>
-        </div>
-      </div>
-      {% endif %}
-
-      <div class="viz-card" style="margin-top:0.4rem;">
-        <div class="viz-label"><span class="ai-zh">相對輪動圖 (RRG) · 以 SPY 為基準</span><span class="ai-en">Relative Rotation Graph (RRG) · Benchmark: SPY</span></div>
-        <div id="chart-rrg-{{ block.lang }}" style="width:100%;"></div>
-        <div style="display:flex;flex-wrap:wrap;gap:0.55rem 1.4rem;margin-top:0.55rem;">
-          <span style="display:flex;align-items:center;gap:0.35rem;font-size:0.72rem;color:#5a5550;"><span style="width:11px;height:11px;background:#d4ede4;border-radius:2px;flex-shrink:0;display:inline-block;"></span><span class="ai-zh">Leading — 強且加速</span><span class="ai-en">Leading — strong &amp; accelerating</span></span>
-          <span style="display:flex;align-items:center;gap:0.35rem;font-size:0.72rem;color:#5a5550;"><span style="width:11px;height:11px;background:#f5e9cf;border-radius:2px;flex-shrink:0;display:inline-block;"></span><span class="ai-zh">Weakening — 強但放緩</span><span class="ai-en">Weakening — strong but slowing</span></span>
-          <span style="display:flex;align-items:center;gap:0.35rem;font-size:0.72rem;color:#5a5550;"><span style="width:11px;height:11px;background:#dbeafe;border-radius:2px;flex-shrink:0;display:inline-block;"></span><span class="ai-zh">Improving — 弱但轉強</span><span class="ai-en">Improving — weak but turning</span></span>
-          <span style="display:flex;align-items:center;gap:0.35rem;font-size:0.72rem;color:#5a5550;"><span style="width:11px;height:11px;background:#f5dada;border-radius:2px;flex-shrink:0;display:inline-block;"></span><span class="ai-zh">Lagging — 弱且減速</span><span class="ai-en">Lagging — weak &amp; decelerating</span></span>
-        </div>
-        <script>
-        (function(){
-          var d = {{ rrg_data | safe }};
-          if(d.traces) Plotly.newPlot('chart-rrg-{{ block.lang }}', d.traces, d.layout, {responsive:true,displayModeBar:false,scrollZoom:false,doubleClick:false,editable:false});
-        })();
-        </script>
-      </div>
-
-      {% else %}
-      <div class="modcard" style="margin-top:0.4rem;color:var(--muted);font-size:0.82rem;">
-        <span class="ai-zh">板塊資料載入中，請重新整理。</span><span class="ai-en">Sector data unavailable — refresh to retry.</span>
-      </div>
-      {% endif %}
-
-      </div><!-- /tab-pane sectors -->
+      {{ sectors_pane('sectors-tw', '-tw', tw_rrg_data, tw_rrg_summary, tw_rrg_sector_stats, tw_sector_performance, tw_rrg_rank_trans, '台股板塊輪動', 'TW Sector Rotation', '板塊 ETF · 相對加權報酬指數 · 12 週', 'Sector ETFs · relative to TAIEX total return · 12-week trail', '板塊表現 · 對加權', 'Sector performance · vs TAIEX', '相對輪動圖 (RRG) · 以加權報酬指數為基準', 'Relative Rotation Graph (RRG) · Benchmark: TAIEX', '加權報酬指數為基準；板塊括號內為相對加權超額。板塊依 1 週超額排序。', 'TAIEX total return is the benchmark; sector parentheses show excess vs TAIEX. Sectors sorted by 1W excess.', block.lang) }}
 
       <div class="foot">THE DAILY REGIME · {{ block.ui.footer }} · {{ block.report_date }}</div>
     </div>
@@ -4446,13 +4453,21 @@ def _write_synthesis_lite_html(
     )
     try:
         from src.sector_rotation import build_rrg_plotly as _build_rrg
+        from src.sector_rotation import build_tw_rrg_plotly as _build_tw_rrg
         from src.collect import load_all_from_cache as _load_cache
-        _rrg = _build_rrg(_load_cache())
+        _cache = _load_cache()
+        _rrg = _build_rrg(_cache)
         rrg_data = {k: v for k, v in _rrg.items() if k not in ("summary", "sector_stats", "sector_performance", "rank_trans")}
         rrg_summary = _rrg.get("summary", {})
         rrg_sector_stats = _rrg.get("sector_stats", [])
         sector_performance = _rrg.get("sector_performance", [])
         rrg_rank_trans = _rrg.get("rank_trans", {})
+        _tw_rrg = _build_tw_rrg(_cache)
+        tw_rrg_data = {k: v for k, v in _tw_rrg.items() if k not in ("summary", "sector_stats", "sector_performance", "rank_trans")}
+        tw_rrg_summary = _tw_rrg.get("summary", {})
+        tw_rrg_sector_stats = _tw_rrg.get("sector_stats", [])
+        tw_sector_performance = _tw_rrg.get("sector_performance", [])
+        tw_rrg_rank_trans = _tw_rrg.get("rank_trans", {})
     except Exception as exc:
         print(f"  Warning: RRG chart failed ({exc})", file=sys.stderr)
         rrg_data = {}
@@ -4460,6 +4475,11 @@ def _write_synthesis_lite_html(
         rrg_sector_stats = []
         sector_performance = []
         rrg_rank_trans = {}
+        tw_rrg_data = {}
+        tw_rrg_summary = {}
+        tw_rrg_sector_stats = []
+        tw_sector_performance = []
+        tw_rrg_rank_trans = {}
     try:
         regime_quadrant_data = _build_regime_quadrant_plotly()
     except Exception as exc:
@@ -4496,6 +4516,11 @@ def _write_synthesis_lite_html(
             rrg_sector_stats=rrg_sector_stats,
             sector_performance=sector_performance,
             rrg_rank_trans=rrg_rank_trans,
+            tw_rrg_data=json.dumps(tw_rrg_data),
+            tw_rrg_summary=tw_rrg_summary,
+            tw_rrg_sector_stats=tw_rrg_sector_stats,
+            tw_sector_performance=tw_sector_performance,
+            tw_rrg_rank_trans=tw_rrg_rank_trans,
         ),
         encoding="utf-8",
     )

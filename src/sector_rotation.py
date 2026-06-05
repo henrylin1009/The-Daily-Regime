@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
+from dataclasses import dataclass
 
 import numpy as np
 import pandas as pd
@@ -24,6 +25,8 @@ _COLORS: dict[str, str] = {
     "xli": "#dc2626",
 }
 
+_BENCH_COLOR = "#6b7280"
+
 _Q_LABELS_EN = {
     "leading": "Leading", "weakening": "Weakening",
     "improving": "Improving", "lagging": "Lagging",
@@ -40,7 +43,42 @@ _ARROW_WEEKS = 3  # weeks back to compute trajectory vector
 _RET_1W = 5
 _RET_1M = 21
 _RET_1Y = 252
-_SPY_COLOR = "#6b7280"
+
+
+@dataclass(frozen=True)
+class SectorUniverse:
+    benchmark_key: str
+    benchmark_label: str
+    sectors: dict[str, str]
+    colors: dict[str, str]
+    benchmark_color: str = _BENCH_COLOR
+
+
+US_SECTORS = SectorUniverse(
+    benchmark_key="spy",
+    benchmark_label="SPY",
+    sectors=SECTORS,
+    colors=_COLORS,
+)
+
+TW_SECTORS = SectorUniverse(
+    benchmark_key="tw_bench",
+    benchmark_label="TAIEX",
+    sectors={
+        "tw_semi": "Semiconductors",
+        "tw_comp": "Components",
+        "tw_fin": "Financials",
+        "tw_ship": "Shipping",
+        "tw_mach": "Industrials",
+    },
+    colors={
+        "tw_semi": "#4f46e5",
+        "tw_comp": "#0891b2",
+        "tw_fin": "#059669",
+        "tw_ship": "#d97706",
+        "tw_mach": "#dc2626",
+    },
+)
 
 
 def _pct_return(series: pd.Series, periods: int) -> float | None:
@@ -53,28 +91,29 @@ def _pct_return(series: pd.Series, periods: int) -> float | None:
     return (float(s.iloc[-1]) / prev - 1.0) * 100.0
 
 
-def _build_sector_performance(data: dict) -> list[dict]:
-    """SPY benchmark row + sector ETFs sorted by 1W excess vs SPY."""
-    spy = _series(data, "spy")
-    if spy.empty:
+def _build_sector_performance(data: dict, *, universe: SectorUniverse = US_SECTORS) -> list[dict]:
+    """Benchmark row + sector rows sorted by 1W excess vs benchmark."""
+    bench_s = _series(data, universe.benchmark_key)
+    if bench_s.empty:
         return []
 
-    spy_rets = {
-        "1w": _pct_return(spy, _RET_1W),
-        "1m": _pct_return(spy, _RET_1M),
-        "1y": _pct_return(spy, _RET_1Y),
+    bench_rets = {
+        "1w": _pct_return(bench_s, _RET_1W),
+        "1m": _pct_return(bench_s, _RET_1M),
+        "1y": _pct_return(bench_s, _RET_1Y),
     }
+
     def _rnd(v: float | None) -> float | None:
         return None if v is None else round(v, 1)
 
     rows: list[dict] = [
         {
-            "label": "SPY",
-            "color": _SPY_COLOR,
+            "label": universe.benchmark_label,
+            "color": universe.benchmark_color,
             "is_benchmark": True,
-            "ret_1w": _rnd(spy_rets["1w"]),
-            "ret_1m": _rnd(spy_rets["1m"]),
-            "ret_1y": _rnd(spy_rets["1y"]),
+            "ret_1w": _rnd(bench_rets["1w"]),
+            "ret_1m": _rnd(bench_rets["1m"]),
+            "ret_1y": _rnd(bench_rets["1y"]),
             "excess_1w": None,
             "excess_1m": None,
             "excess_1y": None,
@@ -82,19 +121,19 @@ def _build_sector_performance(data: dict) -> list[dict]:
         }
     ]
 
-    for ticker, label in SECTORS.items():
+    for ticker, label in universe.sectors.items():
         s = _series(data, ticker)
         if s.empty:
             continue
         r1w = _pct_return(s, _RET_1W)
         r1m = _pct_return(s, _RET_1M)
         r1y = _pct_return(s, _RET_1Y)
-        ex1w = None if r1w is None or spy_rets["1w"] is None else round(r1w - spy_rets["1w"], 1)
-        ex1m = None if r1m is None or spy_rets["1m"] is None else round(r1m - spy_rets["1m"], 1)
-        ex1y = None if r1y is None or spy_rets["1y"] is None else round(r1y - spy_rets["1y"], 1)
+        ex1w = None if r1w is None or bench_rets["1w"] is None else round(r1w - bench_rets["1w"], 1)
+        ex1m = None if r1m is None or bench_rets["1m"] is None else round(r1m - bench_rets["1m"], 1)
+        ex1y = None if r1y is None or bench_rets["1y"] is None else round(r1y - bench_rets["1y"], 1)
         rows.append({
             "label": label,
-            "color": _COLORS[ticker],
+            "color": universe.colors[ticker],
             "is_benchmark": False,
             "ret_1w": None if r1w is None else round(r1w, 1),
             "ret_1m": None if r1m is None else round(r1m, 1),
@@ -129,12 +168,12 @@ def _quadrant(rx: float, ry: float) -> str:
     return "lagging"
 
 
-def _compute_rrg_series(spy_w: pd.Series, sec_w: pd.Series) -> pd.DataFrame | None:
+def _compute_rrg_series(bench_w: pd.Series, sec_w: pd.Series) -> pd.DataFrame | None:
     """Return full weekly RS-Ratio / RS-Momentum history, or None if insufficient data."""
-    base = pd.concat([spy_w.rename("spy"), sec_w.rename("sec")], axis=1).dropna()
+    base = pd.concat([bench_w.rename("bench"), sec_w.rename("sec")], axis=1).dropna()
     if len(base) < _NORM + _SMOOTH + 5:
         return None
-    rs = np.log(base["sec"] / base["spy"])
+    rs = np.log(base["sec"] / base["bench"])
     rs_sm = rs.rolling(_SMOOTH).mean()
     rs_ratio = (rs_sm - rs_sm.rolling(_NORM).mean()) / rs_sm.rolling(_NORM).std()
     mom_raw = rs_ratio.diff(1).rolling(_SMOOTH).mean()
@@ -152,7 +191,6 @@ def _historical_stats(full: pd.DataFrame) -> dict:
     """
     qs = full.apply(lambda row: _quadrant(row["r"], row["m"]), axis=1)
 
-    # Week-by-week transition matrix (for stay_pct + exit distribution)
     ww_stay: dict[str, int] = defaultdict(int)
     ww_exit: dict[str, dict[str, int]] = defaultdict(lambda: defaultdict(int))
     q_list = qs.tolist()
@@ -166,32 +204,30 @@ def _historical_stats(full: pd.DataFrame) -> dict:
     stay_pct: dict[str, int] = {}
     exits: dict[str, list[dict]] = {}
     for q in set(q_list):
-        s = ww_stay.get(q, 0)
-        e = sum(ww_exit.get(q, {}).values())
-        total = s + e
-        if total > 0:
-            stay_pct[q] = round(s / total * 100)
-        if e > 0:
+        stay_n = ww_stay.get(q, 0)
+        exit_n = sum(ww_exit[q].values())
+        total = stay_n + exit_n
+        if total == 0:
+            continue
+        stay_pct[q] = round(stay_n / total * 100)
+        if exit_n > 0:
             exits[q] = sorted(
-                [{"q": nq, "pct": round(cnt / e * 100)} for nq, cnt in ww_exit[q].items()],
+                [{"q": nq, "pct": round(cnt / exit_n * 100)} for nq, cnt in ww_exit[q].items()],
                 key=lambda x: -x["pct"],
             )[:3]
 
-    # Run-length for avg stay
     runs: list[dict] = []
-    cur_q = q_list[0]
-    run_len = 1
-    for q in q_list[1:]:
-        if q == cur_q:
-            run_len += 1
-        else:
-            runs.append({"q": cur_q, "len": run_len, "next": q})
-            cur_q = q
-            run_len = 1
+    i = 0
+    while i < len(q_list):
+        q = q_list[i]
+        j = i
+        while j < len(q_list) and q_list[j] == q:
+            j += 1
+        runs.append({"q": q, "len": j - i})
+        i = j
 
-    # Current streak
-    streak = 1
     last_q = q_list[-1]
+    streak = 1
     for q in reversed(q_list[:-1]):
         if q == last_q:
             streak += 1
@@ -206,7 +242,6 @@ def _historical_stats(full: pd.DataFrame) -> dict:
         q: round(sum(v) / len(v), 1) for q, v in q_durations.items() if v
     }
 
-    # Keep trans_pct as alias of exits for table column
     trans_pct = exits
 
     return {
@@ -227,8 +262,10 @@ def _build_summary(positions: dict) -> dict:
     lagging   = [p for p in positions.values() if p["quadrant"] == "lagging"]
 
     def _join(lst: list[str]) -> str:
-        if not lst: return ""
-        if len(lst) == 1: return lst[0]
+        if not lst:
+            return ""
+        if len(lst) == 1:
+            return lst[0]
         return ", ".join(lst[:-1]) + " & " + lst[-1]
 
     parts_en, parts_zh = [], []
@@ -289,11 +326,15 @@ def _avg_weeks_when_rank1(leader_series: pd.Series, ticker: str) -> float | None
     return round(sum(runs) / len(runs), 1)
 
 
-def _attach_avg_weeks_as_rank1(sector_stats: list[dict], all_full: dict[str, pd.DataFrame]) -> None:
+def _attach_avg_weeks_as_rank1(
+    sector_stats: list[dict],
+    all_full: dict[str, pd.DataFrame],
+    universe: SectorUniverse,
+) -> None:
     leader_series = _weekly_rank_score_leaders(all_full)
     if leader_series.empty:
         return
-    label_to_ticker = {label: t for t, label in SECTORS.items()}
+    label_to_ticker = {label: t for t, label in universe.sectors.items()}
     for row in sector_stats:
         ticker = label_to_ticker.get(row.get("label", ""))
         if not ticker:
@@ -303,13 +344,11 @@ def _attach_avg_weeks_as_rank1(sector_stats: list[dict], all_full: dict[str, pd.
             row["avg_weeks_as_rank1"] = avg
 
 
-def _rank_transitions(all_full: dict[str, pd.DataFrame]) -> dict:
+def _rank_transitions(all_full: dict[str, pd.DataFrame], universe: SectorUniverse) -> dict:
     """
     Compute historical #1 rank transitions across all sectors.
     Returns for the current #1: stay_pct + who takes over (with %).
-    Rank score = rs_ratio + rs_mom (top-right = best).
     """
-    # Build aligned weekly score matrix
     score_frames = {
         ticker: (df["r"] + df["m"]).rename(ticker)
         for ticker, df in all_full.items()
@@ -318,13 +357,9 @@ def _rank_transitions(all_full: dict[str, pd.DataFrame]) -> dict:
     if len(scores) < 20:
         return {}
 
-    # Who is #1 each week
     leader_series = scores.idxmax(axis=1)
-
-    # Current leader
     current_leader = leader_series.iloc[-1]
 
-    # Week-by-week transitions when current_leader is #1
     stay = 0
     successors: dict[str, int] = defaultdict(int)
     leader_list = leader_series.tolist()
@@ -341,8 +376,8 @@ def _rank_transitions(all_full: dict[str, pd.DataFrame]) -> dict:
 
     stay_pct = round(stay / total * 100)
     exits = sorted(
-        [{"ticker": t, "label": SECTORS[t], "pct": round(cnt / (total - stay) * 100)}
-         for t, cnt in successors.items() if t in SECTORS],
+        [{"ticker": t, "label": universe.sectors[t], "pct": round(cnt / (total - stay) * 100)}
+         for t, cnt in successors.items() if t in universe.sectors],
         key=lambda x: -x["pct"],
     )[:3]
 
@@ -353,26 +388,26 @@ def _rank_transitions(all_full: dict[str, pd.DataFrame]) -> dict:
     }
 
 
-def build_rrg_plotly(data: dict) -> dict:
+def build_rrg_plotly(data: dict, *, universe: SectorUniverse = US_SECTORS) -> dict:
     """Return Plotly JSON + summary + historical stats table, or {} if unavailable."""
-    spy = _series(data, "spy")
-    if spy.empty:
+    bench = _series(data, universe.benchmark_key)
+    if bench.empty:
         return {}
 
-    spy_w = spy.resample("W-FRI").last().dropna()
+    bench_w = bench.resample("W-FRI").last().dropna()
     traces: list[dict] = []
-    annotations: list[dict] = []  # trajectory arrows
+    annotations: list[dict] = []
     positions: dict[str, dict] = {}
-    sector_stats: list[dict] = []  # for historical table
-    all_full: dict[str, pd.DataFrame] = {}  # full history per ticker
+    sector_stats: list[dict] = []
+    all_full: dict[str, pd.DataFrame] = {}
 
-    for ticker, label in SECTORS.items():
+    for ticker, label in universe.sectors.items():
         s = _series(data, ticker)
         if s.empty:
             continue
         s_w = s.resample("W-FRI").last().dropna()
 
-        full = _compute_rrg_series(spy_w, s_w)
+        full = _compute_rrg_series(bench_w, s_w)
         if full is None:
             continue
 
@@ -381,15 +416,13 @@ def build_rrg_plotly(data: dict) -> dict:
         x = trail["r"].tolist()
         y = trail["m"].tolist()
         dates = [d.strftime("%Y-%m-%d") for d in trail.index]
-        col = _COLORS[ticker]
+        col = universe.colors[ticker]
 
-        # Trail line
         traces.append({
             "type": "scatter", "x": x, "y": y, "mode": "lines",
             "line": {"color": col, "width": 1.5, "dash": "dot"},
             "hoverinfo": "skip", "showlegend": False, "legendgroup": ticker,
         })
-        # Trail dots
         traces.append({
             "type": "scatter", "x": x[:-1], "y": y[:-1], "mode": "markers",
             "marker": {"size": 4, "color": col, "opacity": 0.35},
@@ -400,7 +433,6 @@ def build_rrg_plotly(data: dict) -> dict:
             ),
             "showlegend": False, "legendgroup": ticker,
         })
-        # Current point
         traces.append({
             "type": "scatter", "x": [x[-1]], "y": [y[-1]],
             "mode": "markers+text",
@@ -414,13 +446,12 @@ def build_rrg_plotly(data: dict) -> dict:
             "name": label, "showlegend": True, "legendgroup": ticker,
         })
 
-        # --- Method B: trajectory arrow ---
         if len(x) >= _ARROW_WEEKS + 1:
             dx = x[-1] - x[-(_ARROW_WEEKS + 1)]
             dy = y[-1] - y[-(_ARROW_WEEKS + 1)]
             mag = (dx ** 2 + dy ** 2) ** 0.5
             if mag > 0.01:
-                scale = 0.45 / mag  # fixed visual length
+                scale = 0.45 / mag
                 annotations.append({
                     "x": x[-1] + dx * scale,
                     "y": y[-1] + dy * scale,
@@ -432,12 +463,10 @@ def build_rrg_plotly(data: dict) -> dict:
                     "arrowcolor": col, "text": "",
                 })
 
-        # Quadrant and position
         rx, ry = x[-1], y[-1]
         q = _quadrant(rx, ry)
         positions[ticker] = {"label": label, "quadrant": q, "rs_ratio": rx, "rs_mom": ry, "color": col}
 
-        # --- Method A: historical stats ---
         stats = _historical_stats(full)
         avg = stats["avg_stay"].get(q)
         stay = stats["stay_pct"].get(q)
@@ -459,8 +488,8 @@ def build_rrg_plotly(data: dict) -> dict:
     if not traces:
         return {}
 
-    _attach_avg_weeks_as_rank1(sector_stats, all_full)
-    rank_trans = _rank_transitions(all_full)
+    _attach_avg_weeks_as_rank1(sector_stats, all_full, universe)
+    rank_trans = _rank_transitions(all_full, universe)
     summary = _build_summary(positions)
 
     R = 2.8
@@ -507,6 +536,11 @@ def build_rrg_plotly(data: dict) -> dict:
         "layout": layout,
         "summary": summary,
         "sector_stats": sector_stats,
-        "sector_performance": _build_sector_performance(data),
+        "sector_performance": _build_sector_performance(data, universe=universe),
         "rank_trans": rank_trans,
     }
+
+
+def build_tw_rrg_plotly(data: dict) -> dict:
+    """Taiwan sector RRG vs TAIEX (TWSE industry indices)."""
+    return build_rrg_plotly(data, universe=TW_SECTORS)

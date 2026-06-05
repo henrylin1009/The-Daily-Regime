@@ -33,6 +33,7 @@ jobs:
           FMP_API_KEY: ${{ secrets.FMP_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          FINMIND_TOKEN: ${{ secrets.FINMIND_TOKEN }}
         run: |
           REPORT_DATE=$(date +%Y-%m-%d)
           echo "Report date (Asia/Taipei): ${REPORT_DATE}"
