@@ -7,8 +7,12 @@ import json
 import re
 import sys
 
-from google import genai
-from google.genai import types
+try:
+    from google import genai
+    from google.genai import types
+except ImportError:
+    genai = None  # type: ignore[assignment]
+    types = None  # type: ignore[assignment]
 
 from src.config import get_gemini_model, require_gemini_key
 from src.indicators import RETURN_PERCENTILE_KEYS
