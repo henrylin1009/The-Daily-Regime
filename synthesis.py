@@ -12,12 +12,6 @@ from pathlib import Path
 
 import yfinance as yf
 
-try:
-    from google import genai
-    from google.genai import types
-except ImportError:
-    genai = None  # type: ignore[assignment]
-    types = None  # type: ignore[assignment]
 from jinja2 import Template
 from openai import OpenAI
 
@@ -32,9 +26,7 @@ from src.config import (
     RAW_DIR,
     get_deepseek_base_url,
     get_deepseek_model,
-    get_gemini_model,
     require_deepseek_key,
-    require_gemini_key,
 )
 from src.macra_ui import (
     apply_gear_semantics_to_l3_view_model,
@@ -1280,13 +1272,12 @@ def _translate_descriptions_to_zh(descriptions: list[str]) -> tuple[list[str], b
         "Keep proper nouns where natural. Return ONLY a JSON array of strings, same length and order.\n"
         + json.dumps(clean, ensure_ascii=False)
     )
-    for caller in (_call_deepseek_translate, _call_gemini_translate):
-        try:
-            result = caller(prompt)
-            if isinstance(result, list) and len(result) == len(clean):
-                return [str(x) for x in result], False
-        except Exception as exc:
-            print(f"  Historical description translation failed: {exc}", file=sys.stderr)
+    try:
+        result = _call_deepseek_translate(prompt)
+        if isinstance(result, list) and len(result) == len(clean):
+            return [str(x) for x in result], False
+    except Exception as exc:
+        print(f"  Historical description translation failed: {exc}", file=sys.stderr)
     return list(clean), True
 
 
@@ -1308,22 +1299,6 @@ def _call_deepseek_translate(prompt: str) -> list[str] | None:
     return None
 
 
-def _call_gemini_translate(prompt: str) -> list[str] | None:
-    client = genai.Client(api_key=require_gemini_key())
-    for model in _gemini_models_to_try():
-        try:
-            response = client.models.generate_content(
-                model=model,
-                contents=prompt,
-                config=types.GenerateContentConfig(temperature=0.2),
-            )
-            raw = response.text or ""
-            parsed = json.loads(_clean_json(raw))
-            if isinstance(parsed, list):
-                return parsed
-        except Exception:
-            continue
-    return None
 
 
 def _build_regime_quadrant_plotly() -> dict:
@@ -3678,17 +3653,22 @@ def _market_snapshot_for_prompt(report_date: str) -> list[dict]:
     return rows
 
 
-def _call_deepseek(prompt: str, model: str) -> tuple[dict | None, str | None]:
+def _call_deepseek(
+    prompt: str,
+    model: str,
+    system_prompt: str | None = None,
+    max_tokens: int = 8192,
+) -> tuple[dict | None, str | None]:
     try:
         resp = _deepseek_client().chat.completions.create(
             model=model,
             messages=[
-                {"role": "system", "content": CIO_SYSTEM_PROMPT.strip()},
+                {"role": "system", "content": (system_prompt or CIO_SYSTEM_PROMPT).strip()},
                 {"role": "user", "content": prompt.strip()},
             ],
             response_format={"type": "json_object"},
             temperature=0.35,
-            max_tokens=8192,
+            max_tokens=max_tokens,
         )
         raw = (resp.choices[0].message.content or "").strip()
         payload = _parse_cio_json(raw)
@@ -3703,47 +3683,40 @@ def _call_deepseek(prompt: str, model: str) -> tuple[dict | None, str | None]:
         return None, str(exc)
 
 
-def _gemini_models_to_try() -> list[str]:
-    primary = get_gemini_model()
-    seen: set[str] = set()
-    ordered: list[str] = []
-    for m in (primary, "gemini-2.5-flash-lite", "gemini-2.0-flash-lite", "gemini-2.5-flash"):
-        if m and m not in seen:
-            seen.add(m)
-            ordered.append(m)
-    return ordered
+GEAR_SYSTEM_PROMPT = """You are a macro analyst writing gear matrix entries for a daily brief.
 
+【Step 5 — Gear Matrix (all six countries)】
+For each country, translate the raw signals into plain language:
+- expectation_en / expectation_zh: What is this market pricing in? (≤28 words each, no jargon)
+- plumbing_en / plumbing_zh: How is money flowing? (≤28 words each)
+- hedging_en / hedging_zh: What risk to watch? (≤28 words each)
+- expectation_label_en/zh, plumbing_label_en/zh, hedging_label_en/zh: Short titles (≤6 words each language)
+- expectation_reasoning_en/zh, plumbing_reasoning_en/zh, hedging_reasoning_en/zh: 2-3 sentences each — hover-only "show your work". Cite concrete figures from that country's gear_matrix_raw (signal, drivers, FX %, spread bp, SKEW/VVIX where relevant).
 
-def _call_gemini_cio(prompt: str, model: str) -> tuple[dict | None, str | None]:
-    try:
-        client = genai.Client(api_key=require_gemini_key())
-        response = client.models.generate_content(
-            model=model,
-            contents=prompt.strip(),
-            config=types.GenerateContentConfig(
-                system_instruction=(
-                    CIO_SYSTEM_PROMPT.strip()
-                    + "\n\nReturn strict JSON only. No markdown fences."
-                ),
-                max_output_tokens=8192,
-                temperature=0.35,
-            ),
-        )
-        raw = response.text or ""
-        if not raw:
-            parts: list[str] = []
-            for cand in response.candidates or []:
-                for part in cand.content.parts or []:
-                    if getattr(part, "text", None):
-                        parts.append(part.text)
-            raw = "\n".join(parts)
-        payload = _parse_cio_json(raw)
-        if payload is None:
-            return None, "invalid_json"
-        return payload, None
-    except Exception as exc:
-        print(f"  Gemini CIO fallback failed ({model}): {exc}", file=sys.stderr)
-        return None, str(exc)
+Also set legacy unsuffixed keys (expectation, plumbing, hedging, and *_label) to the English (_en) value for backward compatibility.
+
+Return strict JSON only. No markdown fences. Schema:
+{
+  "gear_matrix_semantics": {
+    "US": {
+      "expectation_en": "...", "expectation_zh": "...", "expectation": "...",
+      "plumbing_en": "...", "plumbing_zh": "...", "plumbing": "...",
+      "hedging_en": "...", "hedging_zh": "...", "hedging": "...",
+      "expectation_label_en": "...", "expectation_label_zh": "...", "expectation_label": "...",
+      "plumbing_label_en": "...", "plumbing_label_zh": "...", "plumbing_label": "...",
+      "hedging_label_en": "...", "hedging_label_zh": "...", "hedging_label": "...",
+      "expectation_reasoning_en": "...", "expectation_reasoning_zh": "...",
+      "plumbing_reasoning_en": "...", "plumbing_reasoning_zh": "...",
+      "hedging_reasoning_en": "...", "hedging_reasoning_zh": "..."
+    },
+    "Japan": { "...": "same shape as US" },
+    "Europe": { "...": "same shape as US" },
+    "China": { "...": "same shape as US" },
+    "Taiwan": { "...": "same shape as US" },
+    "Australia": { "...": "same shape as US" }
+  }
+}
+"""
 
 
 def _synthesis_fallback() -> dict:
@@ -3939,7 +3912,16 @@ def _deepseek_models_to_try() -> list[str]:
     return ordered
 
 
-def _get_synthesis(prompt: str, skip_llm: bool) -> tuple[dict, dict]:
+def _get_synthesis(
+    prompt_core: str,
+    prompt_gear: str,
+    skip_llm: bool,
+) -> tuple[dict, dict]:
+    """Two-call DeepSeek strategy: Call 1 = main report, Call 2 = gear matrix.
+
+    Splitting avoids JSON truncation caused by the large gear_matrix_semantics block
+    pushing the response past max_tokens.  Each call is well within 8192 tokens.
+    """
     fallback = _synthesis_fallback()
     llm_meta: dict = {
         "provider": "deepseek",
@@ -3954,39 +3936,55 @@ def _get_synthesis(prompt: str, skip_llm: bool) -> tuple[dict, dict]:
         print("  Layer 3 LLM skipped (--skip-llm); using placeholder CIO text.", file=sys.stderr)
         return fallback, llm_meta
 
+    # ── Call 1: main report (all fields except gear_matrix_semantics) ──────────
+    call1_out: dict | None = None
     last_error: str | None = None
     for model in _deepseek_models_to_try():
-        out, err = _call_deepseek(prompt, model)
+        out, err = _call_deepseek(prompt_core, model, max_tokens=8192)
         if out:
-            print(f"  DeepSeek synthesis succeeded ({model})", file=sys.stderr)
+            print(f"  DeepSeek Call 1 (main) succeeded ({model})", file=sys.stderr)
+            call1_out = out
             llm_meta.update({"provider": "deepseek", "status": "ok", "model": model, "error": None})
-            return _normalize_synthesis({**fallback, **out}), llm_meta
+            break
         last_error = err or "unknown"
         if err == "invalid_json_truncated":
-            print(
-                "  DeepSeek JSON truncated (raise max_tokens or shorten prompt); trying fallback...",
-                file=sys.stderr,
-            )
+            print("  DeepSeek Call 1 JSON truncated.", file=sys.stderr)
 
-    print("  DeepSeek failed; trying Gemini CIO fallback...", file=sys.stderr)
-    for model in _gemini_models_to_try():
-        out, err = _call_gemini_cio(prompt, model)
+    if call1_out is None:
+        llm_meta["error"] = last_error or "call1 failed"
+        print("  Layer 3 LLM Call 1 failed for all models; using placeholder CIO text.", file=sys.stderr)
+        return fallback, llm_meta
+
+    # ── Call 2: gear matrix only ───────────────────────────────────────────────
+    call2_out: dict | None = None
+    gear_last_error: str | None = None
+    for model in _deepseek_models_to_try():
+        out, err = _call_deepseek(
+            prompt_gear,
+            model,
+            system_prompt=GEAR_SYSTEM_PROMPT,
+            max_tokens=6144,
+        )
         if out:
-            print(f"  Gemini CIO fallback succeeded ({model})", file=sys.stderr)
-            llm_meta.update(
-                {
-                    "provider": "gemini_fallback",
-                    "status": "ok",
-                    "model": model,
-                    "error": None,
-                }
-            )
-            return _normalize_synthesis({**fallback, **out}), llm_meta
-        last_error = err or last_error
+            print(f"  DeepSeek Call 2 (gear) succeeded ({model})", file=sys.stderr)
+            call2_out = out
+            break
+        gear_last_error = err or "unknown"
+        if err == "invalid_json_truncated":
+            print("  DeepSeek Call 2 (gear) JSON truncated.", file=sys.stderr)
 
-    llm_meta["error"] = last_error or "all providers failed"
-    print("  Layer 3 LLM failed for all models; using placeholder CIO text.", file=sys.stderr)
-    return fallback, llm_meta
+    if call2_out is None:
+        print(
+            f"  DeepSeek Call 2 (gear) failed ({gear_last_error}); gear will use quant fallback.",
+            file=sys.stderr,
+        )
+        # gear_matrix_semantics will be filled by quant fallback downstream
+    else:
+        # Merge gear result into main result
+        call1_out["gear_matrix_semantics"] = call2_out.get("gear_matrix_semantics", {})
+
+    merged = {**fallback, **call1_out}
+    return _normalize_synthesis(merged), llm_meta
 
 
 def _resolve_event_of_day(l2b: dict) -> dict:
@@ -4205,6 +4203,7 @@ def _build_synthesis_prompt(
     report_date: str,
     country_signals: dict | None = None,
 ) -> str:
+    """Build the CORE synthesis prompt (Call 1).  Gear matrix is excluded — see _build_gear_prompt."""
     flow_block = {
         "signals": (l2b.get("flow_payload") or {}).get("signals", {}),
         "coverage": l2b.get("data_coverage", {}),
@@ -4220,7 +4219,6 @@ def _build_synthesis_prompt(
     momentum = quant_context_json.get("momentum_profile") if isinstance(quant_context_json, dict) else {}
     div_ctx = _divergence_prompt_context(momentum, l1, l2a, l2b, quant_context_json)
     regime_label = quant_context_json.get("macro_regime_label") or "Unknown"
-    gear_matrix_raw = build_l2_gear_raw_context(l2b, quant_context_json)
     try:
         us_financial_conditions = _us_financial_conditions_summary()
     except Exception:
@@ -4265,9 +4263,6 @@ never describe a [GLOBAL RELATIVE] number as if it were the US.**
 === [GLOBAL RELATIVE] Layer 2 flow (MUST reference in Zone 3) ===
 {json.dumps(flow_block, ensure_ascii=False, indent=2)}
 
-=== [GLOBAL RELATIVE] Gear Matrix raw inputs (translate in gear_matrix_semantics; do not echo verbatim) ===
-{json.dumps(gear_matrix_raw, ensure_ascii=False, indent=2)}
-
 === [GLOBAL RELATIVE] Per-Country Quantitative Signals (four-grid: growth / inflation / policy / capital) ===
 {json.dumps(country_signals or {}, ensure_ascii=False, indent=2)}
 
@@ -4294,11 +4289,36 @@ Instructions:
 - Zone 1: flash_bullets (capital_flows from the carry/relative surface, volatility from US VIX, macro_sentiment) aligned with macro_regime_label.
 - Zone 2: decisive, cold, contrarian; NO digits, %, Z-scores, tickers, bn.
 - Zone 3: pure_alpha three sections (expectation_arbitrage, crowdedness_leverage, hedging_cost_anomaly); cite macro_regime_label, divergence_score, penalty_reason, SKEW, VVIX, SHY/TLT, MOVE/VIX/DXY/JPY/TWD/SPY/HYG.
-- gear_matrix_semantics: all six countries; expectation/plumbing/hedging sentences plus labels and *_reasoning hover text (see system Step 5).
 - relationship_analysis.status must match convergence_divergence.status (likely {div_ctx.get("likely_status")}).
 - Failure mode: generic prose with no named indicators from the payloads above.
+- NOTE: gear_matrix_semantics is produced in a separate call — do NOT output it here; omit the key entirely.
 
-Return exactly the Macro Pulse 3.0 JSON schema in your system instructions.
+Return exactly the Macro Pulse 3.0 JSON schema in your system instructions (excluding gear_matrix_semantics).
+"""
+
+
+def _build_gear_prompt(
+    l2b: dict,
+    quant_context_json: dict,
+    country_signals: dict | None = None,
+) -> str:
+    """Build the gear-matrix-only prompt (Call 2).
+
+    Kept lean so the response fits comfortably within 6144 tokens.
+    """
+    regime_label = quant_context_json.get("macro_regime_label") or "Unknown"
+    gear_matrix_raw = build_l2_gear_raw_context(l2b, quant_context_json)
+    return f"""
+macro_regime_label = {regime_label}
+
+=== Gear Matrix raw inputs (six countries: US, Japan, Europe, China, Taiwan, Australia) ===
+{json.dumps(gear_matrix_raw, ensure_ascii=False, indent=2)}
+
+=== Per-Country Quantitative Signals (four-grid: growth / inflation / policy / capital) ===
+{json.dumps(country_signals or {}, ensure_ascii=False, indent=2)}
+
+Translate the raw signals above into the gear_matrix_semantics JSON block described in your system instructions.
+All six countries must be present. Return strict JSON only.
 """
 
 
@@ -4784,11 +4804,12 @@ def main() -> None:
         print(f"  Rerender lite from {cache_path.name} (LLM skipped).", file=sys.stderr)
     else:
         _guard_skip_llm_overwrite(out_data, args.skip_llm)
-        prompt = _build_synthesis_prompt(
+        prompt_core = _build_synthesis_prompt(
             l1, l2a, l2b, quant_context_json, event_of_day, surfaced_rows, d,
             country_signals=country_signals,
         )
-        synthesis, llm_meta = _get_synthesis(prompt, args.skip_llm)
+        prompt_gear = _build_gear_prompt(l2b, quant_context_json, country_signals=country_signals)
+        synthesis, llm_meta = _get_synthesis(prompt_core, prompt_gear, args.skip_llm)
         synthesis, country_cycle = _apply_quant_country_cycle(synthesis, l1, quant_context_json)
         llm_placeholder = is_synthesis_placeholder(synthesis)
         us_growth_z = _us_growth_z_score(quant_context_json)
