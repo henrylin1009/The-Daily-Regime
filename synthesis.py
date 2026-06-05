@@ -2423,7 +2423,7 @@ HTML_TMPL_LITE = """<!doctype html>
         <button class="tab-btn" data-pane="global" role="tab"><span class="ai-zh">國際承接面</span><span class="ai-en">Global</span></button>
         <button class="tab-btn" data-pane="history" role="tab"><span class="ai-zh">歷史借鏡</span><span class="ai-en">History</span></button>
         <button class="tab-btn" data-pane="sectors" role="tab"><span class="ai-zh">板塊輪動</span><span class="ai-en">Sectors</span></button>
-        <button class="tab-btn" data-pane="sectors-tw" role="tab"><span class="ai-zh">台股板塊</span><span class="ai-en">TW Sectors</span></button>
+        <button class="tab-btn" data-pane="sectors-tw" role="tab"><span class="ai-zh">台股 ETF</span><span class="ai-en">TW ETFs</span></button>
       </nav>
     </div>
 
@@ -2461,7 +2461,7 @@ HTML_TMPL_LITE = """<!doctype html>
         <div class="lead">
           <div class="stat">
             <div class="stat-val" style="color:{{ top.color }};">
-              <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:{{ top.color }};margin-right:6px;vertical-align:middle;"></span>{{ top.label }}
+              <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:{{ top.color }};margin-right:6px;vertical-align:middle;"></span>{% if top.label_zh %}<span class="ai-zh">{{ top.label_zh }}</span><span class="ai-en">{{ top.label }}</span>{% else %}{{ top.label }}{% endif %}
             </div>
             <div class="stat-sub">
               <span class="ai-zh">{{ top.quadrant_zh }} · 已領先 {{ top.weeks_current }} 週{% if top.avg_weeks_as_rank1 %} · 當第一時歷史平均 {{ top.avg_weeks_as_rank1 }} 週{% endif %}</span>
@@ -2480,7 +2480,7 @@ HTML_TMPL_LITE = """<!doctype html>
             {% for e in prank.exits %}
             <div class="trans-stat">
               <div class="ts-num">{{ e.pct }}%</div>
-              <div class="ts-lab">→ {{ e.label }}</div>
+              <div class="ts-lab">→ {% if e.label_zh %}<span class="ai-zh">{{ e.label_zh }}</span><span class="ai-en">{{ e.label }}</span>{% else %}{{ e.label }}{% endif %}</div>
             </div>
             {% endfor %}
           </div>
@@ -2508,7 +2508,7 @@ HTML_TMPL_LITE = """<!doctype html>
             <td>
               <span class="sector-perf-label">
                 <span class="sector-perf-dot" style="background:{{ r.color }};"></span>
-                <strong{% if r.is_benchmark %} style="color:var(--ink);"{% endif %}>{{ r.label }}</strong>
+                <strong{% if r.is_benchmark %} style="color:var(--ink);"{% endif %}>{% if r.label_zh %}<span class="ai-zh">{{ r.label_zh }}</span><span class="ai-en">{{ r.label }}</span>{% else %}{{ r.label }}{% endif %}</strong>
               </span>
             </td>
             <td style="text-align:right;font-family:var(--mono);font-size:0.88rem;">
@@ -2821,7 +2821,7 @@ HTML_TMPL_LITE = """<!doctype html>
 
       {{ sectors_pane('sectors', '', rrg_data, rrg_summary, rrg_sector_stats, sector_performance, rrg_rank_trans, '板塊輪動', 'Sector Rotation', '各板塊相對 SPY 的強弱與動能方向（近 12 週軌跡）', 'Relative strength & momentum vs SPY — 12-week trail', '板塊表現 · 對 SPY', 'Sector performance · vs SPY', '相對輪動圖 (RRG) · 以 SPY 為基準', 'Relative Rotation Graph (RRG) · Benchmark: SPY', 'SPY 為基準；板塊括號內為相對 SPY 超額。板塊依 1 週超額排序。', 'SPY is the benchmark; sector parentheses show excess vs SPY. Sectors sorted by 1W excess.', block.lang) }}
 
-      {{ sectors_pane('sectors-tw', '-tw', tw_rrg_data, tw_rrg_summary, tw_rrg_sector_stats, tw_sector_performance, tw_rrg_rank_trans, '台股板塊輪動', 'TW Sector Rotation', '板塊 ETF · 相對加權報酬指數 · 12 週', 'Sector ETFs · relative to TAIEX total return · 12-week trail', '板塊表現 · 對加權', 'Sector performance · vs TAIEX', '相對輪動圖 (RRG) · 以加權報酬指數為基準', 'Relative Rotation Graph (RRG) · Benchmark: TAIEX', '加權報酬指數為基準；板塊括號內為相對加權超額。板塊依 1 週超額排序。', 'TAIEX total return is the benchmark; sector parentheses show excess vs TAIEX. Sectors sorted by 1W excess.', block.lang) }}
+      {{ sectors_pane('sectors-tw', '-tw', tw_rrg_data, tw_rrg_summary, tw_rrg_sector_stats, tw_sector_performance, tw_rrg_rank_trans, '台股 ETF 輪動', 'TW ETF Rotation', '上市 ETF 主題 · 相對加權報酬指數 · 12 週', 'Listed ETF themes · relative to TAIEX total return · 12-week trail', 'ETF 表現 · 對加權', 'ETF performance · vs TAIEX', '相對輪動圖 (RRG) · 以加權報酬指數為基準', 'Relative Rotation Graph (RRG) · Benchmark: TAIEX', '加權報酬指數為基準；括號內為相對加權超額。各線為上市 ETF 價格，非證交所產業類股指數。依 1 週超額排序。', 'TAIEX total return is the benchmark; parentheses show excess vs TAIEX. Lines are listed ETF prices, not TWSE industry indices. Sorted by 1W excess.', block.lang) }}
 
       <div class="foot">THE DAILY REGIME · {{ block.ui.footer }} · {{ block.report_date }}</div>
     </div>

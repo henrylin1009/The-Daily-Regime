@@ -350,7 +350,7 @@ INDICATOR_FETCHERS: dict[str, Callable[[str], pd.DataFrame]] = {
     "fx_usdjpy": lambda s: _fetch_fred("DEXJPUS", s),
     "fx_eurusd": lambda s: _fetch_fred("DEXUSEU", s),
     "fx_usdcny": lambda s: _fetch_fred("DEXCHUS", s),
-    # Taiwan — FinMind TAIEX total return + sector ETF proxies (00892/0053/0055/00919/00690)
+    # Taiwan — FinMind TAIEX total return + listed ETF themes (00892/0053/0055/00919/00690)
     "tw_bench": lambda s: _fetch_finmind_v4("TaiwanStockTotalReturnIndex", "TAIEX", s, value_col="price"),
     "tw_semi": lambda s: _fetch_finmind_v4("TaiwanStockPrice", "00892", s),
     "tw_comp": lambda s: _fetch_finmind_v4("TaiwanStockPrice", "0053", s),

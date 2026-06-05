@@ -40,6 +40,9 @@ def test_tw_universe_parameter_matches_wrapper():
     wrapped = build_tw_rrg_plotly(_synthetic_tw_cache())
     assert len(direct.get("traces", [])) == len(wrapped.get("traces", []))
     assert direct.get("sector_performance")[0]["label"] == "TAIEX"
+    labels = {r["label"]: r.get("label_zh") for r in direct["sector_performance"]}
+    assert labels["Semiconductor ETF (00892)"] == "半導體 ETF (00892)"
+    assert labels["High Dividend ETF (00919)"] == "高息 ETF (00919)"
 
 
 def test_fetch_finmind_v4_parses_close():

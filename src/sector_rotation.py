@@ -52,6 +52,7 @@ class SectorUniverse:
     sectors: dict[str, str]
     colors: dict[str, str]
     benchmark_color: str = _BENCH_COLOR
+    sectors_zh: dict[str, str] | None = None
 
 
 US_SECTORS = SectorUniverse(
@@ -65,11 +66,18 @@ TW_SECTORS = SectorUniverse(
     benchmark_key="tw_bench",
     benchmark_label="TAIEX",
     sectors={
-        "tw_semi": "Semiconductors",
-        "tw_comp": "Components",
-        "tw_fin": "Financials",
-        "tw_ship": "Shipping",
-        "tw_mach": "Industrials",
+        "tw_semi": "Semiconductor ETF (00892)",
+        "tw_comp": "Electronics ETF (0053)",
+        "tw_fin": "Financial ETF (0055)",
+        "tw_ship": "High Dividend ETF (00919)",
+        "tw_mach": "Blue Chip 30 (00690)",
+    },
+    sectors_zh={
+        "tw_semi": "半導體 ETF (00892)",
+        "tw_comp": "電子 ETF (0053)",
+        "tw_fin": "金融 ETF (0055)",
+        "tw_ship": "高息 ETF (00919)",
+        "tw_mach": "藍籌 30 (00690)",
     },
     colors={
         "tw_semi": "#4f46e5",
@@ -131,7 +139,7 @@ def _build_sector_performance(data: dict, *, universe: SectorUniverse = US_SECTO
         ex1w = None if r1w is None or bench_rets["1w"] is None else round(r1w - bench_rets["1w"], 1)
         ex1m = None if r1m is None or bench_rets["1m"] is None else round(r1m - bench_rets["1m"], 1)
         ex1y = None if r1y is None or bench_rets["1y"] is None else round(r1y - bench_rets["1y"], 1)
-        rows.append({
+        row = {
             "label": label,
             "color": universe.colors[ticker],
             "is_benchmark": False,
@@ -142,7 +150,10 @@ def _build_sector_performance(data: dict, *, universe: SectorUniverse = US_SECTO
             "excess_1m": ex1m,
             "excess_1y": ex1y,
             "sort_key": ex1w if ex1w is not None else -999.0,
-        })
+        }
+        if universe.sectors_zh and ticker in universe.sectors_zh:
+            row["label_zh"] = universe.sectors_zh[ticker]
+        rows.append(row)
 
     bench = rows[0]
     sectors = sorted(rows[1:], key=lambda r: r["sort_key"], reverse=True)
@@ -375,11 +386,19 @@ def _rank_transitions(all_full: dict[str, pd.DataFrame], universe: SectorUnivers
         return {}
 
     stay_pct = round(stay / total * 100)
-    exits = sorted(
-        [{"ticker": t, "label": universe.sectors[t], "pct": round(cnt / (total - stay) * 100)}
-         for t, cnt in successors.items() if t in universe.sectors],
-        key=lambda x: -x["pct"],
-    )[:3]
+    exits = []
+    for t, cnt in successors.items():
+        if t not in universe.sectors:
+            continue
+        exit_row: dict = {
+            "ticker": t,
+            "label": universe.sectors[t],
+            "pct": round(cnt / (total - stay) * 100),
+        }
+        if universe.sectors_zh and t in universe.sectors_zh:
+            exit_row["label_zh"] = universe.sectors_zh[t]
+        exits.append(exit_row)
+    exits = sorted(exits, key=lambda x: -x["pct"])[:3]
 
     return {
         "current_leader": current_leader,
@@ -472,7 +491,7 @@ def build_rrg_plotly(data: dict, *, universe: SectorUniverse = US_SECTORS) -> di
         stay = stats["stay_pct"].get(q)
         exits = stats["exits"].get(q, [])
         rank_score = _rank_score(rx, ry, q)
-        sector_stats.append({
+        stat_row = {
             "label": label,
             "color": col,
             "quadrant_en": _Q_LABELS_EN[q],
@@ -483,7 +502,10 @@ def build_rrg_plotly(data: dict, *, universe: SectorUniverse = US_SECTORS) -> di
             "exits_en": [{"label": _Q_LABELS_EN[t["q"]], "pct": t["pct"]} for t in exits],
             "exits_zh": [{"label": _Q_LABELS_ZH[t["q"]], "pct": t["pct"]} for t in exits],
             "rank_score": rank_score,
-        })
+        }
+        if universe.sectors_zh and ticker in universe.sectors_zh:
+            stat_row["label_zh"] = universe.sectors_zh[ticker]
+        sector_stats.append(stat_row)
 
     if not traces:
         return {}
@@ -542,5 +564,5 @@ def build_rrg_plotly(data: dict, *, universe: SectorUniverse = US_SECTORS) -> di
 
 
 def build_tw_rrg_plotly(data: dict) -> dict:
-    """Taiwan sector RRG vs TAIEX (TWSE industry indices)."""
+    """Taiwan listed-ETF RRG vs TAIEX total return."""
     return build_rrg_plotly(data, universe=TW_SECTORS)
