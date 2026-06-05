@@ -2269,7 +2269,7 @@ HTML_TMPL_LITE = """<!doctype html>
     .zone-title { font-family:var(--serif); font-size:1.85rem; font-weight:700; color:var(--ink); letter-spacing:-0.015em; line-height:1.08; }
     .zone-sub { font-family:var(--sans); font-size:0.82rem; color:var(--muted); margin-top:0.4rem; letter-spacing:0; line-height:1.45; }
     /* Big colour-block module (Notion structure + Economist palette, no rules) */
-    .modcard { background:var(--paper); border-radius:16px; padding:1.7rem 1.8rem; margin:1.1rem 0; }
+    .modcard { background:var(--paper); border-radius:16px; padding:1.7rem 1.8rem; margin:1.1rem 0; overflow:visible; }
     @media (max-width:560px) { .modcard { padding:1.2rem 1.15rem; border-radius:12px; } }
     .mod-label { font-family:var(--sans); font-size:0.82rem; font-weight:700; text-transform:uppercase; letter-spacing:0.09em; color:var(--red); margin-bottom:0.45rem; }
     .mod-head { font-family:var(--serif); font-size:1.55rem; font-weight:700; line-height:1.12; letter-spacing:-0.01em; color:var(--ink); margin:0 0 0.9rem; }
@@ -2385,7 +2385,8 @@ HTML_TMPL_LITE = """<!doctype html>
     /* Merged country+carry cards */
     .cty-carry-grid { display:grid; grid-template-columns:1fr 1fr; gap:0.9rem; }
     @media (max-width:680px) { .cty-carry-grid { grid-template-columns:1fr; } }
-    .cty-carry-card { background:var(--block); border-radius:12px; padding:0.95rem 1.05rem; }
+    .cty-carry-card { background:var(--block); border-radius:12px; padding:0.95rem 1.05rem; overflow:visible; }
+    .cty-gears { overflow:visible; }
     .cty-carry-head { display:flex; align-items:baseline; flex-wrap:wrap; gap:0.4rem; margin-bottom:0.25rem; }
     .cty-carry-head .carry-country { font-size:1.02rem; font-weight:700; }
     .cty-carry-top { background:var(--paper); border-radius:10px; padding:0.6rem 0.75rem; margin-bottom:0.5rem; }
@@ -2452,6 +2453,8 @@ HTML_TMPL_LITE = """<!doctype html>
     /* Open rightward when icon sits near the left edge */
     .info.tip-right .tip { left:0; right:auto; transform:none; }
     .info.tip-right .tip::before { left:5px; right:auto; transform:none; }
+    .info.tip-fit .tip { left:0; right:auto; transform:none; }
+    .info.tip-fit .tip::before { left:var(--tip-arrow-left, 50%); right:auto; transform:none; }
     /* ── Interactions (Tier 1) ─────────────────────────────────────── */
     /* Top scroll-progress hairline (brand red) */
     .scroll-progress { position:fixed; top:0; left:0; height:3px; width:0; background:var(--red); z-index:200; transition:width 0.08s linear; }
@@ -2490,6 +2493,41 @@ HTML_TMPL_LITE = """<!doctype html>
       var saved = null;
       try { saved = localStorage.getItem(KEY); } catch (e) {}
       apply(saved || 'en');
+      function positionInfoTip(info) {
+        var tip = info.querySelector('.tip');
+        if (!tip) return;
+        info.classList.remove('tip-left', 'tip-right', 'tip-fit');
+        tip.style.left = '';
+        tip.style.right = '';
+        tip.style.transform = '';
+        info.style.removeProperty('--tip-arrow-left');
+        var pad = 10;
+        var tipW = Math.min(280, window.innerWidth * 0.78);
+        var r = info.getBoundingClientRect();
+        var cx = r.left + r.width / 2;
+        var fitsRight = (r.left + tipW) <= (window.innerWidth - pad);
+        var fitsLeft = (r.right - tipW) >= pad;
+        var side = cx < window.innerWidth / 2 ? 'tip-right' : 'tip-left';
+        if (side === 'tip-right' && !fitsRight && fitsLeft) side = 'tip-left';
+        else if (side === 'tip-left' && !fitsLeft && fitsRight) side = 'tip-right';
+        if (side === 'tip-right' && !fitsRight && !fitsLeft) {
+          info.classList.add('tip-fit');
+          var ideal = cx - tipW / 2;
+          var clamped = Math.max(pad, Math.min(ideal, window.innerWidth - pad - tipW));
+          tip.style.left = (clamped - r.left) + 'px';
+          info.style.setProperty('--tip-arrow-left', (cx - clamped) + 'px');
+          return;
+        }
+        if (side === 'tip-left' && !fitsLeft && !fitsRight) {
+          info.classList.add('tip-fit');
+          var idealL = cx - tipW / 2;
+          var clampedL = Math.max(pad, Math.min(idealL, window.innerWidth - pad - tipW));
+          tip.style.left = (clampedL - r.left) + 'px';
+          info.style.setProperty('--tip-arrow-left', (cx - clampedL) + 'px');
+          return;
+        }
+        info.classList.add(side);
+      }
       document.addEventListener('click', function (ev) {
         var btn = ev.target.closest('.lang-switch button');
         if (btn) { apply(btn.getAttribute('data-lang')); return; }
@@ -2499,11 +2537,21 @@ HTML_TMPL_LITE = """<!doctype html>
           ev.stopPropagation();
           var isOpen = info.classList.contains('tip-open');
           document.querySelectorAll('.info.tip-open').forEach(function(el){ el.classList.remove('tip-open'); });
-          if (!isOpen) info.classList.add('tip-open');
+          if (!isOpen) {
+            positionInfoTip(info);
+            info.classList.add('tip-open');
+          }
           return;
         }
         // Close all open tooltips when clicking elsewhere
         document.querySelectorAll('.info.tip-open').forEach(function(el){ el.classList.remove('tip-open'); });
+      });
+      document.addEventListener('mouseenter', function (ev) {
+        var info = ev.target.closest('.info');
+        if (info) positionInfoTip(info);
+      }, true);
+      window.addEventListener('resize', function () {
+        document.querySelectorAll('.info.tip-open').forEach(positionInfoTip);
       });
     })();
   </script>

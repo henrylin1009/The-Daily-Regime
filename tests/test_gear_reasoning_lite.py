@@ -159,3 +159,4 @@ def test_lite_html_cty_row_has_info():
     assert "cty-row-head" in html
     assert 'class="info' in html
     assert "綠燈" in html or "SKEW" in html
+    assert "positionInfoTip" in html
