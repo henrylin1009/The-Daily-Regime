@@ -3170,6 +3170,19 @@ def _parse_cio_json(raw: str) -> dict | None:
     return None
 
 
+def _parse_gear_json(raw: str) -> dict | None:
+    """Parser for Call 2 (gear-only): accepts any dict that has gear_matrix_semantics."""
+    if not raw.strip():
+        return None
+    try:
+        payload = json.loads(_clean_json(raw))
+    except json.JSONDecodeError:
+        return None
+    if isinstance(payload, dict) and "gear_matrix_semantics" in payload:
+        return payload
+    return None
+
+
 def _coerce_narrative(value: object) -> list[str]:
     if isinstance(value, list):
         parts = [str(x).strip() for x in value if str(x).strip()]
@@ -3630,6 +3643,7 @@ def _call_deepseek(
     model: str,
     system_prompt: str | None = None,
     max_tokens: int = 8192,
+    parse_fn=None,
 ) -> tuple[dict | None, str | None]:
     try:
         resp = _deepseek_client().chat.completions.create(
@@ -3643,7 +3657,7 @@ def _call_deepseek(
             max_tokens=max_tokens,
         )
         raw = (resp.choices[0].message.content or "").strip()
-        payload = _parse_cio_json(raw)
+        payload = (parse_fn or _parse_cio_json)(raw)
         if payload is None:
             finish = getattr(resp.choices[0], "finish_reason", None)
             if finish == "length":
@@ -3943,6 +3957,7 @@ def _get_synthesis(
             model,
             system_prompt=GEAR_SYSTEM_PROMPT,
             max_tokens=6144,
+            parse_fn=_parse_gear_json,
         )
         if out:
             print(f"  DeepSeek Call 2 (gear) succeeded ({model})", file=sys.stderr)
