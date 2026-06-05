@@ -1,6 +1,7 @@
 """Sector Rotation: RRG computation with trajectory arrows and historical stats."""
 from __future__ import annotations
 
+import math
 from collections import defaultdict
 from dataclasses import dataclass
 
@@ -40,6 +41,9 @@ _SMOOTH = 10   # weeks for RS smoothing
 _NORM = 52     # weeks for z-score normalisation window
 _TRAIL = 12    # weeks of tail to draw
 _ARROW_WEEKS = 3  # weeks back to compute trajectory vector
+_RRG_R_MIN = 2.8   # minimum half-axis span (σ)
+_RRG_R_PAD = 0.18  # padding fraction on data extent
+_RRG_LABEL_PAD = 0.45  # extra σ for marker + text above points
 _RET_1W = 5
 _RET_1M = 21
 _RET_1Y = 252
@@ -87,6 +91,24 @@ TW_SECTORS = SectorUniverse(
         "tw_mach": "#dc2626",
     },
 )
+
+
+def _rrg_axis_limit(coords: list[tuple[float, float]]) -> float:
+    """Symmetric axis half-range from trail + arrow tips, with padding."""
+    if not coords:
+        return _RRG_R_MIN
+    xs = [c[0] for c in coords]
+    ys = [c[1] for c in coords]
+    extent = max(max(abs(v) for v in xs), max(abs(v) for v in ys))
+    padded = extent * (1.0 + _RRG_R_PAD) + _RRG_LABEL_PAD
+    if padded <= _RRG_R_MIN:
+        return _RRG_R_MIN
+    return math.ceil(padded * 2) / 2
+
+
+def _rrg_axis_ticks(r: float) -> list[int]:
+    n = max(1, int(math.floor(r)))
+    return list(range(-n, n + 1))
 
 
 def _pct_return(series: pd.Series, periods: int) -> float | None:
@@ -416,6 +438,7 @@ def build_rrg_plotly(data: dict, *, universe: SectorUniverse = US_SECTORS) -> di
     bench_w = bench.resample("W-FRI").last().dropna()
     traces: list[dict] = []
     annotations: list[dict] = []
+    extent_coords: list[tuple[float, float]] = []
     positions: dict[str, dict] = {}
     sector_stats: list[dict] = []
     all_full: dict[str, pd.DataFrame] = {}
@@ -436,6 +459,7 @@ def build_rrg_plotly(data: dict, *, universe: SectorUniverse = US_SECTORS) -> di
         y = trail["m"].tolist()
         dates = [d.strftime("%Y-%m-%d") for d in trail.index]
         col = universe.colors[ticker]
+        extent_coords.extend(zip(x, y))
 
         traces.append({
             "type": "scatter", "x": x, "y": y, "mode": "lines",
@@ -471,9 +495,12 @@ def build_rrg_plotly(data: dict, *, universe: SectorUniverse = US_SECTORS) -> di
             mag = (dx ** 2 + dy ** 2) ** 0.5
             if mag > 0.01:
                 scale = 0.45 / mag
+                tip_x = x[-1] + dx * scale
+                tip_y = y[-1] + dy * scale
+                extent_coords.append((tip_x, tip_y))
                 annotations.append({
-                    "x": x[-1] + dx * scale,
-                    "y": y[-1] + dy * scale,
+                    "x": tip_x,
+                    "y": tip_y,
                     "ax": x[-1], "ay": y[-1],
                     "xref": "x", "yref": "y",
                     "axref": "x", "ayref": "y",
@@ -514,22 +541,24 @@ def build_rrg_plotly(data: dict, *, universe: SectorUniverse = US_SECTORS) -> di
     rank_trans = _rank_transitions(all_full, universe)
     summary = _build_summary(positions)
 
-    R = 2.8
+    R = _rrg_axis_limit(extent_coords)
+    ticks = _rrg_axis_ticks(R)
     layout = {
         "height": 440,
-        "margin": {"l": 55, "r": 20, "t": 28, "b": 50},
+        "autosize": True,
+        "margin": {"l": 55, "r": 48, "t": 36, "b": 50},
         "paper_bgcolor": "#ffffff", "plot_bgcolor": "#ffffff",
         "font": {"family": "Inter, sans-serif", "size": 11},
         "dragmode": False,
         "xaxis": {
             "title": "RS-Ratio (σ)", "range": [-R, R], "fixedrange": True,
             "zeroline": True, "zerolinecolor": "#333", "zerolinewidth": 1.5,
-            "gridcolor": "#F0F0F0", "tickvals": [-2, -1, 0, 1, 2],
+            "gridcolor": "#F0F0F0", "tickvals": ticks,
         },
         "yaxis": {
             "title": "RS-Momentum (σ)", "range": [-R, R], "fixedrange": True,
             "zeroline": True, "zerolinecolor": "#333", "zerolinewidth": 1.5,
-            "gridcolor": "#F0F0F0", "tickvals": [-2, -1, 0, 1, 2],
+            "gridcolor": "#F0F0F0", "tickvals": ticks,
         },
         "showlegend": False,
         "shapes": [

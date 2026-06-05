@@ -2849,6 +2849,18 @@ HTML_TMPL_LITE = """<!doctype html>
           btn.addEventListener('click', function () { switchTab(btn.getAttribute('data-pane')); });
         });
       })();
+      (function () {
+        function resizeActivePlots() {
+          if (!window.Plotly) return;
+          document.querySelectorAll('.tab-pane.active .js-plotly-plot').forEach(function (g) {
+            try { Plotly.Plots.resize(g); } catch (e) {}
+          });
+        }
+        window.addEventListener('resize', function () { resizeActivePlots(); });
+        window.addEventListener('orientationchange', function () {
+          setTimeout(resizeActivePlots, 120);
+        });
+      })();
       var sel = '.hero, .zone-divider, .modcard, .viz-card, .story, .carry-cell';
       var targets = Array.prototype.slice.call(document.querySelectorAll(sel));
       targets.forEach(function (el) { el.classList.add('reveal'); });

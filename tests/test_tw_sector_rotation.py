@@ -8,7 +8,14 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from src.sector_rotation import TW_SECTORS, build_rrg_plotly, build_tw_rrg_plotly
+from src.sector_rotation import (
+    TW_SECTORS,
+    _RRG_R_MIN,
+    _rrg_axis_limit,
+    _rrg_axis_ticks,
+    build_rrg_plotly,
+    build_tw_rrg_plotly,
+)
 
 
 def _synthetic_tw_cache(n: int = 900, freq: str = "B") -> dict[str, pd.DataFrame]:
@@ -26,6 +33,22 @@ def _synthetic_tw_cache(n: int = 900, freq: str = "B") -> dict[str, pd.DataFrame
     return data
 
 
+def test_rrg_axis_limit_expands_for_leading_quadrant():
+    coords = [(0.2, 0.1), (3.1, 2.8), (3.4, 3.0)]
+    r = _rrg_axis_limit(coords)
+    assert r > _RRG_R_MIN
+    assert r >= 3.5
+
+
+def test_rrg_axis_limit_respects_minimum():
+    assert _rrg_axis_limit([(0.4, -0.3)]) == _RRG_R_MIN
+
+
+def test_rrg_axis_ticks_follow_limit():
+    assert _rrg_axis_ticks(2.8) == [-2, -1, 0, 1, 2]
+    assert _rrg_axis_ticks(3.5) == [-3, -2, -1, 0, 1, 2, 3]
+
+
 def test_tw_rrg_plotly_returns_traces():
     result = build_tw_rrg_plotly(_synthetic_tw_cache())
     assert result.get("traces"), "expected Plotly traces"
@@ -33,6 +56,8 @@ def test_tw_rrg_plotly_returns_traces():
     assert result.get("summary", {}).get("en")
     assert len(result.get("sector_stats", [])) >= 3
     assert len(result.get("sector_performance", [])) >= 2
+    x_rng = result["layout"]["xaxis"]["range"]
+    assert x_rng[1] >= _RRG_R_MIN
 
 
 def test_tw_universe_parameter_matches_wrapper():
