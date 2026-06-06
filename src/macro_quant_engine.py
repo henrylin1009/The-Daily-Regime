@@ -1037,6 +1037,126 @@ def _build_ff_factor_block() -> dict[str, Any]:
         return {}
 
 
+def _build_fed_rate_path_block() -> dict[str, Any]:
+    """Fetch ZQ monthly futures term structure → implied Fed rate path + cuts/hikes priced in.
+
+    Uses ZQ{M}{YY}.CBT contracts on CME (yfinance fast_info).
+    Implied rate = 100 - price.  change_vs_now_bp < 0 = cuts priced in.
+    Called from generate_quant_payload_dict() so the result is inside quant_engine JSON.
+    """
+    from datetime import datetime as _dt
+    _MONTH_CODES = "FGHJKMNQUVXZ"
+    today = _dt.today()
+    contracts: list[tuple[str, int, int]] = []
+    y, m = today.year, today.month
+    for _ in range(12):
+        m += 1
+        if m > 12:
+            m, y = 1, y + 1
+        contracts.append((f"ZQ{_MONTH_CODES[m - 1]}{str(y)[-2:]}.CBT", y, m))
+
+    term_structure: list[dict] = []
+    for ticker, yr, mo in contracts:
+        try:
+            price = yf.Ticker(ticker).fast_info.last_price
+            if price is None or price != price:
+                continue
+            term_structure.append({
+                "ticker": ticker,
+                "year": yr,
+                "month": mo,
+                "implied_rate_pct": round(100.0 - float(price), 4),
+            })
+            if len(term_structure) >= 8:
+                break
+        except Exception:
+            continue
+
+    if not term_structure:
+        return {"error": "no ZQ contracts available", "summary": "unavailable"}
+
+    # Current rate: nearest contract as proxy (FEDFUNDS monthly lags by ~5 weeks)
+    current_rate = term_structure[0]["implied_rate_pct"]
+
+    for row in term_structure:
+        row["change_vs_now_bp"] = round((row["implied_rate_pct"] - current_rate) * 100, 1)
+
+    def _describe(bp: float) -> str:
+        n25 = round(abs(bp) / 25)
+        if bp < -10:
+            return f"{n25} cut{'s' if n25 != 1 else ''} priced in ({-bp:.0f}bp)"
+        if bp > 10:
+            return f"{n25} hike{'s' if n25 != 1 else ''} priced in (+{bp:.0f}bp)"
+        return "on hold"
+
+    last = term_structure[-1]
+    eoy = next((r for r in term_structure if r["year"] == today.year and r["month"] == 12), last)
+    summary = (
+        f"Nearest implied rate: {current_rate:.2f}%. "
+        f"Year-end {eoy['year']}-{eoy['month']:02d}: {_describe(eoy['change_vs_now_bp'])}. "
+        f"Horizon {last['year']}-{last['month']:02d}: {_describe(last['change_vs_now_bp'])}."
+    )
+    print(f"  fed rate path: {summary}", file=sys.stderr)
+    return {
+        "nearest_implied_rate_pct": current_rate,
+        "term_structure": term_structure,
+        "summary": summary,
+        "as_of": today.date().isoformat(),
+    }
+
+
+def _build_fed_balance_sheet_block() -> dict[str, Any]:
+    """Fetch WALCL (Fed total assets, weekly FRED) → QT/QE regime signal.
+
+    Called from generate_quant_payload_dict() so it lives inside quant_engine JSON.
+    WALCL is in $M; we convert to $B and compute 13w / 52w % changes.
+    """
+    try:
+        s = _fred_series("WALCL")  # weekly, $M
+    except Exception as exc:
+        return {"error": str(exc), "summary": "unavailable"}
+
+    s = s.dropna().sort_index()
+    if len(s) < 10:
+        return {"error": "insufficient WALCL data", "summary": "unavailable"}
+
+    latest_bn = round(float(s.iloc[-1]) / 1_000, 1)
+    as_of = s.index[-1].date().isoformat()
+
+    def _pct(periods: int) -> float | None:
+        if len(s) <= periods:
+            return None
+        old = float(s.iloc[-periods])
+        return round((float(s.iloc[-1]) - old) / old * 100, 2) if old else None
+
+    chg_13w = _pct(13)
+    chg_52w = _pct(52)
+
+    # 8-week slope for short-term trend
+    recent = s.iloc[-8:]
+    cov = sum((i - 3.5) * (float(v) - float(recent.mean())) for i, v in enumerate(recent))
+    trend = "expanding" if cov > 0 else "shrinking"
+
+    if chg_13w is not None:
+        signal = "QE/expanding" if chg_13w > 1.0 else "QT/shrinking" if chg_13w < -1.0 else "stable"
+    else:
+        signal = "unknown"
+
+    s13 = f"{'+' if (chg_13w or 0) >= 0 else ''}{chg_13w:.1f}%" if chg_13w is not None else "n/a"
+    s52 = f"{'+' if (chg_52w or 0) >= 0 else ''}{chg_52w:.1f}%" if chg_52w is not None else "n/a"
+    summary = f"Fed assets: ${latest_bn:.0f}B. 13w: {s13}. 52w: {s52}. Trend: {trend} → {signal}."
+    print(f"  fed balance sheet: {summary}", file=sys.stderr)
+    return {
+        "total_assets_bn": latest_bn,
+        "as_of": as_of,
+        "chg_13w_pct": chg_13w,
+        "chg_52w_pct": chg_52w,
+        "trend": trend,
+        "signal": signal,
+        "summary": summary,
+    }
+
+
 def generate_quant_payload_dict(df: pd.DataFrame) -> dict[str, Any]:
     """
     Structured quant metadata for Layer 3 LLM synthesis (no raw price series).
@@ -1111,7 +1231,9 @@ def generate_quant_payload_dict(df: pd.DataFrame) -> dict[str, Any]:
             "Global_Liquidity_and_Growth": {
                 "DXY_Z_Score": _safe_float(row.get("DXY_Z")) if row is not None else None,
                 "US_Growth_Z_Score": _safe_float(row.get("US_Growth_Z")) if row is not None else None,
+                "Fed_Balance_Sheet": _build_fed_balance_sheet_block(),
             },
+            "Fed_Rate_Path": _build_fed_rate_path_block(),
             "Labour_and_Inflation_Context": _build_labour_inflation_context(),
         },
         "Layer_2_Tactical": {

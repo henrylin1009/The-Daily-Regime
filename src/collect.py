@@ -313,7 +313,6 @@ INDICATOR_FETCHERS: dict[str, Callable[[str], pd.DataFrame]] = {
     "credit_spread_hy": lambda s: _fetch_fred("BAA10Y", s),
     "credit_spread_hy_oas": lambda s: _fetch_fred("BAMLH0A0HYM2", s),
     "fed_funds_rate": lambda s: _fetch_fred("FEDFUNDS", s),
-    "walcl": lambda s: _fetch_fred("WALCL", s),  # Fed balance sheet total assets (weekly, $M)
     # FRED — other central banks (optional regime features)
     "ecb_deposit_rate": lambda s: _fetch_fred("ECBDFR", s),
     "boj_policy_rate": lambda s: _fetch_fred("IRSTCI01JPM156N", s),
@@ -483,7 +482,6 @@ LATE_START_OK: dict[str, str] = {
     "fx_eurusd": "1999-01-01",
     "fx_usdcny": "1981-01-01",
     "zq_futures": "2000-09-01",
-    "walcl": "2002-12-18",  # FRED WALCL starts 2002-12-18
     "gld": "2004-11-01",
     # Key kept as 'uso' but fetcher is DBO (see INDICATOR_FETCHERS).
     "uso": "2007-01-01",
