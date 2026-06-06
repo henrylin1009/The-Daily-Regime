@@ -616,6 +616,74 @@ def _fetch_fed_rate_expectations() -> dict:
     }
 
 
+def _compute_fed_balance_sheet_signal() -> dict:
+    """Load WALCL from cache, compute 13w/52w change and QT/QE trend signal."""
+    from pathlib import Path as _Path
+    import pandas as _pd
+    import math as _math
+
+    _raw = _Path(__file__).parent / "data" / "raw" / "walcl.csv"
+    if not _raw.exists():
+        return {"error": "walcl.csv not found — run collect with --force-refresh", "summary": "unavailable"}
+
+    df = _pd.read_csv(_raw, index_col=0, parse_dates=True)["value"].dropna().sort_index()
+    if len(df) < 10:
+        return {"error": "insufficient WALCL data", "summary": "unavailable"}
+
+    latest_bn = round(df.iloc[-1] / 1_000, 1)        # convert $M → $B
+    as_of = df.index[-1].date().isoformat()
+
+    # 13-week (~1 quarter) and 52-week change
+    def _pct_chg(periods: int) -> float | None:
+        if len(df) <= periods:
+            return None
+        old = df.iloc[-periods]
+        if old == 0:
+            return None
+        return round((df.iloc[-1] - old) / old * 100, 2)
+
+    chg_13w = _pct_chg(13)
+    chg_52w = _pct_chg(52)
+
+    # Trend: rolling 4-week slope (positive = expanding/QE, negative = shrinking/QT)
+    recent = df.iloc[-8:]
+    slope_sign = None
+    if len(recent) >= 4:
+        x = list(range(len(recent)))
+        xm = sum(x) / len(x)
+        ym = recent.mean()
+        cov = sum((xi - xm) * (yi - ym) for xi, yi in zip(x, recent))
+        slope_sign = "expanding" if cov > 0 else "shrinking"
+
+    # Signal: label the liquidity regime
+    if chg_13w is not None:
+        if chg_13w > 1.0:
+            signal = "QE / expanding (liquidity injection)"
+        elif chg_13w < -1.0:
+            signal = "QT / shrinking (liquidity drain)"
+        else:
+            signal = "roughly stable"
+    else:
+        signal = "unknown"
+
+    summary = (
+        f"Fed balance sheet: ${latest_bn:.1f}B (as of {as_of}). "
+        f"13w change: {'+' if (chg_13w or 0) >= 0 else ''}{chg_13w:.1f}%. "
+        f"52w change: {'+' if (chg_52w or 0) >= 0 else ''}{chg_52w:.1f}%. "
+        f"Trend: {slope_sign or 'n/a'} → {signal}."
+    )
+
+    return {
+        "total_assets_bn": latest_bn,
+        "as_of": as_of,
+        "chg_13w_pct": chg_13w,
+        "chg_52w_pct": chg_52w,
+        "trend": slope_sign,
+        "signal": signal,
+        "summary": summary,
+    }
+
+
 def _fetch_validation_panel() -> list[dict]:
     rows: list[dict] = []
     # Carry crosses and USD funding proxy
@@ -1007,6 +1075,13 @@ def main() -> None:
         print(f"  Rate expectations: {quant_payload['fed_rate_expectations'].get('summary')}", file=sys.stderr)
     except Exception as exc:
         print(f"  Rate expectations failed (non-fatal): {exc}", file=sys.stderr)
+
+    print("Stage 6d: Fed balance sheet (WALCL) liquidity signal...")
+    try:
+        quant_payload["fed_balance_sheet"] = _compute_fed_balance_sheet_signal()
+        print(f"  Balance sheet: {quant_payload['fed_balance_sheet'].get('summary')}", file=sys.stderr)
+    except Exception as exc:
+        print(f"  Balance sheet signal failed (non-fatal): {exc}", file=sys.stderr)
 
     # Table prep: spread rows
     spread_vals = []
