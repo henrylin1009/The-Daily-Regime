@@ -532,6 +532,90 @@ def _fetch_equity_returns() -> dict[str, dict]:
     return out
 
 
+def _fetch_fed_rate_expectations() -> dict:
+    """Fetch Fed funds futures term structure and compute implied cuts/hikes.
+
+    Uses ZQ{M}{YY}.CBT monthly contracts (30-day Fed funds futures on CME via yfinance).
+    Implied rate = 100 - price. Negative change_vs_now_bp = cuts priced in.
+    """
+    from datetime import datetime
+
+    # CME month codes: F=Jan G=Feb H=Mar J=Apr K=May M=Jun N=Jul Q=Aug U=Sep V=Oct X=Nov Z=Dec
+    _MONTH_CODES = "FGHJKMNQUVXZ"
+    today = datetime.today()
+    contracts = []
+    y, m = today.year, today.month
+    for _ in range(12):
+        m += 1
+        if m > 12:
+            m = 1
+            y += 1
+        code = f"ZQ{_MONTH_CODES[m - 1]}{str(y)[-2:]}.CBT"
+        contracts.append((code, y, m))
+
+    term_structure: list[dict] = []
+    for ticker, yr, mo in contracts:
+        try:
+            t = yf.Ticker(ticker)
+            price = t.fast_info.last_price
+            if price is None or price != price:  # NaN check
+                continue
+            implied_rate = round(100.0 - float(price), 4)
+            term_structure.append({
+                "ticker": ticker,
+                "year": yr,
+                "month": mo,
+                "price": round(float(price), 4),
+                "implied_rate_pct": implied_rate,
+            })
+            if len(term_structure) >= 8:
+                break
+        except Exception:
+            continue
+
+    if not term_structure:
+        return {"error": "no contracts fetched", "term_structure": [], "summary": "unavailable"}
+
+    try:
+        from pathlib import Path as _Path
+        import pandas as _pd
+        _raw = _Path(__file__).parent / "data" / "raw" / "fed_funds_rate.csv"
+        _ff = _pd.read_csv(_raw, index_col=0, parse_dates=True)["value"].dropna()
+        current_rate = float(_ff.iloc[-1])
+    except Exception:
+        current_rate = term_structure[0]["implied_rate_pct"]
+
+    for row in term_structure:
+        row["change_vs_now_bp"] = round((row["implied_rate_pct"] - current_rate) * 100, 1)
+
+    def _describe(bp: float) -> str:
+        cuts = round(-bp / 25)
+        hikes = round(bp / 25)
+        if bp < -10:
+            return f"{cuts} cut{'s' if cuts != 1 else ''} priced in ({-bp:.0f}bp)"
+        elif bp > 10:
+            return f"{hikes} hike{'s' if hikes != 1 else ''} priced in (+{bp:.0f}bp)"
+        else:
+            return "on hold (no move priced in)"
+
+    last = term_structure[-1]
+    eoy_candidates = [r for r in term_structure if r["year"] == today.year and r["month"] == 12]
+    eoy = eoy_candidates[0] if eoy_candidates else last
+
+    summary = (
+        f"Current rate: {current_rate:.2f}%. "
+        f"Year-end ({eoy['year']}-{eoy['month']:02d}): {_describe(eoy['change_vs_now_bp'])}. "
+        f"Horizon ({last['year']}-{last['month']:02d}): {_describe(last['change_vs_now_bp'])}."
+    )
+
+    return {
+        "current_fed_funds_pct": current_rate,
+        "term_structure": term_structure,
+        "summary": summary,
+        "as_of": today.date().isoformat(),
+    }
+
+
 def _fetch_validation_panel() -> list[dict]:
     rows: list[dict] = []
     # Carry crosses and USD funding proxy
@@ -916,6 +1000,13 @@ def main() -> None:
     except Exception as exc:
         print(f"  Macro quant engine failed (non-fatal): {exc}", file=sys.stderr)
         quant_payload = {"error": str(exc)}
+
+    print("Stage 6c: Fed rate expectations curve...")
+    try:
+        quant_payload["fed_rate_expectations"] = _fetch_fed_rate_expectations()
+        print(f"  Rate expectations: {quant_payload['fed_rate_expectations'].get('summary')}", file=sys.stderr)
+    except Exception as exc:
+        print(f"  Rate expectations failed (non-fatal): {exc}", file=sys.stderr)
 
     # Table prep: spread rows
     spread_vals = []
