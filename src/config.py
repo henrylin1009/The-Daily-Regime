@@ -114,7 +114,7 @@ def require_deepseek_key() -> str:
 
 def get_deepseek_model() -> str:
     """DeepSeek chat model id (OpenAI-compatible API)."""
-    return os.getenv("DEEPSEEK_MODEL", "deepseek-chat")
+    return os.getenv("DEEPSEEK_MODEL", "deepseek-v4-pro")
 
 
 def get_deepseek_base_url() -> str:

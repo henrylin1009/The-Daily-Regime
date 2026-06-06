@@ -140,7 +140,7 @@ Also set legacy unsuffixed keys (title, body, the_stance, expectation, etc.) to 
 }
 """
 
-DEEPSEEK_MODEL_FALLBACKS = ("deepseek-chat",)
+DEEPSEEK_MODEL_FALLBACKS = ("deepseek-chat", "deepseek-v4-pro")
 
 _CIO_REQUIRED_KEYS = frozenset(
     {
