@@ -41,7 +41,6 @@ jobs:
           python flow_run.py --date "${REPORT_DATE}"
           python run.py --date "${REPORT_DATE}" --skip-hmm --force-refresh
           python global_regime.py --force-refresh --date "${REPORT_DATE}"
-          python -m src.news_retrieval --date "${REPORT_DATE}"
           python synthesis.py --date "${REPORT_DATE}"
           python layer_pages.py --date "${REPORT_DATE}"
 
@@ -51,7 +50,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add output/synthesis_lite.html data/raw/ data/processed/news_*.json || true
+          git add output/synthesis_lite.html data/raw/ || true
           git diff --staged --quiet || git commit -m "Daily report ${REPORT_DATE}"
 
       - name: Push report
