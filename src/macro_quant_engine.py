@@ -1105,54 +1105,110 @@ def _build_fed_rate_path_block() -> dict[str, Any]:
     }
 
 
-def _build_fed_balance_sheet_block() -> dict[str, Any]:
-    """Fetch WALCL (Fed total assets, weekly FRED) → QT/QE regime signal.
+def _build_fed_liquidity_block() -> dict[str, Any]:
+    """Comprehensive Fed liquidity & money supply block.
 
-    Called from generate_quant_payload_dict() so it lives inside quant_engine JSON.
-    WALCL is in $M; we convert to $B and compute 13w / 52w % changes.
+    Fetches (all weekly FRED unless noted):
+      WALCL   – Fed total assets ($M)
+      WRESBAL – Bank reserves ($M)
+      WTREGEN – Treasury General Account / TGA ($M)
+      RRPTTLD – Overnight reverse repo ($B, daily)
+      M2SL    – M2 money supply ($B, monthly)
+
+    Fed Net Liquidity = WALCL − TGA − RRP  (the money that actually hits markets)
     """
-    try:
-        s = _fred_series("WALCL")  # weekly, $M
-    except Exception as exc:
-        return {"error": str(exc), "summary": "unavailable"}
+    def _fetch(sid: str) -> pd.Series | None:
+        try:
+            s = _fred_series(sid).dropna().sort_index()
+            return s if len(s) >= 4 else None
+        except Exception as exc:
+            print(f"  liquidity: {sid} unavailable ({exc})", file=sys.stderr)
+            return None
 
-    s = s.dropna().sort_index()
-    if len(s) < 10:
-        return {"error": "insufficient WALCL data", "summary": "unavailable"}
+    def _latest_bn(s: pd.Series | None) -> float | None:
+        if s is None:
+            return None
+        return round(float(s.iloc[-1]) / 1_000, 1)
 
-    latest_bn = round(float(s.iloc[-1]) / 1_000, 1)
-    as_of = s.index[-1].date().isoformat()
-
-    def _pct(periods: int) -> float | None:
-        if len(s) <= periods:
+    def _pct_chg(s: pd.Series | None, periods: int) -> float | None:
+        if s is None or len(s) <= periods:
             return None
         old = float(s.iloc[-periods])
         return round((float(s.iloc[-1]) - old) / old * 100, 2) if old else None
 
-    chg_13w = _pct(13)
-    chg_52w = _pct(52)
+    def _fmt(v: float | None) -> str:
+        if v is None:
+            return "n/a"
+        return f"{'+' if v >= 0 else ''}{v:.1f}%"
 
-    # 8-week slope for short-term trend
-    recent = s.iloc[-8:]
-    cov = sum((i - 3.5) * (float(v) - float(recent.mean())) for i, v in enumerate(recent))
-    trend = "expanding" if cov > 0 else "shrinking"
+    walcl = _fetch("WALCL")     # $M weekly
+    reserves = _fetch("WRESBAL")  # $M weekly
+    tga = _fetch("WTREGEN")      # $M weekly
+    rrp = _fetch("RRPTTLD")      # $B daily (already in $B)
+    m2 = _fetch("M2SL")          # $B monthly
 
-    if chg_13w is not None:
-        signal = "QE/expanding" if chg_13w > 1.0 else "QT/shrinking" if chg_13w < -1.0 else "stable"
+    walcl_bn = _latest_bn(walcl)
+    reserves_bn = _latest_bn(reserves)
+    tga_bn = _latest_bn(tga)
+    # RRP is already in $B
+    rrp_bn = round(float(rrp.iloc[-1]), 1) if rrp is not None else None
+
+    # Fed Net Liquidity = WALCL − TGA − RRP
+    net_liquidity_bn: float | None = None
+    if walcl_bn is not None and tga_bn is not None:
+        net_liquidity_bn = round(walcl_bn - tga_bn - (rrp_bn or 0), 1)
+
+    # 13w changes
+    walcl_13w = _pct_chg(walcl, 13)
+    walcl_52w = _pct_chg(walcl, 52)
+    reserves_13w = _pct_chg(reserves, 13)
+
+    # M2 YoY (monthly — 12 observations back)
+    m2_yoy: float | None = None
+    m2_latest_bn: float | None = None
+    if m2 is not None and len(m2) >= 13:
+        m2_latest_bn = round(float(m2.iloc[-1]), 1)
+        old_m2 = float(m2.iloc[-13])
+        m2_yoy = round((float(m2.iloc[-1]) - old_m2) / old_m2 * 100, 2) if old_m2 else None
+
+    # QT/QE signal from WALCL 13w change
+    if walcl_13w is not None:
+        bs_signal = "QE/expanding" if walcl_13w > 1.0 else "QT/shrinking" if walcl_13w < -1.0 else "stable"
     else:
-        signal = "unknown"
+        bs_signal = "unknown"
 
-    s13 = f"{'+' if (chg_13w or 0) >= 0 else ''}{chg_13w:.1f}%" if chg_13w is not None else "n/a"
-    s52 = f"{'+' if (chg_52w or 0) >= 0 else ''}{chg_52w:.1f}%" if chg_52w is not None else "n/a"
-    summary = f"Fed assets: ${latest_bn:.0f}B. 13w: {s13}. 52w: {s52}. Trend: {trend} → {signal}."
-    print(f"  fed balance sheet: {summary}", file=sys.stderr)
+    # 8-week slope trend
+    bs_trend = "unknown"
+    if walcl is not None and len(walcl) >= 8:
+        recent = walcl.iloc[-8:]
+        cov = sum((i - 3.5) * (float(v) - float(recent.mean())) for i, v in enumerate(recent))
+        bs_trend = "expanding" if cov > 0 else "shrinking"
+
+    summary_parts = [f"Fed assets: ${walcl_bn:.0f}B ({_fmt(walcl_13w)} 13w, {_fmt(walcl_52w)} 52w) → {bs_signal}."]
+    if net_liquidity_bn is not None:
+        summary_parts.append(f"Net liquidity (assets−TGA−RRP): ${net_liquidity_bn:.0f}B.")
+    if reserves_bn is not None:
+        summary_parts.append(f"Bank reserves: ${reserves_bn:.0f}B ({_fmt(reserves_13w)} 13w).")
+    if m2_yoy is not None:
+        m2_label = "expanding" if m2_yoy > 0 else "contracting"
+        summary_parts.append(f"M2: ${m2_latest_bn:.0f}B, YoY {_fmt(m2_yoy)} ({m2_label}).")
+    summary = " ".join(summary_parts)
+
+    print(f"  fed liquidity: {summary}", file=sys.stderr)
     return {
-        "total_assets_bn": latest_bn,
-        "as_of": as_of,
-        "chg_13w_pct": chg_13w,
-        "chg_52w_pct": chg_52w,
-        "trend": trend,
-        "signal": signal,
+        "as_of": walcl.index[-1].date().isoformat() if walcl is not None else None,
+        "fed_total_assets_bn": walcl_bn,
+        "fed_total_assets_13w_pct": walcl_13w,
+        "fed_total_assets_52w_pct": walcl_52w,
+        "balance_sheet_signal": bs_signal,
+        "balance_sheet_trend": bs_trend,
+        "bank_reserves_bn": reserves_bn,
+        "bank_reserves_13w_pct": reserves_13w,
+        "tga_bn": tga_bn,
+        "rrp_bn": rrp_bn,
+        "net_liquidity_bn": net_liquidity_bn,
+        "m2_bn": m2_latest_bn,
+        "m2_yoy_pct": m2_yoy,
         "summary": summary,
     }
 
@@ -1231,7 +1287,7 @@ def generate_quant_payload_dict(df: pd.DataFrame) -> dict[str, Any]:
             "Global_Liquidity_and_Growth": {
                 "DXY_Z_Score": _safe_float(row.get("DXY_Z")) if row is not None else None,
                 "US_Growth_Z_Score": _safe_float(row.get("US_Growth_Z")) if row is not None else None,
-                "Fed_Balance_Sheet": _build_fed_balance_sheet_block(),
+                "Fed_Liquidity": _build_fed_liquidity_block(),
             },
             "Fed_Rate_Path": _build_fed_rate_path_block(),
             "Labour_and_Inflation_Context": _build_labour_inflation_context(),
