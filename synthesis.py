@@ -4221,6 +4221,12 @@ def _build_synthesis_prompt(
         carry_relative = _build_carry_relative(l2b)
     except Exception:
         carry_relative = {}
+    try:
+        _news_path = PROCESSED_DIR / f"news_{report_date}.json"
+        _news_doc = json.loads(_news_path.read_text()) if _news_path.exists() else {}
+        news_events = _news_doc.get("events") or []
+    except Exception:
+        news_events = []
     return f"""
 You are synthesizing today's The Macro Pulse War Room executive brief ({report_date}).
 
@@ -4264,6 +4270,9 @@ never describe a [GLOBAL RELATIVE] number as if it were the US.**
 
 === Divergence / Risk_Analytics (explain in relationship_analysis.divergence_explanation; cite penalty_reason) ===
 {json.dumps(div_ctx, ensure_ascii=False, indent=2)}
+
+=== Recent Macro & Geopolitical Events (web-searched, cited; tagged confirms/contradicts/beyond_quant vs regime) ===
+{json.dumps(news_events, ensure_ascii=False, indent=2)}
 
 === Event of the Day (PRIMARY tactical pulse) ===
 {json.dumps(event_of_day, ensure_ascii=False, indent=2)}

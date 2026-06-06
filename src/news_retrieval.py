@@ -98,29 +98,50 @@ _SYSTEM = (
 
 
 def _build_quant_summary(date: str) -> str:
-    """Compact quant-conclusion summary from the synthesis snapshot (best effort)."""
+    """Compact quant-conclusion summary from synthesis snapshot or quant_engine fallback."""
     snap = OUTPUT_DIR / f"synthesis_data_{date}.json"
-    if not snap.exists():
-        return "Quant conclusion unavailable for this date."
-    try:
-        d = json.loads(snap.read_text())
-    except Exception:
-        return "Quant conclusion unavailable (snapshot unreadable)."
-    qc = d.get("quant_context") or {}
-    label = qc.get("macro_regime_label", "?")
-    detail = qc.get("macro_regime_detail") or {}
-    growth = detail.get("growth", "?")
-    inflation = detail.get("inflation", "?")
-    gz = d.get("us_growth_z_score")
-    l1 = qc.get("Layer_1_Structural") or {}
-    yc = (l1.get("Yield_Curve") or {}).get("State", "?")
-    parts = [
-        f"Regime label: {label}.",
-        f"Growth momentum: {growth} (US growth z={gz}).",
-        f"Inflation momentum: {inflation}.",
-        f"Yield curve: {yc}.",
-    ]
-    return " ".join(parts)
+    quant_engine = OUTPUT_DIR / f"quant_engine_{date}.json"
+
+    if snap.exists():
+        try:
+            d = json.loads(snap.read_text())
+            qc = d.get("quant_context") or {}
+            label = qc.get("macro_regime_label", "?")
+            detail = qc.get("macro_regime_detail") or {}
+            growth = detail.get("growth", "?")
+            inflation = detail.get("inflation", "?")
+            gz = d.get("us_growth_z_score")
+            l1 = qc.get("Layer_1_Structural") or {}
+            yc = (l1.get("Yield_Curve") or {}).get("State", "?")
+            return " ".join([
+                f"Regime label: {label}.",
+                f"Growth momentum: {growth} (US growth z={gz}).",
+                f"Inflation momentum: {inflation}.",
+                f"Yield curve: {yc}.",
+            ])
+        except Exception:
+            pass
+
+    if quant_engine.exists():
+        try:
+            qc = json.loads(quant_engine.read_text())
+            label = qc.get("macro_regime_label", "?")
+            detail = qc.get("macro_regime_detail") or {}
+            growth = detail.get("growth", "?")
+            inflation = detail.get("inflation", "?")
+            l1 = qc.get("Layer_1_Structural") or {}
+            yc = (l1.get("Yield_Curve") or {}).get("State", "?")
+            return " ".join([
+                f"Regime label: {label}.",
+                f"Growth momentum: {growth}.",
+                f"Inflation momentum: {inflation}.",
+                f"Yield curve: {yc}.",
+            ])
+        except Exception:
+            pass
+
+    return "Quant conclusion unavailable for this date."
+
 
 
 def _cache_path(date: str) -> Path:
