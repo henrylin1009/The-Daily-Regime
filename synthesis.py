@@ -72,6 +72,9 @@ Use the Key Indicator Pulse deltas (1d/1w/1m) as your primary evidence. If nothi
 - signal: "risk_on" | "risk_off" | "rates_tightening" | "rates_easing" | "liquidity_draining" | "liquidity_expanding" | "neutral"
 - market_summary_en / market_summary_zh: ONE paragraph (3-5 sentences). Use the PRE-FLAGGED SIGNALS section in the prompt as your primary focus (biggest movers + extreme percentile readings). Include exact numbers. Connect them into a coherent narrative — if multiple signals point in the same direction, say so; if there is a contradiction (e.g. stocks at all-time highs but rates pricing hikes), explain what that means for investors. Bloomberg brief style, plain language, no tickers.
 
+【Labour Market Rule】
+Check Labour_and_Inflation_Context in the quant data. If NFP_Change.trend_3m is "Accelerating" or "Decelerating" (not "Mixed"), you MUST mention the jobs market trend in either today_pulse.body or cio_directive.the_narrative — one sentence is enough. Translate plainly: "Accelerating" → "hiring is picking up", "Decelerating" → "the jobs market is cooling". Do not use "NFP", "PAYEMS", or "non-farm payrolls" — say "jobs", "hiring", or "the labour market".
+
 【Step 3 — Daily Themes (2-3 themes, MOST IMPORTANT)】
 Extract 2-3 dominant MEDIUM-TERM themes (days to weeks) from ALL the country data combined. Each theme:
 - title: REQUIRED for every theme. A short punchy headline, max 8 words, NOT a full sentence and NOT the first sentence of the body. (e.g. "Goldilocks holds, but cracks are forming", "Yen positioning at a dangerous extreme", "Taiwan inflows running hot"). Never leave this blank.
