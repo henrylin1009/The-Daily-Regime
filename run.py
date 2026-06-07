@@ -491,6 +491,7 @@ def main() -> None:
             divergence_matches = []
 
         regime_stats = {}
+        regime_summary = {}
 
         narrative = ""
         executive_summary = ""
