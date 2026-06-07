@@ -2856,7 +2856,7 @@ HTML_TMPL_LITE = """<!doctype html>
         {% else %}
           {% set pulse_color = '#6b7280' %}
         {% endif %}
-        <div class="mod-label" style="color:{{ pulse_color }}">⚡ {{ block.today_pulse.headline }}</div>
+        <div class="mod-label" style="color:{{ pulse_color }}">{{ block.today_pulse.headline }}</div>
         <p class="narr-p">{{ block.today_pulse.body }}</p>
         {% if block.today_pulse.market_summary %}
         <p class="narr-p">{{ block.today_pulse.market_summary }}</p>
