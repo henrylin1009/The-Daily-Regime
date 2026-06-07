@@ -41,17 +41,36 @@ PERIOD_DESCRIPTIONS: dict[str, str] = {
     "2023": "Disinflation glide — higher rates, resilient labour",
 }
 
+PERIOD_DESCRIPTIONS_ZH: dict[str, str] = {
+    "1999": "1990年代末景氣高峰——低失業、強勁成長",
+    "2000": "網路泡沫頂峰——勞動市場緊俏、估值偏高",
+    "2005": "2000年代中期擴張——利率上升、成長穩健",
+    "2007": "金融海嘯前夕——殖利率曲線平坦、波動偏低、信貸自滿",
+    "2008": "全球金融危機——信貸壓力、政策寬鬆",
+    "2009": "危機後復甦——刺激政策、風險資產反彈",
+    "2011": "歐債危機——避險情緒、成長放緩",
+    "2014": "景氣循環中段放緩——低波動、美元走強、油價開始下跌",
+    "2015": "中國放緩擔憂——大宗商品走弱",
+    "2018": "2018年末——聯準會緊縮、殖利率曲線開始倒掛",
+    "2020": "疫情衝擊——前所未有刺激、波動飆升",
+    "2022": "通膨飆升——聯準會積極升息",
+    "2023": "去通膨緩降——利率仍高、勞動市場具韌性",
+}
+
 
 def _decade_bucket(ts: pd.Timestamp) -> int:
     """Bucket year into decade (2000, 2010, ...) for diversity constraint."""
     return (ts.year // 10) * 10
 
 
-def _period_description(period: str) -> str:
+def _period_description(period: str, lang: str = "en") -> str:
     year = period[:4]
-    for prefix, desc in sorted(PERIOD_DESCRIPTIONS.items(), key=lambda x: -len(x[0])):
+    table = PERIOD_DESCRIPTIONS_ZH if lang == "zh" else PERIOD_DESCRIPTIONS
+    for prefix, desc in sorted(table.items(), key=lambda x: -len(x[0])):
         if year.startswith(prefix):
             return desc
+    if lang == "zh":
+        return f"約 {period} 的總體總經環境"
     return f"Macro regime circa {period}"
 
 
@@ -199,7 +218,8 @@ def find_similar_periods(
             {
                 "date": period,
                 "distance": round(dist, 2),
-                "description": _period_description(period),
+                "description": _period_description(period, "en"),
+                "description_zh": _period_description(period, "zh"),
                 "what_happened": "",
                 **spy_stats,
             }

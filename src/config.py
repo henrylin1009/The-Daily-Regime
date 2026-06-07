@@ -117,6 +117,11 @@ def get_deepseek_model() -> str:
     return os.getenv("DEEPSEEK_MODEL", "deepseek-v4-pro")
 
 
+def get_deepseek_gear_model() -> str:
+    """DeepSeek model for Call 2 gear matrix (lighter than main synthesis)."""
+    return os.getenv("DEEPSEEK_GEAR_MODEL", "deepseek-v4-flash")
+
+
 def get_deepseek_base_url() -> str:
     """DeepSeek OpenAI-compatible API base URL."""
     return os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com").rstrip("/")

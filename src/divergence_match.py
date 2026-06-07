@@ -68,12 +68,36 @@ DIVERGENCE_PERIOD_DESCRIPTIONS: dict[str, str] = {
     "2023": "Disinflation — Fed holds high, ECB catches up, BOJ still outlier",
 }
 
+DIVERGENCE_PERIOD_DESCRIPTIONS_ZH: dict[str, str] = {
+    "1999": "歐元問世——美元走強、亞洲危機後新興市場復甦",
+    "2000": "網路泡沫頂峰——聯準會緊縮、美元強勢、新興市場承壓",
+    "2001": "泡沫後——聯準會開始降息、美元走弱",
+    "2004": "2000年代中期擴張——全球成長同步、新興市場表現優於已開發市場",
+    "2006": "金融海嘯前流動性高峰——利差交易盛行、全球波動偏低",
+    "2007": "金融海嘯前夕——美元走弱、大宗商品牛市、新興市場接近高點",
+    "2008": "金融海嘯——全球同步崩跌、美元飆升、利差交易平倉",
+    "2009": "危機後復甦——聯準會接近零利率、新興市場反彈、美元偏弱",
+    "2011": "歐債危機——歐央行先升後降、全球分化加劇",
+    "2013": "縮表驚慌——聯準會暗示退出、新興市場資金外流、美元走強",
+    "2014": "分化開始——聯準會結束QE、歐央行降息、日銀擴表、美元指數飆升",
+    "2015": "分化高峰——美元主導、人民幣貶值、新興市場壓力",
+    "2018": "聯準會獨自升息——美元反彈、新興市場承壓、利差交易平倉",
+    "2019": "聯準會轉鴿——歐日仍寬鬆、美元走弱",
+    "2020": "疫情衝擊——全球同步寬鬆、新興市場年底反彈",
+    "2021": "再通膨——全球同步復甦、新興市場短暫領先",
+    "2022": "通膨飆升——聯準會積極升息、歐央行跟進、美元擠壓新興市場",
+    "2023": "去通膨——聯準會維持高利率、歐央行追趕、日銀仍是異類",
+}
 
-def _period_desc(period: str) -> str:
+
+def _period_desc(period: str, lang: str = "en") -> str:
     year = period[:4]
-    for prefix, desc in sorted(DIVERGENCE_PERIOD_DESCRIPTIONS.items(), key=lambda x: -len(x[0])):
+    table = DIVERGENCE_PERIOD_DESCRIPTIONS_ZH if lang == "zh" else DIVERGENCE_PERIOD_DESCRIPTIONS
+    for prefix, desc in sorted(table.items(), key=lambda x: -len(x[0])):
         if year.startswith(prefix):
             return desc
+    if lang == "zh":
+        return f"約 {period} 的全球分化環境"
     return f"Global divergence regime circa {period}"
 
 
@@ -235,7 +259,8 @@ def find_divergence_periods(
         matches.append({
             "date": period,
             "distance": round(dist, 2),
-            "description": _period_desc(period),
+            "description": _period_desc(period, "en"),
+            "description_zh": _period_desc(period, "zh"),
             **stats,
         })
         if len(matches) >= n_matches:
