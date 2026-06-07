@@ -63,6 +63,7 @@ Use the Key Indicator Pulse deltas (1d/1w/1m) as your primary evidence. If nothi
 - headline_en / headline_zh: One punchy sentence (max 12 words) naming the biggest mover. e.g. "10-year yields spike to 3-month high" or "Credit spreads at historic tights, risk complacency rising"
 - body_en / body_zh: 2 sentences. What moved (with the actual delta number), and what it means for markets RIGHT NOW.
 - signal: "risk_on" | "risk_off" | "rates_tightening" | "rates_easing" | "liquidity_draining" | "liquidity_expanding" | "neutral"
+- market_summary_en / market_summary_zh: ONE paragraph (3-5 sentences) that acts as a data-driven news summary. Cover ALL of the following that are relevant: (1) which indicators moved the most this week and by how much (use exact deltas from Key Indicator Pulse), (2) any momentum direction changes (e.g. VIX was falling but now rising), (3) any indicators at extreme percentiles (<15th or >85th vs history). Write like a Bloomberg brief — factual, specific numbers, no jargon. If multiple things happened, connect them into a coherent narrative. Plain language only.
 
 【Step 3 — Daily Themes (2-3 themes, MOST IMPORTANT)】
 Extract 2-3 dominant MEDIUM-TERM themes (days to weeks) from ALL the country data combined. Each theme:
@@ -102,7 +103,9 @@ Also set legacy unsuffixed keys (title, body, the_stance, expectation, etc.) to 
     "headline_zh": "...",
     "body_en": "...",
     "body_zh": "...",
-    "signal": "risk_on | risk_off | rates_tightening | rates_easing | liquidity_draining | liquidity_expanding | neutral"
+    "signal": "risk_on | risk_off | rates_tightening | rates_easing | liquidity_draining | liquidity_expanding | neutral",
+    "market_summary_en": "One paragraph. Biggest movers this week (exact numbers), any momentum flips, any extreme percentile readings. Bloomberg brief style.",
+    "market_summary_zh": "同上，繁體中文，同樣具體數字，白話。"
   },
   "daily_themes": [
     {
@@ -2199,6 +2202,7 @@ def _build_lite_lang_blocks(
                     "headline": today_pulse.get("headline_zh" if lang_key == "zh" else "headline_en") or today_pulse.get("headline_en", ""),
                     "body": today_pulse.get("body_zh" if lang_key == "zh" else "body_en") or today_pulse.get("body_en", ""),
                     "signal": today_pulse.get("signal", "neutral"),
+                    "market_summary": today_pulse.get("market_summary_zh" if lang_key == "zh" else "market_summary_en") or today_pulse.get("market_summary_en", ""),
                 },
                 "daily_themes": themes_local,
                 "directive": directive_view,
@@ -2785,6 +2789,9 @@ HTML_TMPL_LITE = """<!doctype html>
         {% endif %}
         <div class="mod-label" style="color:{{ pulse_color }}">⚡ {{ block.today_pulse.headline }}</div>
         <p class="narr-p">{{ block.today_pulse.body }}</p>
+        {% if block.today_pulse.market_summary %}
+        <p class="narr-p" style="margin-top:0.5rem; color:#374151;">{{ block.today_pulse.market_summary }}</p>
+        {% endif %}
       </div>
       {% endif %}
 
