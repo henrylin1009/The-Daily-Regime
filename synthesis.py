@@ -2859,7 +2859,7 @@ HTML_TMPL_LITE = """<!doctype html>
         <div class="mod-label" style="color:{{ pulse_color }}">⚡ {{ block.today_pulse.headline }}</div>
         <p class="narr-p">{{ block.today_pulse.body }}</p>
         {% if block.today_pulse.market_summary %}
-        <p class="narr-p" style="margin-top:0.5rem; border-top:1px solid #e5e7eb; padding-top:0.5rem; color:#374151;">{{ block.today_pulse.market_summary }}</p>
+        <p class="narr-p">{{ block.today_pulse.market_summary }}</p>
         {% endif %}
       </div>
       {% endif %}
