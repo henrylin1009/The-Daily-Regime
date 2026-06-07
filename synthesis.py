@@ -2456,7 +2456,7 @@ HTML_TMPL_LITE = """<!doctype html>
     .headline { font-size:1.4rem; font-weight:700; line-height:1.24; letter-spacing:-0.01em; margin:0; flex:1; min-width:0; }
     .headline-row .info { flex-shrink:0; margin-top:0.3rem; margin-left:0; }
     .story-body { font-size:1rem; line-height:1.62; color:#1d1d1b; margin:0 0 0.55rem; }
-    .implication { font-size:0.95rem; font-style:italic; line-height:1.55; color:#3a3a38; margin:0; padding-left:0.85rem; border-left:3px solid var(--ink); }
+    .implication { font-size:0.95rem; font-style:italic; line-height:1.55; color:#3a3a38; margin:0; }
     .implication b { font-style:normal; }
     /* Bottom line */
     .stance { font-size:1.28rem; font-weight:700; line-height:1.34; margin:0.2rem 0 0.85rem; letter-spacing:-0.01em; }
