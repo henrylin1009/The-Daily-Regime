@@ -3106,6 +3106,7 @@ HTML_TMPL_LITE = """<!doctype html>
       <div class="modcard">
         <div class="det-inner">
           {% if block.analogue_commentary %}
+          <div class="mod-label">{% if block.lang == 'zh-Hant' %}歷史借鏡解讀{% else %}Historical Context{% endif %}</div>
           <p class="narr-p" style="margin-bottom:1.1rem;">{{ block.analogue_commentary }}</p>
           {% endif %}
           {% if block.historical_matches %}
