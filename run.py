@@ -472,30 +472,8 @@ def main() -> None:
         print("Stage 3: Finding historical matches...")
         feature_matrix = build_feature_matrix(data)
 
-        print("Stage 3c: HMM regime classification...")
-        regime_summary = None
-        if not args.skip_hmm:
-            from src.regime_hmm import run_regime_analysis
-
-            spy_df = data.get("spy")
-            if spy_df is not None and not spy_df.empty:
-                spy_m = (
-                    spy_df.assign(date=pd.to_datetime(spy_df["date"]))
-                    .set_index("date")["value"]
-                    .sort_index()
-                    .resample("ME")
-                    .last()
-                    .pct_change()
-                    * 100.0
-                ).dropna()
-                regime_summary = run_regime_analysis(spy_m)
-
-        current_episode_start = None
-        if regime_summary:
-            as_of = pd.Timestamp(regime_summary.get("as_of"))
-            months = int(regime_summary.get("months_in_regime", 0))
-            if months > 0 and pd.notna(as_of):
-                current_episode_start = as_of - pd.DateOffset(months=months - 1)
+        # Exclude last 12 months from history matching to avoid self-similar recent periods
+        current_episode_start = pd.Timestamp.today() - pd.DateOffset(months=12)
 
         matches = find_similar_periods(
             feature_matrix,
