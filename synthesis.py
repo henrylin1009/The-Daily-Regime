@@ -63,6 +63,7 @@ Use the Key Indicator Pulse deltas (1d/1w/1m) as your primary evidence. If nothi
 - headline_en / headline_zh: One punchy sentence (max 12 words) naming the biggest mover. e.g. "10-year yields spike to 3-month high" or "Credit spreads at historic tights, risk complacency rising"
 - body_en / body_zh: 2 sentences. What moved (with the actual delta number), and what it means for markets RIGHT NOW.
 - signal: "risk_on" | "risk_off" | "rates_tightening" | "rates_easing" | "liquidity_draining" | "liquidity_expanding" | "neutral"
+- market_summary_en / market_summary_zh: ONE paragraph (3-5 sentences). Use the PRE-FLAGGED SIGNALS section in the prompt as your primary focus (biggest movers + extreme percentile readings). Include exact numbers. Connect them into a coherent narrative — if multiple signals point in the same direction, say so; if there is a contradiction (e.g. stocks at all-time highs but rates pricing hikes), explain what that means for investors. Bloomberg brief style, plain language, no tickers.
 
 【Step 3 — Daily Themes (2-3 themes, MOST IMPORTANT)】
 Extract 2-3 dominant MEDIUM-TERM themes (days to weeks) from ALL the country data combined. Each theme:
@@ -102,7 +103,9 @@ Also set legacy unsuffixed keys (title, body, the_stance, expectation, etc.) to 
     "headline_zh": "...",
     "body_en": "...",
     "body_zh": "...",
-    "signal": "risk_on | risk_off | rates_tightening | rates_easing | liquidity_draining | liquidity_expanding | neutral"
+    "signal": "risk_on | risk_off | rates_tightening | rates_easing | liquidity_draining | liquidity_expanding | neutral",
+    "market_summary_en": "ONE paragraph focused on the pre-flagged signals. Exact numbers. Coherent narrative.",
+    "market_summary_zh": "同上，繁體中文，具體數字。"
   },
   "daily_themes": [
     {
@@ -1636,6 +1639,55 @@ def _build_indicator_pulse_block() -> list[dict]:
     return out
 
 
+def _build_flagged_signals(pulse: list[dict]) -> str:
+    """Pre-select the most noteworthy signals from indicator pulse for the LLM.
+
+    Flags:
+    1. Top 2 by absolute 1-week % change
+    2. Any at extreme percentile (<15th or >85th)
+    Deduplicates and returns a short text block for the prompt.
+    """
+    if not pulse:
+        return "No indicator data available."
+
+    flagged: list[str] = []
+    seen: set[str] = set()
+
+    # Sort by absolute 1w % change
+    by_1w = sorted(
+        [r for r in pulse if r.get("chg_1w_pct") is not None],
+        key=lambda r: abs(r["chg_1w_pct"]),
+        reverse=True,
+    )
+    for r in by_1w[:2]:
+        name = r["indicator"]
+        seen.add(name)
+        delta = r["chg_1w_pct"]
+        pct = r["percentile_vs_history"]
+        cur = r["current"]
+        sign = "+" if delta >= 0 else ""
+        flagged.append(
+            f"{name}: {cur}, 1w change {sign}{delta:.2f}% ({r['direction']}), "
+            f"at {pct}th percentile vs history."
+        )
+
+    # Extreme percentiles not already included
+    for r in pulse:
+        name = r["indicator"]
+        if name in seen:
+            continue
+        pct = r["percentile_vs_history"]
+        if pct <= 15 or pct >= 85:
+            seen.add(name)
+            cur = r["current"]
+            label = "historically tight/low" if pct <= 15 else "historically elevated/high"
+            flagged.append(
+                f"{name}: {cur}, at {pct}th percentile ({label})."
+            )
+
+    return "\n".join(flagged) if flagged else "No significant moves flagged this week."
+
+
 def _us_financial_conditions_summary() -> list[dict]:
     """
     Structured US financial conditions for the LLM prompt (圈層1 · US ANCHOR).
@@ -2199,6 +2251,7 @@ def _build_lite_lang_blocks(
                     "headline": today_pulse.get("headline_zh" if lang_key == "zh" else "headline_en") or today_pulse.get("headline_en", ""),
                     "body": today_pulse.get("body_zh" if lang_key == "zh" else "body_en") or today_pulse.get("body_en", ""),
                     "signal": today_pulse.get("signal", "neutral"),
+                    "market_summary": today_pulse.get("market_summary_zh" if lang_key == "zh" else "market_summary_en") or "",
                 },
                 "daily_themes": themes_local,
                 "directive": directive_view,
@@ -2785,6 +2838,9 @@ HTML_TMPL_LITE = """<!doctype html>
         {% endif %}
         <div class="mod-label" style="color:{{ pulse_color }}">⚡ {{ block.today_pulse.headline }}</div>
         <p class="narr-p">{{ block.today_pulse.body }}</p>
+        {% if block.today_pulse.market_summary %}
+        <p class="narr-p" style="margin-top:0.5rem; border-top:1px solid #e5e7eb; padding-top:0.5rem; color:#374151;">{{ block.today_pulse.market_summary }}</p>
+        {% endif %}
       </div>
       {% endif %}
 
@@ -4345,8 +4401,10 @@ def _build_synthesis_prompt(
         carry_relative = {}
     try:
         indicator_pulse = _build_indicator_pulse_block()
+        flagged_signals = _build_flagged_signals(indicator_pulse)
     except Exception:
         indicator_pulse = []
+        flagged_signals = "Indicator data unavailable."
     return f"""
 You are synthesizing today's The Macro Pulse War Room executive brief ({report_date}).
 
@@ -4366,9 +4424,11 @@ never describe a [GLOBAL RELATIVE] number as if it were the US.**
 === [US ANCHOR] US Financial Conditions (the global switch; US-only — do NOT generalise to other markets) ===
 {json.dumps(us_financial_conditions, ensure_ascii=False, indent=2)}
 
-=== [US ANCHOR] Key Indicator Pulse — current level, 1d/1w/1m/3m delta, 52w percentile vs full history ===
+=== [US ANCHOR] PRE-FLAGGED SIGNALS (biggest 1w movers + extreme percentiles) — use these for market_summary ===
+{flagged_signals}
+
+=== [US ANCHOR] Key Indicator Pulse — full detail (current level, 1d/1w/1m/3m delta, percentile vs full history) ===
 Rules: use direction + delta to identify WHAT IS CHANGING TODAY vs recent past.
-Lead your themes with whichever indicator moved most over 1w or 1m. Never describe a static level without its delta.
 {json.dumps(indicator_pulse, ensure_ascii=False, indent=2)}
 
 === [US ANCHOR] Market snapshot (US equities/rates; Zone 1 flash; numbers allowed here only) ===
