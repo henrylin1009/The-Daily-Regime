@@ -1546,6 +1546,82 @@ def _build_zscore_plotly(lang: str = "zh-Hant") -> dict:
 _CARRY_COUNTRY_ZH = {"Japan": "日本", "Europe": "歐洲", "China": "中國", "Taiwan": "台灣"}
 
 
+def _build_indicator_pulse_block() -> list[dict]:
+    """Multi-timeframe pulse for 5 key US indicators.
+
+    For each indicator computes:
+      - current value
+      - delta vs 1d / 1w (5d) / 1m (21d) / 3m (63d) ago
+      - 52-week percentile (vs full available history)
+      - direction label (rising / falling / flat)
+
+    Injected into synthesis prompt so LLM sees direction + speed, not just level.
+    """
+    specs = [
+        ("vix.csv",              "VIX",           "lower_is_better"),
+        ("dgs10.csv",            "US 10Y Yield",  "neutral"),
+        ("credit_spread_hy.csv", "HY Credit Spread", "lower_is_better"),
+        ("spy.csv",              "SPY",           "higher_is_better"),
+        ("dxy.csv",              "DXY",           "neutral"),
+    ]
+    windows = {"1d": 1, "1w": 5, "1m": 21, "3m": 63}
+
+    out: list[dict] = []
+    for fname, label, direction in specs:
+        try:
+            s = pd.read_csv(RAW_DIR / fname, index_col=0, parse_dates=True).squeeze()
+            s = pd.to_numeric(s, errors="coerce").dropna().sort_index()
+            if len(s) < 63:
+                continue
+
+            cur = float(s.iloc[-1])
+
+            # Deltas
+            deltas: dict[str, float | None] = {}
+            for name, n in windows.items():
+                if len(s) > n:
+                    prev = float(s.iloc[-n - 1])
+                    deltas[f"chg_{name}"] = round(cur - prev, 4)
+                    deltas[f"chg_{name}_pct"] = round((cur - prev) / abs(prev) * 100, 2) if prev else None
+                else:
+                    deltas[f"chg_{name}"] = None
+                    deltas[f"chg_{name}_pct"] = None
+
+            # 52-week percentile (vs full history, not just 52w)
+            pct_rank = int(round(float((s.iloc[:-1] < cur).mean()) * 100))
+
+            # 52-week high/low
+            w52 = s.iloc[-252:] if len(s) >= 252 else s
+            high_52w = round(float(w52.max()), 4)
+            low_52w  = round(float(w52.min()), 4)
+
+            # Direction from 1-week delta
+            d1w = deltas.get("chg_1w")
+            if d1w is None:
+                direction_label = "unknown"
+            elif abs(d1w) < 0.001 * abs(cur):   # < 0.1% move = flat
+                direction_label = "flat"
+            elif d1w > 0:
+                direction_label = "rising"
+            else:
+                direction_label = "falling"
+
+            row: dict = {
+                "indicator": label,
+                "current": round(cur, 4),
+                "direction": direction_label,
+                "percentile_vs_history": pct_rank,
+                "52w_high": high_52w,
+                "52w_low":  low_52w,
+            }
+            row.update(deltas)
+            out.append(row)
+        except Exception as exc:
+            print(f"  indicator pulse: {label} failed ({exc})", file=sys.stderr)
+
+    return out
+
+
 def _us_financial_conditions_summary() -> list[dict]:
     """
     Structured US financial conditions for the LLM prompt (圈層1 · US ANCHOR).
@@ -4221,6 +4297,10 @@ def _build_synthesis_prompt(
         carry_relative = _build_carry_relative(l2b)
     except Exception:
         carry_relative = {}
+    try:
+        indicator_pulse = _build_indicator_pulse_block()
+    except Exception:
+        indicator_pulse = []
     return f"""
 You are synthesizing today's The Macro Pulse War Room executive brief ({report_date}).
 
@@ -4239,6 +4319,11 @@ never describe a [GLOBAL RELATIVE] number as if it were the US.**
 
 === [US ANCHOR] US Financial Conditions (the global switch; US-only — do NOT generalise to other markets) ===
 {json.dumps(us_financial_conditions, ensure_ascii=False, indent=2)}
+
+=== [US ANCHOR] Key Indicator Pulse — current level, 1d/1w/1m/3m delta, 52w percentile vs full history ===
+Rules: use direction + delta to identify WHAT IS CHANGING TODAY vs recent past.
+Lead your themes with whichever indicator moved most over 1w or 1m. Never describe a static level without its delta.
+{json.dumps(indicator_pulse, ensure_ascii=False, indent=2)}
 
 === [US ANCHOR] Market snapshot (US equities/rates; Zone 1 flash; numbers allowed here only) ===
 {json.dumps(market_snapshot, ensure_ascii=False, indent=2)}
