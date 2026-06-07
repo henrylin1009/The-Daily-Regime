@@ -39,7 +39,7 @@ jobs:
           echo "Report date (Asia/Taipei): ${REPORT_DATE}"
           echo "REPORT_DATE=${REPORT_DATE}" >> "$GITHUB_ENV"
           python flow_run.py --date "${REPORT_DATE}"
-          python run.py --date "${REPORT_DATE}" --skip-hmm --force-refresh
+          python run.py --date "${REPORT_DATE}" --force-refresh
           python global_regime.py --force-refresh --date "${REPORT_DATE}"
           python synthesis.py --date "${REPORT_DATE}"
 
