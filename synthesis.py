@@ -3077,6 +3077,9 @@ HTML_TMPL_LITE = """<!doctype html>
       </div>
       <div class="modcard">
         <div class="det-inner">
+          {% if block.analogue_commentary %}
+          <p class="narr-p" style="margin-bottom:1.1rem;">{{ block.analogue_commentary }}</p>
+          {% endif %}
           {% if block.historical_matches %}
           <div class="an-sub">{{ block.ui.history_us_sub }}</div>
           <div class="an-sub2">{{ block.ui.history_us_sub2 }}</div>
