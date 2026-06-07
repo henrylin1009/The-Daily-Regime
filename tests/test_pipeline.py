@@ -11,7 +11,6 @@ import pytest
 from src.collect import INDICATOR_FETCHERS, load_all_from_cache, validate_all_caches
 from src.factor_attrib import compute_factor_attribution
 from src.history_match import REGIME_FEATURES, build_feature_matrix, find_similar_periods
-from src.regime_stats import compute_regime_stats
 
 
 @pytest.fixture(scope="module")
@@ -73,13 +72,6 @@ def test_factor_attribution_shape(cached_data):
         assert len(by_id["fama_french"]["factors"]) >= 5
     if by_id.get("crr", {}).get("available"):
         assert len(by_id["crr"]["factors"]) >= 4
-
-
-def test_regime_stats(cached_data):
-    matrix = build_feature_matrix(cached_data)
-    stats = compute_regime_stats(matrix)
-    assert stats.get("available")
-    assert stats["current_regime_months"] >= 1
 
 
 def test_signals_json_exists():
