@@ -901,7 +901,7 @@ def main() -> None:
     quant_payload: dict = {}
     quant_panel_meta: dict = {"rows": 0, "columns": [], "last_date": None}
     try:
-        macro_df = fetch_macro_panel(period="3y")
+        macro_df = fetch_macro_panel(period="max")
         enriched = MacroQuantEngine(macro_df).enrich()
         quant_json_str = generate_quant_payload(enriched)
         quant_payload = json.loads(quant_json_str)
