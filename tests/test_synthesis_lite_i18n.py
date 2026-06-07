@@ -51,6 +51,15 @@ def test_lite_template_has_lang_switch_and_blocks():
         macro_regime_label="Goldilocks",
         regime_gauge_tone="stable",
         divergence_gauge={"score": 43},
+        today_pulse={
+            "headline_en": "Test",
+            "headline_zh": "測試",
+            "body_en": "Body",
+            "body_zh": "內文",
+            "signal": "neutral",
+        },
+        analogue_commentary={"en": "", "zh": ""},
+        structural_context={"en": "", "zh": ""},
         daily_themes=[],
         directive={
             "the_stance_en": "Stance",
