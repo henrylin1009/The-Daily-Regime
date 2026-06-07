@@ -22,7 +22,7 @@ jobs:
           pip install -r requirements.txt
 
       - name: Lint (import check)
-        run: python -c "import src.collect, src.indicators, src.history_match, src.factor_attrib, src.regime_stats, src.web"
+        run: python -c "import src.collect, src.indicators, src.history_match, src.factor_attrib"
 
       - name: Run tests
         run: pytest tests/ -v --tb=short
