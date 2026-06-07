@@ -22,7 +22,6 @@ from src.history_match import build_feature_matrix, find_similar_periods, save_m
 from src.divergence_match import build_divergence_matrix, find_divergence_periods, save_divergence_matches
 from src.indicators import compute_signals
 from src.factor_attrib import compute_factor_attribution
-from src.regime_stats import compute_regime_stats, save_regime_stats
 from src.macra_assets import macra_style_block
 from src.macra_ui import (
     apply_gear_semantics_to_gears,
@@ -449,10 +448,7 @@ body {{ font-family: "Inter", "IBM Plex Sans", sans-serif; color:#0f172a; backgr
 def main() -> None:
     parser = argparse.ArgumentParser(description="Macro Intelligence Platform")
     parser.add_argument("--force-refresh", action="store_true", help="Re-fetch all data from OpenBB")
-    parser.add_argument("--skip-hmm", action="store_true", help="Skip HMM regime classification")
     parser.add_argument("--date", type=str, default=None, help="Output date YYYY-MM-DD (default: today)")
-    parser.add_argument("--notify", action="store_true", help="Send brief via email/Telegram (NOTIFY_CHANNELS in .env)")
-    parser.add_argument("--skip-notify", action="store_true", help="Skip delivery even if NOTIFY_CHANNELS is set")
     args = parser.parse_args()
 
     output_date = date.fromisoformat(args.date) if args.date else date.today()
@@ -494,9 +490,7 @@ def main() -> None:
             print(f"  Warning: divergence matching failed: {_div_exc}", file=__import__("sys").stderr)
             divergence_matches = []
 
-        print("Stage 3c: Regime statistics...")
-        regime_stats = compute_regime_stats(feature_matrix, regime_summary=regime_summary)
-        save_regime_stats(regime_stats)
+        regime_stats = {}
 
         narrative = ""
         executive_summary = ""
@@ -538,19 +532,6 @@ def main() -> None:
         }
         brief_data_path.write_text(json.dumps(brief_data_payload, ensure_ascii=False, indent=2), encoding="utf-8")
         print(f"Data JSON: {brief_data_path}")
-        import os
-
-        notify_env = os.getenv("NOTIFY_CHANNELS", "").strip()
-        if args.notify or (notify_env and not args.skip_notify):
-            print("Delivering brief...")
-            from src.notify import notify_brief
-
-            try:
-                notify_brief(out_path, signals)
-                print("Notification sent.")
-            except EnvironmentError as exc:
-                print(f"Notification skipped: {exc}", file=sys.stderr)
-
     except EnvironmentError as exc:
         print(f"Configuration error: {exc}", file=sys.stderr)
         sys.exit(1)
