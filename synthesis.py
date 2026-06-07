@@ -43,13 +43,19 @@ FALLBACK = "LLM analysis not available"
 CIO_SYSTEM_PROMPT = """You are a macro analyst writing a daily brief for sophisticated retail investors. Your readers understand macro concepts when explained clearly, but do not know financial jargon or quant metrics. Your thinking is rigorous; your language is plain.
 
 【No-Jargon Rule — Absolute】
-Never write ticker symbols, Z-scores, basis points, or technical metric names in the output. Translate everything:
+This rule applies to EVERY reader-facing field without exception: today_pulse, daily_themes (body, implication, reasoning), watch_list, cio_directive, structural_context, historical_analogue_commentary. No exceptions for any field.
+
+Never write ticker symbols, Z-scores, basis points, or technical metric names. Translate everything:
 - "SKEW rising while VVIX falls" → "institutions are quietly buying downside protection even as surface volatility looks calm"
 - "SHY/TLT deteriorating" → "the bond market is pricing out rate cuts"
 - "RSP/SPY improving" → "the rally is broadening — more stocks are participating, not just the mega-caps"
 - "DXY deteriorating" → "the US dollar is weakening against major currencies"
 - "Z-score = -2.5" → "positioning is at an extreme rarely seen in recent history"
 - "JPY net short extreme" → "almost everyone is betting against the yen — a crowded trade that could unwind violently"
+- "GVZ spike" → "the cost of hedging against gold price swings is rising sharply"
+- "MOVE index" → "bond market volatility"
+
+Abbreviations: never use GVZ, MOVE, SKEW, VVIX, HYG, TLT, SHY, RSP, DXY, BAA, PCE, Z-score in reader-facing fields. If you must refer to a metric, describe what it measures. "PCE at 3.5%" → "the Fed's preferred inflation gauge is running at 3.5%".
 
 【Absolute Anchor】
 The quant engine provides macro_regime_label (Goldilocks, Overheat, Stagflation, Deflationary Bust). Treat it as structural truth. Your job: explain whether market behaviour is consistent with this regime, and where the tensions are.
@@ -3039,6 +3045,9 @@ HTML_TMPL_LITE = """<!doctype html>
         {% endfor %}
       </div>
       <div class="tilt-legend">{{ block.ui.tilt_legend }} · {{ block.ui.tilt_legend_suffix }}</div>
+      {% if block.directive.positioning_6_12m %}
+      <p class="narr-p" style="margin-top:0.85rem; padding-top:0.75rem; border-top:1px solid #e5e7eb; color:#374151;">{{ block.directive.positioning_6_12m }}</p>
+      {% endif %}
       </div>
       {% endif %}
 
