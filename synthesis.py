@@ -25,6 +25,7 @@ from src.config import (
     PROCESSED_DIR,
     RAW_DIR,
     get_deepseek_base_url,
+    get_deepseek_gear_model,
     get_deepseek_model,
     require_deepseek_key,
 )
@@ -100,13 +101,14 @@ Each watch_list item is a short alert (en/zh) PLUS a reasoning_en/reasoning_zh l
 
 【Step 7 — Structural Context (structural_context) — Long-term backdrop, shown at bottom of TODAY tab】
 Write ONE paragraph (4-6 sentences) answering: "Where are we in the big cycle?"
-Use the data in Layer_1_Structural: Regime_Duration, Fed_Liquidity, Fed_Rate_Path, Yield_Curve.
+Use the data in Layer_1_Structural: Fed_Liquidity, Fed_Rate_Path, Yield_Curve.
+Do NOT mention the regime label or how long the current regime has been running — that is already shown on the market regime card.
 Structure the paragraph as follows:
-1. How long has this regime been running, and is that long or short by historical standards?
-2. Where does the Fed's balance sheet and net liquidity stand — are conditions tightening or easing structurally?
-3. What does the rate futures curve imply about the next 12 months — cuts, hikes, or hold?
+1. Where does the Fed's balance sheet and net liquidity stand — are conditions tightening or easing structurally?
+2. What does the rate futures curve imply about the next 12 months — cuts, hikes, or hold?
+3. What does the yield curve shape tell us about where we are in the rate cycle?
 4. One closing sentence: what this structural backdrop means for investors over a multi-year horizon.
-If Regime_Duration or Fed_Liquidity data is missing, write what you can infer from the other indicators.
+If Fed_Liquidity or Fed_Rate_Path data is missing, write what you can infer from the Yield_Curve and macro context.
 Plain language only. Numbers welcome. No tickers, no Z-scores.
 
 【Step 6 — Historical Analogue Commentary (historical_analogue_commentary)】
@@ -1277,7 +1279,10 @@ def _lite_critical_watchout(watch_bilingual: list[dict], lang: str) -> list[dict
     return out
 
 
-def _localize_historical_matches(matches: list[dict], descriptions_zh: list[str]) -> list[dict]:
+def _localize_historical_matches(
+    matches: list[dict],
+    descriptions_zh: list[str] | None = None,
+) -> list[dict]:
     out: list[dict] = []
     for i, m in enumerate(matches or []):
         if not isinstance(m, dict):
@@ -1285,46 +1290,12 @@ def _localize_historical_matches(matches: list[dict], descriptions_zh: list[str]
         row = dict(m)
         desc_en = str(row.get("description") or "")
         row["description_en"] = desc_en
-        row["description"] = descriptions_zh[i] if i < len(descriptions_zh) and descriptions_zh[i] else desc_en
+        zh = str(row.get("description_zh") or "").strip()
+        if not zh and descriptions_zh and i < len(descriptions_zh):
+            zh = str(descriptions_zh[i] or "").strip()
+        row["description"] = zh or desc_en
         out.append(row)
     return out
-
-
-def _translate_descriptions_to_zh(descriptions: list[str]) -> tuple[list[str], bool]:
-    """Batch-translate short historical descriptions; returns (zh_list, used_fallback)."""
-    clean = [str(d).strip() for d in descriptions if str(d).strip()]
-    if not clean:
-        return [], False
-    prompt = (
-        "Translate each string to Traditional Chinese (繁體中文) for retail investors. "
-        "Keep proper nouns where natural. Return ONLY a JSON array of strings, same length and order.\n"
-        + json.dumps(clean, ensure_ascii=False)
-    )
-    try:
-        result = _call_deepseek_translate(prompt)
-        if isinstance(result, list) and len(result) == len(clean):
-            return [str(x) for x in result], False
-    except Exception as exc:
-        print(f"  Historical description translation failed: {exc}", file=sys.stderr)
-    return list(clean), True
-
-
-def _call_deepseek_translate(prompt: str) -> list[str] | None:
-    client = OpenAI(api_key=require_deepseek_key(), base_url=get_deepseek_base_url())
-    for model in _deepseek_models_to_try():
-        try:
-            resp = client.chat.completions.create(
-                model=model,
-                messages=[{"role": "user", "content": prompt}],
-                temperature=0.2,
-            )
-            raw = (resp.choices[0].message.content or "").strip()
-            parsed = json.loads(_clean_json(raw))
-            if isinstance(parsed, list):
-                return parsed
-        except Exception:
-            continue
-    return None
 
 
 
@@ -4158,6 +4129,8 @@ def _get_synthesis(
         "provider": "deepseek",
         "status": "failed",
         "model": None,
+        "call1_model": None,
+        "call2_model": None,
         "error": None,
     }
 
@@ -4175,7 +4148,13 @@ def _get_synthesis(
         if out:
             print(f"  DeepSeek Call 1 (main) succeeded ({model})", file=sys.stderr)
             call1_out = out
-            llm_meta.update({"provider": "deepseek", "status": "ok", "model": model, "error": None})
+            llm_meta.update({
+                "provider": "deepseek",
+                "status": "ok",
+                "model": model,
+                "call1_model": model,
+                "error": None,
+            })
             break
         last_error = err or "unknown"
         if err == "invalid_json_truncated":
@@ -4186,21 +4165,22 @@ def _get_synthesis(
         print("  Layer 3 LLM Call 1 failed for all models; using placeholder CIO text.", file=sys.stderr)
         return fallback, llm_meta
 
-    # ── Call 2: gear matrix only ───────────────────────────────────────────────
+    # ── Call 2: gear matrix only (Flash; no Pro fallback chain) ────────────────
     call2_out: dict | None = None
     gear_last_error: str | None = None
-    for model in _deepseek_models_to_try():
-        out, err = _call_deepseek(
-            prompt_gear,
-            model,
-            system_prompt=GEAR_SYSTEM_PROMPT,
-            max_tokens=6144,
-            parse_fn=_parse_gear_json,
-        )
-        if out:
-            print(f"  DeepSeek Call 2 (gear) succeeded ({model})", file=sys.stderr)
-            call2_out = out
-            break
+    gear_model = get_deepseek_gear_model()
+    out, err = _call_deepseek(
+        prompt_gear,
+        gear_model,
+        system_prompt=GEAR_SYSTEM_PROMPT,
+        max_tokens=6144,
+        parse_fn=_parse_gear_json,
+    )
+    if out:
+        print(f"  DeepSeek Call 2 (gear) succeeded ({gear_model})", file=sys.stderr)
+        call2_out = out
+        llm_meta["call2_model"] = gear_model
+    else:
         gear_last_error = err or "unknown"
         if err == "invalid_json_truncated":
             print("  DeepSeek Call 2 (gear) JSON truncated.", file=sys.stderr)
@@ -4425,6 +4405,34 @@ def _format_historical_analogues_for_llm(l2a: dict) -> str:
     return "\n".join(lines)
 
 
+def _json_compact(obj) -> str:
+    return json.dumps(obj, ensure_ascii=False, separators=(",", ":"))
+
+
+def _strip_prompt_summaries(quant: dict) -> dict:
+    """Drop prose summary fields from quant payload for Call 1 (numeric fields kept)."""
+    out = json.loads(json.dumps(quant, ensure_ascii=False))
+    for key in ("Fed_Liquidity", "Fed_Rate_Path"):
+        block = out.get(key)
+        if isinstance(block, dict):
+            block.pop("summary", None)
+    return out
+
+
+def _slim_divergence_context(div_ctx: dict) -> dict:
+    drivers = div_ctx.get("drivers") or []
+    if isinstance(drivers, list):
+        drivers = [str(d) for d in drivers[:3]]
+    else:
+        drivers = []
+    slim: dict = {}
+    for key in ("divergence_score", "likely_status", "penalty_reason"):
+        if key in div_ctx:
+            slim[key] = div_ctx[key]
+    slim["drivers"] = drivers
+    return slim
+
+
 def _build_synthesis_prompt(
     l1: dict,
     l2a: dict,
@@ -4449,12 +4457,11 @@ def _build_synthesis_prompt(
     }
     market_snapshot = _market_snapshot_for_prompt(report_date)
     momentum = quant_context_json.get("momentum_profile") if isinstance(quant_context_json, dict) else {}
-    div_ctx = _divergence_prompt_context(momentum, l1, l2a, l2b, quant_context_json)
+    div_ctx = _slim_divergence_context(
+        _divergence_prompt_context(momentum, l1, l2a, l2b, quant_context_json)
+    )
     regime_label = quant_context_json.get("macro_regime_label") or "Unknown"
-    try:
-        us_financial_conditions = _us_financial_conditions_summary()
-    except Exception:
-        us_financial_conditions = []
+    quant_for_prompt = _strip_prompt_summaries(quant_context_json)
     try:
         carry_relative = _build_carry_relative(l2b)
     except Exception:
@@ -4463,7 +4470,6 @@ def _build_synthesis_prompt(
         indicator_pulse = _build_indicator_pulse_block()
         flagged_signals = _build_flagged_signals(indicator_pulse)
     except Exception:
-        indicator_pulse = []
         flagged_signals = "Indicator data unavailable."
     return f"""
 You are synthesizing today's The Macro Pulse War Room executive brief ({report_date}).
@@ -4479,51 +4485,44 @@ never describe a [GLOBAL RELATIVE] number as if it were the US.**
 ╔══════════════ [US ANCHOR] — United States ONLY ══════════════╗
 
 === [US ANCHOR] Quant Engine (US growth/inflation momentum + regime match) ===
-{json.dumps(quant_context_json, ensure_ascii=False, indent=2)}
-
-=== [US ANCHOR] US Financial Conditions (the global switch; US-only — do NOT generalise to other markets) ===
-{json.dumps(us_financial_conditions, ensure_ascii=False, indent=2)}
+{_json_compact(quant_for_prompt)}
 
 === [US ANCHOR] PRE-FLAGGED SIGNALS (biggest 1w movers + extreme percentiles) — use these for market_summary ===
 {flagged_signals}
 
-=== [US ANCHOR] Key Indicator Pulse — full detail (current level, 1d/1w/1m/3m delta, percentile vs full history) ===
-Rules: use direction + delta to identify WHAT IS CHANGING TODAY vs recent past.
-{json.dumps(indicator_pulse, ensure_ascii=False, indent=2)}
-
 === [US ANCHOR] Market snapshot (US equities/rates; Zone 1 flash; numbers allowed here only) ===
-{json.dumps(market_snapshot, ensure_ascii=False, indent=2)}
+{_json_compact(market_snapshot)}
 
 ╔══════════════ [GLOBAL RELATIVE] — each market vs the US ══════════════╗
 
 === [GLOBAL RELATIVE] Carry / Rate-Differential Surface (each market RELATIVE to US; US is origin; China = capital-controlled, read as policy/FX not carry) ===
-{json.dumps(carry_relative, ensure_ascii=False, indent=2)}
+{_json_compact(carry_relative)}
 
 === [GLOBAL RELATIVE] Layer 1 structural snapshot (MUST reference in Zone 3) ===
-{json.dumps(l1.get("llm", {}), ensure_ascii=False, indent=2)}
+{_json_compact(l1.get("llm", {}))}
 
 === [GLOBAL RELATIVE] Layer 1 modules summary ===
-{json.dumps({k: l1.get(k) for k in ("module_a", "module_b", "module_c", "module_d", "module_e") if l1.get(k)}, ensure_ascii=False, indent=2)}
+{_json_compact({k: l1.get(k) for k in ("module_a", "module_b", "module_c", "module_d", "module_e") if l1.get(k)})}
 
 === [GLOBAL RELATIVE] Layer 2 flow (MUST reference in Zone 3) ===
-{json.dumps(flow_block, ensure_ascii=False, indent=2)}
+{_json_compact(flow_block)}
 
 === [GLOBAL RELATIVE] Per-Country Quantitative Signals (four-grid: growth / inflation / policy / capital) ===
-{json.dumps(country_signals or {}, ensure_ascii=False, indent=2)}
+{_json_compact(country_signals or {})}
 
 ╔══════════════ SHARED CONTEXT ══════════════╗
 
 === Divergence / Risk_Analytics (explain in relationship_analysis.divergence_explanation; cite penalty_reason) ===
-{json.dumps(div_ctx, ensure_ascii=False, indent=2)}
+{_json_compact(div_ctx)}
 
 === Event of the Day (PRIMARY tactical pulse) ===
-{json.dumps(event_of_day, ensure_ascii=False, indent=2)}
+{_json_compact(event_of_day)}
 
 === What Rose to Surface Today (top 5 auto-ranked) ===
-{json.dumps(surfaced_rows[:5], ensure_ascii=False, indent=2)}
+{_json_compact(surfaced_rows[:5])}
 
 === Layer 2 macro brief (MUST reference in Zone 3) ===
-{json.dumps(brief_block, ensure_ascii=False, indent=2)}
+{_json_compact(brief_block)}
 
 === Historical Analogues (use for qualitative depth in themes and CIO directive; never cite raw %) ===
 {_format_historical_analogues_for_llm(l2a)}
@@ -4557,10 +4556,10 @@ def _build_gear_prompt(
 macro_regime_label = {regime_label}
 
 === Gear Matrix raw inputs (six countries: US, Japan, Europe, China, Taiwan, Australia) ===
-{json.dumps(gear_matrix_raw, ensure_ascii=False, indent=2)}
+{_json_compact(gear_matrix_raw)}
 
 === Per-Country Quantitative Signals (four-grid: growth / inflation / policy / capital) ===
-{json.dumps(country_signals or {}, ensure_ascii=False, indent=2)}
+{_json_compact(country_signals or {})}
 
 Translate the raw signals above into the gear_matrix_semantics JSON block described in your system instructions.
 All six countries must be present. Return strict JSON only.
@@ -4863,10 +4862,6 @@ def _write_synthesis_lite_html(
         _, watch_bi = _normalize_watch_list_bilingual(synthesis.get("watch_list") or [])
     hist_en = (l2a.get("matches") or [])[:3]
     div_en = (l2a.get("divergence_matches") or [])[:3]
-    hist_desc = [str(m.get("description") or "") for m in hist_en if isinstance(m, dict)]
-    div_desc = [str(m.get("description") or "") for m in div_en if isinstance(m, dict)]
-    hist_zh, hist_fb = _translate_descriptions_to_zh(hist_desc)
-    div_zh, div_fb = _translate_descriptions_to_zh(div_desc)
     # Data-driven Investment-Clock asset tilt (hard-data momentum + severity axis).
     try:
         from src.regime_tilt import compute_asset_tilts
@@ -4903,9 +4898,9 @@ def _write_synthesis_lite_html(
         vs_us_alignment=vs_us_alignment,
         historical_matches_en=hist_en,
         divergence_matches_en=div_en,
-        historical_descriptions_zh=hist_zh,
-        divergence_descriptions_zh=div_zh,
-        history_translation_fallback=hist_fb or div_fb,
+        historical_descriptions_zh=[],
+        divergence_descriptions_zh=[],
+        history_translation_fallback=False,
         tilt_result=tilt_result,
         carry_relative=carry_relative,
         risk_analytics=(quant_context_json.get("Risk_Analytics") if isinstance(quant_context_json, dict) else None),

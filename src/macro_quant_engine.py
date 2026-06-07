@@ -792,115 +792,6 @@ def compute_euclidean_regime_match(df: pd.DataFrame) -> dict[str, Any]:
     }
 
 
-def _compute_regime_duration(df: pd.DataFrame) -> dict[str, Any]:
-    """
-    Count how many consecutive trading days the current regime label has held,
-    and summarize historical duration stats for that regime.
-    Requires a 'macro_regime_label' column computed per-row (uses compute_macro_regime_detail logic).
-    Falls back to using the enriched df.attrs if per-row labels are not available.
-    """
-    empty: dict[str, Any] = {
-        "current_regime": None,
-        "duration_days": None,
-        "avg_duration_days": None,
-        "max_duration_days": None,
-        "pct_of_history": None,
-    }
-    try:
-        # Build per-row regime labels using growth/inflation Z-scores
-        required = {"US_Growth_Z", "SPY_Z", "TIP_IEF_Ratio_Z"}
-        available = required.intersection(set(df.columns))
-        if len(available) < 2:
-            return empty
-
-        labels: list[str] = []
-        dates: list[Any] = []
-        for ts, row in df.iterrows():
-            try:
-                g_votes = []
-                if "US_Growth_Z" in df.columns:
-                    v = row.get("US_Growth_Z")
-                    if pd.notna(v):
-                        g_votes.append(float(v) > 0)
-                if "SPY_Z" in df.columns:
-                    v = row.get("SPY_Z")
-                    if pd.notna(v):
-                        g_votes.append(float(v) > 0)
-                if "Copper_Gold_Ratio_Z" in df.columns:
-                    v = row.get("Copper_Gold_Ratio_Z")
-                    if pd.notna(v):
-                        g_votes.append(float(v) > 0)
-
-                i_votes = []
-                if "TIP_IEF_Ratio_Z" in df.columns:
-                    v = row.get("TIP_IEF_Ratio_Z")
-                    if pd.notna(v):
-                        i_votes.append(float(v) > 0)
-
-                if len(g_votes) < 1 or len(i_votes) < 1:
-                    continue
-
-                g_valid = g_votes
-                growth_accel = sum(g_valid) >= 2 if len(g_valid) >= 2 else g_valid[0]
-                inflation_accel = i_votes[0]
-                label = compute_macro_regime_label(growth_accel, inflation_accel)
-                labels.append(label)
-                dates.append(ts)
-            except Exception:
-                continue
-
-        if len(labels) < 30:
-            return empty
-
-        label_series = pd.Series(labels, index=dates)
-        current_label = label_series.iloc[-1]
-
-        # Count consecutive days of current regime from the end
-        duration = 0
-        for lbl in reversed(labels):
-            if lbl == current_label:
-                duration += 1
-            else:
-                break
-
-        # Compute historical episode stats for this regime
-        episodes: list[int] = []
-        count = 0
-        prev = None
-        for lbl in labels:
-            if lbl == current_label:
-                count += 1
-            else:
-                if prev == current_label and count > 0:
-                    episodes.append(count)
-                count = 0
-            prev = lbl
-        if count > 0:
-            episodes.append(count)  # include current episode
-
-        avg_dur = round(float(np.mean(episodes)), 1) if episodes else None
-        max_dur = int(max(episodes)) if episodes else None
-        total_days = len(labels)
-        regime_days = sum(1 for l in labels if l == current_label)
-        pct = round(regime_days / total_days * 100, 1) if total_days > 0 else None
-
-        print(
-            f"  regime duration: {current_label} for {duration} days "
-            f"(avg={avg_dur}, max={max_dur}, {pct}% of history)",
-            file=sys.stderr,
-        )
-        return {
-            "current_regime": current_label,
-            "duration_days": duration,
-            "avg_duration_days": avg_dur,
-            "max_duration_days": max_dur,
-            "pct_of_history": pct,
-        }
-    except Exception as exc:
-        print(f"  regime duration: error — {exc}", file=sys.stderr)
-        return empty
-
-
 def _safe_float(value: Any, decimals: int = 2) -> float | None:
     if value is None:
         return None
@@ -1414,7 +1305,6 @@ def generate_quant_payload_dict(df: pd.DataFrame) -> dict[str, Any]:
                 "Key_Feature_Diff": REGIME_MATCH_KEY_FEATURE_DIFF,
             },
         },
-        "Regime_Duration": _compute_regime_duration(df),
     }
     return payload
 
