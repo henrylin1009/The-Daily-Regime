@@ -92,6 +92,17 @@ Example of RIGHT: "The stock rally is broadening out, the dollar is softening, a
 【Step 5b — Watch List】
 Each watch_list item is a short alert (en/zh) PLUS a reasoning_en/reasoning_zh long version (shown only on hover): 1-2 sentences explaining why this matters, citing the concrete trigger and figures (e.g. "yen net shorts are near a record and the carry trade is crowded — an unwind could be violent"). Numbers are welcome in the reasoning fields.
 
+【Step 7 — Structural Context (structural_context) — Long-term backdrop, shown at bottom of TODAY tab】
+Write ONE paragraph (4-6 sentences) answering: "Where are we in the big cycle?"
+Use the data in Layer_1_Structural: Regime_Duration, Fed_Liquidity, Fed_Rate_Path, Yield_Curve.
+Structure the paragraph as follows:
+1. How long has this regime been running, and is that long or short by historical standards?
+2. Where does the Fed's balance sheet and net liquidity stand — are conditions tightening or easing structurally?
+3. What does the rate futures curve imply about the next 12 months — cuts, hikes, or hold?
+4. One closing sentence: what this structural backdrop means for investors over a multi-year horizon.
+If Regime_Duration or Fed_Liquidity data is missing, write what you can infer from the other indicators.
+Plain language only. Numbers welcome. No tickers, no Z-scores.
+
 【Step 6 — Historical Analogue Commentary (historical_analogue_commentary)】
 Write ONE paragraph (3-5 sentences) that gives the reader a sense of what this historical moment rhymes with.
 - Name the matched period explicitly (e.g. "The current setup most closely echoes late 2019..." or "This pattern echoes mid-2007...").
@@ -166,6 +177,10 @@ Also set legacy unsuffixed keys (title, body, the_stance, expectation, etc.) to 
   "country_attribution_notes": { "US": "...", "Japan": "...", "Europe": "...", "China": "...", "Taiwan": "..." },
   "historical_analogue_commentary": {
     "en": "ONE paragraph (3-5 sentences). What does the closest historical analogue period tell us? Name the period. Describe what happened back then. Explain what was similar and what is different. End with what that implies for the next 3-12 months — not a prediction, but a conditional: 'If this episode follows the 19XX pattern...'",
+    "zh": "同上，繁體中文，相同內容。"
+  },
+  "structural_context": {
+    "en": "ONE paragraph (4-6 sentences). Where are we in the big cycle? Use the Fed liquidity data, rate path, yield curve state, and regime duration to paint the structural backdrop. Cover: (1) how long this regime has been running and whether that is unusual, (2) where the Fed's balance sheet and net liquidity stand vs history, (3) where rates are in the cycle and what the futures curve implies about the next 12 months, (4) one sentence on what this structural backdrop means for investors over a multi-year horizon. Plain language, no tickers, no jargon. Numbers are welcome.",
     "zh": "同上，繁體中文，相同內容。"
   }
 }
@@ -2181,6 +2196,7 @@ def _build_lite_lang_blocks(
     divergence_gauge: dict,
     today_pulse: dict,
     analogue_commentary: dict,
+    structural_context: dict,
     daily_themes: list[dict],
     directive: dict,
     watch_bilingual: list[dict],
@@ -2280,6 +2296,7 @@ def _build_lite_lang_blocks(
                 "historical_matches": hist,
                 "divergence_matches": divm,
                 "analogue_commentary": analogue_commentary.get("zh" if lang_key == "zh" else "en") or "",
+                "structural_context": structural_context.get("zh" if lang_key == "zh" else "en") or "",
                 "country_matrix": _lite_country_matrix(
                     country_matrix,
                     gear_semantics,
@@ -2896,6 +2913,17 @@ HTML_TMPL_LITE = """<!doctype html>
         <div class="det-inner">
           {% for para in block.directive.the_narrative %}<p class="narr-p">{{ para }}</p>{% endfor %}
           {% if block.directive.the_watchout %}<p class="narr-p"><b>{{ block.ui.watchout_label }} ·</b> {{ block.directive.the_watchout }}</p>{% endif %}
+        </div>
+      </div>
+      {% endif %}
+      {% if block.structural_context %}
+      <div class="zone-divider" style="margin-top:2rem;">
+        <div class="zone-title">{% if block.lang == 'zh-Hant' %}長期結構定位{% else %}Structural Backdrop{% endif %}</div>
+        <div class="zone-sub">{% if block.lang == 'zh-Hant' %}現在在大週期的哪裡{% else %}Where we stand in the big cycle{% endif %}</div>
+      </div>
+      <div class="modcard">
+        <div class="det-inner">
+          <p class="narr-p">{{ block.structural_context }}</p>
         </div>
       </div>
       {% endif %}
@@ -3959,6 +3987,7 @@ def _synthesis_fallback() -> dict:
         },
         "gear_matrix_semantics": _empty_gear_matrix_semantics(),
         "historical_analogue_commentary": {"en": FALLBACK, "zh": FALLBACK},
+        "structural_context": {"en": FALLBACK, "zh": FALLBACK},
     }
     return fb
 
@@ -4847,6 +4876,8 @@ def _write_synthesis_lite_html(
     today_pulse = today_pulse_raw if isinstance(today_pulse_raw, dict) else {}
     analogue_commentary_raw = synthesis.get("historical_analogue_commentary") if isinstance(synthesis, dict) else {}
     analogue_commentary = analogue_commentary_raw if isinstance(analogue_commentary_raw, dict) else {}
+    structural_context_raw = synthesis.get("structural_context") if isinstance(synthesis, dict) else {}
+    structural_context = structural_context_raw if isinstance(structural_context_raw, dict) else {}
 
     lite_lang_blocks = _build_lite_lang_blocks(
         report_date=d,
@@ -4855,6 +4886,7 @@ def _write_synthesis_lite_html(
         divergence_gauge=divergence_gauge,
         today_pulse=today_pulse,
         analogue_commentary=analogue_commentary,
+        structural_context=structural_context,
         daily_themes=daily_themes_bi,
         directive=directive,
         watch_bilingual=watch_bi,
