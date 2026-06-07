@@ -42,7 +42,6 @@ jobs:
           python run.py --date "${REPORT_DATE}" --skip-hmm --force-refresh
           python global_regime.py --force-refresh --date "${REPORT_DATE}"
           python synthesis.py --date "${REPORT_DATE}"
-          python layer_pages.py --date "${REPORT_DATE}"
 
       - name: Commit report
         env:
