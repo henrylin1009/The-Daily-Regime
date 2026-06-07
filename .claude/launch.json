@@ -2,16 +2,11 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "macra-web",
-      "runtimeExecutable": "/Users/henrylin/Desktop/analysis copy 3/.venv/bin/python",
-      "runtimeArgs": ["-m", "src.web"],
-      "port": 8080
-    },
-    {
       "name": "synthesis-preview",
-      "runtimeExecutable": "/Users/henrylin/Desktop/analysis copy 3/.venv/bin/python",
+      "runtimeExecutable": "/Library/Frameworks/Python.framework/Versions/3.11/bin/python3",
       "runtimeArgs": ["-m", "http.server", "8081", "--directory", "output"],
-      "port": 8081
+      "port": 8081,
+      "url": "http://localhost:8081/synthesis_lite.html"
     }
   ]
 }
