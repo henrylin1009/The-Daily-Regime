@@ -57,15 +57,22 @@ The quant engine provides macro_regime_label (Goldilocks, Overheat, Stagflation,
 【Step 1 — Internal Reasoning (not shown in output)】
 pre_analysis fields (cross_layer_conflict, momentum_verification, event_pulse_analysis): think through the data, identify the dominant story and any conflicts. This is your scratchpad — you may use metric names here since it is internal.
 
-【Step 2 — Daily Themes (2-3 themes, MOST IMPORTANT)】
-Extract 2-3 dominant themes from ALL the country data combined. Each theme:
+【Step 2 — Today's Pulse (today_pulse) — FIRST, anchored to TODAY】
+Before writing themes, answer: "What is the single most important thing that CHANGED today or this week vs last week?"
+Use the Key Indicator Pulse deltas (1d/1w/1m) as your primary evidence. If nothing moved, say so honestly.
+- headline_en / headline_zh: One punchy sentence (max 12 words) naming the biggest mover. e.g. "10-year yields spike to 3-month high" or "Credit spreads at historic tights, risk complacency rising"
+- body_en / body_zh: 2 sentences. What moved (with the actual delta number), and what it means for markets RIGHT NOW.
+- signal: "risk_on" | "risk_off" | "rates_tightening" | "rates_easing" | "liquidity_draining" | "liquidity_expanding" | "neutral"
+
+【Step 3 — Daily Themes (2-3 themes, MOST IMPORTANT)】
+Extract 2-3 dominant MEDIUM-TERM themes (days to weeks) from ALL the country data combined. Each theme:
 - title: REQUIRED for every theme. A short punchy headline, max 8 words, NOT a full sentence and NOT the first sentence of the body. (e.g. "Goldilocks holds, but cracks are forming", "Yen positioning at a dangerous extreme", "Taiwan inflows running hot"). Never leave this blank.
 - body: 2-3 sentences in plain language. Cite 1-2 specific countries as evidence. Do NOT repeat the title verbatim. No jargon.
 - implication: One sentence on what this means for a long-term investor's portfolio over the next 6–12 months — not "watch X", but "this favours / pressures / is neutral for [asset class or region]".
 - reasoning: 3-4 sentences — the "show your work" long version shown only on hover. UNLIKE every other field, HERE you SHOULD cite specific figures so the reader can see how you reached this theme: name the actual numbers (e.g. "CPI at 3.95% and still rising", "foreign inflows in the top fifth of the past year", "the 2-10y curve flattened to +0.49%", "yen net shorts near a record"). Still readable prose, not a ticker dump, but quantitatively concrete. This is where the data justification lives.
 - supporting_countries: list of country names used as evidence
 
-【Step 3 — Daily Overview (zone1_pulse.flash_bullets)】
+【Step 4 — Daily Overview (zone1_pulse.flash_bullets)】
 CRITICAL: This is shown DIRECTLY to retail readers. Do NOT copy from pre_analysis — pre_analysis is your internal scratchpad and is full of jargon. You must REWRITE everything in plain language here.
 ABSOLUTELY FORBIDDEN in these three fields: ticker symbols (SPY, HYG, DXY, NZD/JPY, USD/CNH, SHY/TLT, etc.), Z-scores (z=2.56), the word "divergence score", numbers like "(43)", "RED signal", "bp", "$165bn", "SKEW", "VVIX", "Layer 2". Translate every one of these into a plain concept.
 - capital_flows: Where is money moving globally and why? (plain language, one sentence)
@@ -74,14 +81,14 @@ ABSOLUTELY FORBIDDEN in these three fields: ticker symbols (SPY, HYG, DXY, NZD/J
 Example of WRONG: "SPY momentum is accelerating (z=2.56), HYG improving, DXY deteriorating."
 Example of RIGHT: "The stock rally is broadening out, the dollar is softening, and risk appetite is healthy."
 
-【Step 4 — Main Narrative (cio_directive)】
+【Step 5 — Main Narrative (cio_directive)】
 - the_stance: One sentence on the overall situation (plain language, ≤20 words, no jargon)
 - the_narrative: Two paragraphs. First explains the current regime and why it holds. Second explains the key tension or divergence to watch. Accessible to a reader who does not follow markets daily. NEVER mention ratio/ticker names like "TIP/IEF", "SHY/TLT", "RSP/SPY" — describe what they mean instead (e.g. "the bond market's inflation expectations").
 - the_watchout: "If [plain language condition] then [plain language consequence for investors]"
 - positioning_6_12m: One sentence on how a long-term investor should tilt their portfolio over the next 6–12 months given this regime (e.g. "This environment historically favours equities and real assets over long-duration bonds"). Plain language, no tickers, no jargon.
 - positioning_6_12m_reasoning: 2-3 sentences — hover-only long version explaining WHY this tilt, citing the concrete drivers and figures (regime, historical conditional returns, key data points). Quantitatively concrete is encouraged here.
 
-【Step 4b — Watch List】
+【Step 5b — Watch List】
 Each watch_list item is a short alert (en/zh) PLUS a reasoning_en/reasoning_zh long version (shown only on hover): 1-2 sentences explaining why this matters, citing the concrete trigger and figures (e.g. "yen net shorts are near a record and the carry trade is crowded — an unwind could be violent"). Numbers are welcome in the reasoning fields.
 
 【Bilingual Output — Required】
@@ -90,6 +97,13 @@ Also set legacy unsuffixed keys (title, body, the_stance, expectation, etc.) to 
 
 【Output — valid JSON only】
 {
+  "today_pulse": {
+    "headline_en": "...",
+    "headline_zh": "...",
+    "body_en": "...",
+    "body_zh": "...",
+    "signal": "risk_on | risk_off | rates_tightening | rates_easing | liquidity_draining | liquidity_expanding | neutral"
+  },
   "daily_themes": [
     {
       "title_en": "...",
@@ -714,8 +728,8 @@ LITE_UI: dict[str, dict[str, str]] = {
         "zone_us_anchor_sub": "全球定價的錨與開關 — 美國週期、金融條件、資產配置",
         "zone_global": "國際承接面",
         "zone_global_sub": "各國相對美國 — 利差、資本流向、利差交易（美國為原點）",
-        "zone_synthesis": "今日主題",
-        "zone_synthesis_sub": "今天最重要的主題與風險",
+        "zone_synthesis": "趨勢追蹤",
+        "zone_synthesis_sub": "中期主導主題與結構性風險",
         "regime_k": "市場體制（美國主導）",
         "coherence_k": "訊號一致性",
         "regime_stable": "成長與通膨環境穩定",
@@ -764,8 +778,8 @@ LITE_UI: dict[str, dict[str, str]] = {
         "zone_us_anchor_sub": "The global pricing anchor & switch — US cycle, financial conditions, allocation",
         "zone_global": "Global Relative",
         "zone_global_sub": "Each market vs the US — rate differentials, capital flows, carry (US is the origin)",
-        "zone_synthesis": "Today's Themes",
-        "zone_synthesis_sub": "The themes and risks that matter most today",
+        "zone_synthesis": "Trend Tracking",
+        "zone_synthesis_sub": "Medium-term dominant themes and structural risks",
         "regime_k": "Market Regime (US-led)",
         "coherence_k": "Signal Coherence",
         "regime_stable": "Growth and inflation environment stable",
@@ -2095,6 +2109,7 @@ def _build_lite_lang_blocks(
     macro_regime_label: str,
     regime_gauge_tone: str,
     divergence_gauge: dict,
+    today_pulse: dict,
     daily_themes: list[dict],
     directive: dict,
     watch_bilingual: list[dict],
@@ -2180,6 +2195,11 @@ def _build_lite_lang_blocks(
                 "carry_relative": (_carry_for_lang := _carry_rows_for_lang(carry_relative, lang_key) if carry_relative else None),
                 "carry_by_code": {r["country_code"]: r for r in (_carry_for_lang or {}).get("rows", [])},
                 "tilt_legend_regime": (nearest_zh if lang_key == "zh" else nearest) if in_transition else regime_disp,
+                "today_pulse": {
+                    "headline": today_pulse.get("headline_zh" if lang_key == "zh" else "headline_en") or today_pulse.get("headline_en", ""),
+                    "body": today_pulse.get("body_zh" if lang_key == "zh" else "body_en") or today_pulse.get("body_en", ""),
+                    "signal": today_pulse.get("signal", "neutral"),
+                },
                 "daily_themes": themes_local,
                 "directive": directive_view,
                 "positioning_text": _lite_positioning_text(directive_view, themes_local),
@@ -2748,6 +2768,25 @@ HTML_TMPL_LITE = """<!doctype html>
         <div class="hero-kicker">{{ block.ui.today_line_kicker }}{{ info(block.directive.the_narrative | join(' '), 'tip-right') }}</div>
         <h1 class="hero-stance">{{ block.directive.the_stance }}</h1>
       </div>
+
+      {% if block.today_pulse and block.today_pulse.headline %}
+      <div class="zone-divider zone-today">
+        <div class="zone-title">{% if block.lang == 'zh-Hant' %}今日脈搏{% else %}Today's Pulse{% endif %}</div>
+        <div class="zone-sub">{% if block.lang == 'zh-Hant' %}今天最重要的市場變化{% else %}The most important market move today{% endif %}</div>
+      </div>
+      <div class="modcard today-pulse-card">
+        {% set sig = block.today_pulse.signal | default('neutral') %}
+        {% if sig in ('risk_off', 'rates_tightening', 'liquidity_draining') %}
+          {% set pulse_color = '#dc2626' %}
+        {% elif sig in ('risk_on', 'rates_easing', 'liquidity_expanding') %}
+          {% set pulse_color = '#16a34a' %}
+        {% else %}
+          {% set pulse_color = '#6b7280' %}
+        {% endif %}
+        <div class="mod-label" style="color:{{ pulse_color }}">⚡ {{ block.today_pulse.headline }}</div>
+        <p class="narr-p">{{ block.today_pulse.body }}</p>
+      </div>
+      {% endif %}
 
       {% if block.daily_themes %}
       <div class="zone-divider zone-3">
@@ -3790,6 +3829,13 @@ Return strict JSON only. No markdown fences. Schema:
 
 def _synthesis_fallback() -> dict:
     fb = {
+        "today_pulse": {
+            "headline_en": FALLBACK,
+            "headline_zh": FALLBACK,
+            "body_en": FALLBACK,
+            "body_zh": FALLBACK,
+            "signal": "neutral",
+        },
         "pre_analysis": {
             "cross_layer_conflict": FALLBACK,
             "momentum_verification": FALLBACK,
@@ -4713,11 +4759,15 @@ def _write_synthesis_lite_html(
     except Exception as exc:
         print(f"  Warning: carry/relative engine failed ({exc})", file=sys.stderr)
         carry_relative = None
+    today_pulse_raw = synthesis.get("today_pulse") if isinstance(synthesis, dict) else {}
+    today_pulse = today_pulse_raw if isinstance(today_pulse_raw, dict) else {}
+
     lite_lang_blocks = _build_lite_lang_blocks(
         report_date=d,
         macro_regime_label=macro_regime_label,
         regime_gauge_tone=regime_gauge_tone,
         divergence_gauge=divergence_gauge,
+        today_pulse=today_pulse,
         daily_themes=daily_themes_bi,
         directive=directive,
         watch_bilingual=watch_bi,
