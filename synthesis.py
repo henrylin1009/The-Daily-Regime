@@ -3045,9 +3045,6 @@ HTML_TMPL_LITE = """<!doctype html>
         {% endfor %}
       </div>
       <div class="tilt-legend">{{ block.ui.tilt_legend }} · {{ block.ui.tilt_legend_suffix }}</div>
-      {% if block.directive.positioning_6_12m %}
-      <p class="narr-p" style="margin-top:0.85rem; padding-top:0.75rem; border-top:1px solid #e5e7eb; color:#374151;">{{ block.directive.positioning_6_12m }}</p>
-      {% endif %}
       </div>
       {% endif %}
 
