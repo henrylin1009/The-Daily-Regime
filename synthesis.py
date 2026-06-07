@@ -92,6 +92,16 @@ Example of RIGHT: "The stock rally is broadening out, the dollar is softening, a
 【Step 5b — Watch List】
 Each watch_list item is a short alert (en/zh) PLUS a reasoning_en/reasoning_zh long version (shown only on hover): 1-2 sentences explaining why this matters, citing the concrete trigger and figures (e.g. "yen net shorts are near a record and the carry trade is crowded — an unwind could be violent"). Numbers are welcome in the reasoning fields.
 
+【Step 6 — Historical Analogue Commentary (historical_analogue_commentary)】
+Write ONE paragraph (3-5 sentences) that gives the reader a sense of what this historical moment rhymes with.
+- Name the matched period explicitly (e.g. "The current setup most closely echoes late 2019..." or "This pattern echoes mid-2007...").
+- In 1-2 sentences: what was happening then — regime, Fed posture, credit, equity action.
+- In 1 sentence: what is the key similarity to today.
+- In 1 sentence: what is the most important difference (what makes today's situation NOT identical).
+- Final sentence: a conditional outlook — "If this episode follows a similar path, [what to watch for] — but [key risk that could change the script]."
+Tone: historically grounded, intellectually honest, not alarmist. Plain language — no tickers, no Z-scores.
+The analogues are in the prompt under "US REGIME ANALOGUES" and "GLOBAL DIVERGENCE ANALOGUES". Reference the closest ones. If the matches are weak (high distance score), say so honestly.
+
 【Bilingual Output — Required】
 Every reader-facing string MUST include BOTH English (_en) and Traditional Chinese (_zh, 繁體白話, same meaning, equally plain).
 Also set legacy unsuffixed keys (title, body, the_stance, expectation, etc.) to the English (_en) value for backward compatibility.
@@ -153,7 +163,11 @@ Also set legacy unsuffixed keys (title, body, the_stance, expectation, etc.) to 
   },
   "convergence_divergence": {"status": "...", "reason": "..."},
   "watch_list": [{"en": "...", "zh": "...", "reasoning_en": "... (numbers welcome)", "reasoning_zh": "...（可放數字）"}],
-  "country_attribution_notes": { "US": "...", "Japan": "...", "Europe": "...", "China": "...", "Taiwan": "..." }
+  "country_attribution_notes": { "US": "...", "Japan": "...", "Europe": "...", "China": "...", "Taiwan": "..." },
+  "historical_analogue_commentary": {
+    "en": "ONE paragraph (3-5 sentences). What does the closest historical analogue period tell us? Name the period. Describe what happened back then. Explain what was similar and what is different. End with what that implies for the next 3-12 months — not a prediction, but a conditional: 'If this episode follows the 19XX pattern...'",
+    "zh": "同上，繁體中文，相同內容。"
+  }
 }
 """
 
@@ -566,6 +580,10 @@ HTML_TMPL = """<!doctype html>
     {% if historical_matches or divergence_matches %}
     <section class="card">
       <div class="zone-label">歷史借鏡 · Historical Analogues</div>
+
+      {% if analogue_commentary %}
+      <p class="analogue-sub-desc" style="margin-bottom:1.1rem; color:#1f2937; line-height:1.65;">{{ analogue_commentary }}</p>
+      {% endif %}
 
       {% if historical_matches %}
       <div class="analogue-sub-label">🇺🇸 美國體制借鏡 — US Macro Regime</div>
@@ -2162,6 +2180,7 @@ def _build_lite_lang_blocks(
     regime_gauge_tone: str,
     divergence_gauge: dict,
     today_pulse: dict,
+    analogue_commentary: dict,
     daily_themes: list[dict],
     directive: dict,
     watch_bilingual: list[dict],
@@ -2260,6 +2279,7 @@ def _build_lite_lang_blocks(
                 "critical_watchout": _lite_critical_watchout(watch_bilingual, lang_key),
                 "historical_matches": hist,
                 "divergence_matches": divm,
+                "analogue_commentary": analogue_commentary.get("zh" if lang_key == "zh" else "en") or "",
                 "country_matrix": _lite_country_matrix(
                     country_matrix,
                     gear_semantics,
@@ -3935,6 +3955,7 @@ def _synthesis_fallback() -> dict:
             "Taiwan": FALLBACK,
         },
         "gear_matrix_semantics": _empty_gear_matrix_semantics(),
+        "historical_analogue_commentary": {"en": FALLBACK, "zh": FALLBACK},
     }
     return fb
 
@@ -4821,6 +4842,8 @@ def _write_synthesis_lite_html(
         carry_relative = None
     today_pulse_raw = synthesis.get("today_pulse") if isinstance(synthesis, dict) else {}
     today_pulse = today_pulse_raw if isinstance(today_pulse_raw, dict) else {}
+    analogue_commentary_raw = synthesis.get("historical_analogue_commentary") if isinstance(synthesis, dict) else {}
+    analogue_commentary = analogue_commentary_raw if isinstance(analogue_commentary_raw, dict) else {}
 
     lite_lang_blocks = _build_lite_lang_blocks(
         report_date=d,
@@ -4828,6 +4851,7 @@ def _write_synthesis_lite_html(
         regime_gauge_tone=regime_gauge_tone,
         divergence_gauge=divergence_gauge,
         today_pulse=today_pulse,
+        analogue_commentary=analogue_commentary,
         daily_themes=daily_themes_bi,
         directive=directive,
         watch_bilingual=watch_bi,
