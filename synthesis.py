@@ -2859,6 +2859,15 @@ HTML_TMPL_LITE = """<!doctype html>
         <h1 class="hero-stance">{{ block.directive.the_stance }}</h1>
       </div>
 
+      {% if block.critical_watchout %}
+      <div class="modcard" style="margin-top:1rem;">
+        <div class="mod-label">{{ block.ui.watch_head }}</div>
+        <ul class="watch-list">
+          {% for w in block.critical_watchout %}<li>{{ w.text }}{{ info(w.reasoning, 'tip-left') }}</li>{% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+
       {% if block.today_pulse and block.today_pulse.headline %}
       <div class="zone-divider zone-today">
         <div class="zone-title">{% if block.lang == 'zh-Hant' %}今日脈搏{% else %}Today's Pulse{% endif %}</div>
@@ -2895,15 +2904,6 @@ HTML_TMPL_LITE = """<!doctype html>
         {% if t.implication %}<p class="implication"><b>{{ block.ui.implication_label }} ·</b> {{ t.implication }}</p>{% endif %}
       </article>
       {% endfor %}
-      </div>
-      {% endif %}
-
-      {% if block.critical_watchout %}
-      <div class="modcard">
-        <div class="mod-label">{{ block.ui.watch_head }}</div>
-        <ul class="watch-list">
-          {% for w in block.critical_watchout %}<li>{{ w.text }}{{ info(w.reasoning, 'tip-left') }}</li>{% endfor %}
-        </ul>
       </div>
       {% endif %}
 
