@@ -1,10 +1,10 @@
 # The Daily Regime
 
-A personal daily macro intelligence report that runs automatically on GitHub Actions every night at midnight (Taipei time). Pulls market and economic data from public APIs, runs a quantitative regime engine, finds historical analogues, and calls a large language model to synthesise everything into a plain-language brief.
+A personal daily macro intelligence report that runs automatically on GitHub Actions each morning (Taipei time). Pulls market and economic data from public APIs, runs a quantitative regime engine, finds historical analogues, and calls a large language model to synthesise everything into a plain-language brief.
 
-**Problem it solves:** A long-term investor needs to know whether the macro backdrop changed — without reading 20 news sources or staring at Bloomberg terminals. This pipeline delivers that in one HTML page, every morning.
+**Problem it solves:** A long-term investor needs to know whether the macro backdrop changed — without reading 20 news sources or staring at Bloomberg terminals. This pipeline delivers that in one HTML page, ready each morning.
 
-**Live report → [the-daily-regime.vercel.app](https://the-daily-regime.vercel.app)** (updated nightly)
+**Live report → [the-daily-regime.vercel.app](https://the-daily-regime.vercel.app)** (updated daily)
 
 ---
 
