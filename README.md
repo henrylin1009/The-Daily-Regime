@@ -4,6 +4,8 @@ A personal daily macro intelligence report that runs automatically on GitHub Act
 
 **Problem it solves:** A long-term investor needs to know whether the macro backdrop changed — without reading 20 news sources or staring at Bloomberg terminals. This pipeline delivers that in one HTML page, every morning.
 
+**Live report → [the-daily-regime.vercel.app](https://the-daily-regime.vercel.app)** (updated nightly)
+
 ---
 
 ## What it produces
