@@ -4147,7 +4147,7 @@ def _get_synthesis(
     call1_out: dict | None = None
     last_error: str | None = None
     for model in _deepseek_models_to_try():
-        out, err = _call_deepseek(prompt_core, model, max_tokens=8192)
+        out, err = _call_deepseek(prompt_core, model, max_tokens=16384)
         if out:
             print(f"  DeepSeek Call 1 (main) succeeded ({model})", file=sys.stderr)
             call1_out = out
