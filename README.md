@@ -1,151 +1,150 @@
-# Macro Intelligence Platform
+# The Daily Regime
 
-A daily macro intelligence tool for long-term index investors. Pulls public data via OpenBB, computes quantitative signals, and uses Gemini to generate plain-language macro summaries.
+A personal daily macro intelligence report that runs automatically on GitHub Actions every night at midnight (Taipei time). Pulls market and economic data from public APIs, runs a quantitative regime engine, finds historical analogues, and calls a large language model to synthesise everything into a plain-language brief.
 
-**Core value**: ~30 seconds a day to know if the big picture changed.
+**Problem it solves:** A long-term investor needs to know whether the macro backdrop changed — without reading 20 news sources or staring at Bloomberg terminals. This pipeline delivers that in one HTML page, every morning.
 
-## Setup
+---
 
-```bash
-cd /Users/henrylin/Desktop/analysis
-python3.11 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-cp .env.example .env
-# Edit .env with your keys
+## What it produces
+
+A single self-contained HTML report (`output/synthesis_lite.html`) committed to the repo each night, covering:
+
+| Section | What it shows |
+|---|---|
+| **In One Line** | Single-sentence regime stance |
+| **What to Watch** | 3 forward-looking alerts from the LLM |
+| **Today's Pulse** | Biggest market mover of the day, with exact numbers |
+| **Trend Tracking** | 2–3 medium-term macro themes (days to weeks) |
+| **Narrative** | CIO-style stance + the key tension to watch |
+| **Structural Backdrop** | Where we are in the Fed/liquidity/rate cycle — multi-year view |
+| **Historical Analogues** | Closest past periods to today's macro fingerprint |
+| **Cross-Border Flows** | Capital flows across US, Japan, China, Taiwan, Europe, UK |
+| **Global Regime Map** | Investment Clock positioning for each major economy |
+
+---
+
+## Architecture
+
+```
+GitHub Actions (cron 0 16 * * *  →  00:00 Taipei)
+│
+├── flow_run.py          Cross-border capital flows + FX + bond yields
+│                        → flow_data_{date}.json
+│
+├── run.py               FRED/yfinance data collection, Z-score signals,
+│                        historical regime matching (30yr window),
+│                        factor attribution, divergence matching
+│                        → brief_data_{date}.json
+│
+├── global_regime.py     Investment Clock per country (A–E structural modules)
+│                        → global_regime_data_{date}.json
+│
+└── synthesis.py         Two-call LLM strategy → synthesis_lite.html (committed)
+    │
+    ├── Call 1 (DeepSeek V4 Pro)    Main report — all narrative fields
+    └── Call 2 (DeepSeek V4 Flash)  Gear matrix — asset class positioning
 ```
 
-### API keys
+Only `output/synthesis_lite.html` is committed to git. All raw data stays local (gitignored).
 
-| Key | Source |
-|-----|--------|
-| `FRED_API_KEY` | Optional — [free at FRED](https://fred.stlouisfed.org/docs/api/api_key.html). Without it, macro series use FRED's public CSV export (no key needed). |
-| `GEMINI_API_KEY` | https://aistudio.google.com/apikey |
+---
 
-## Usage
+## Key technical decisions
 
-```bash
-# Full pipeline
-python run.py
+### Quantitative regime engine (`src/macro_quant_engine.py`)
+- Pulls market data via yfinance with `period="max"` (20+ years)
+- Computes rolling 252-day Z-scores across growth, inflation, liquidity, and risk dimensions
+- Daily regime label (Goldilocks / Overheat / Stagflation / Deflationary Bust) via 2-of-3 vote on growth momentum + 2-of-2 on inflation momentum
+- Investment Clock (monthly, `src/regime_tilt.py`) is the authoritative source for regime + duration displayed in the UI — the daily label feeds only the LLM narrative
 
-# Force refresh cached data
-python run.py --force-refresh
+### Historical analogue matching (`src/history_match.py`)
+- Feature matrix built from 20+ years of monthly macro data (FRED + yfinance)
+- Fixed 12-month exclusion window to prevent self-similar recent matches
+- Returns top 3 closest historical periods with what-happened context
+- Separate divergence matching (`src/divergence_match.py`) for cross-country signal splits
 
-# Offline dev (no Gemini API call; uses cached data if present)
-python run.py --skip-llm
+### Two-call LLM strategy (`synthesis.py`)
+Split into two API calls to stay within token limits and control cost:
+- **Call 1** — DeepSeek V4 Pro, `max_tokens=16384`: all reader-facing narrative fields (today_pulse, daily_themes, cio_directive, structural_context, historical_analogue_commentary)
+- **Call 2** — DeepSeek V4 Flash, `max_tokens=6144`: gear matrix (asset class positioning table)
+- Fallback chain: Flash → Pro
+- Temperature 0.35 for consistent, non-hallucinated output
 
-# If all data/raw/*.csv files exist, Stage 1 loads from cache without API keys
+### Prompt engineering
+- No-jargon rule enforced in system prompt: LLM is explicitly forbidden from using ticker symbols, Z-scores, or abbreviations (DXY, TLT, HYG, etc.) in reader-facing fields
+- Each field has a concrete plain-language translation example in the prompt
+- Labour market rule: if NFP trend is accelerating or decelerating, the LLM must mention it
+- `structural_context` prompt explicitly told not to mention regime duration (regime_tilt card already shows it — avoids duplication)
 
-# Validate cached data (exit 1 on failure)
-python -m src.collect --validate
+---
 
-# Test individual stages
-python -m src.collect --force-refresh
-python -m src.indicators
-python -m src.history_match
-python -m src.analyst --live
-```
+## Data sources
 
-Output: `output/brief_YYYY-MM-DD.html`
+| Data | Source | Used for |
+|---|---|---|
+| Equities, FX, bonds, commodities | yfinance | Z-scores, regime signals, flows |
+| CPI, NFP, JOLTS, PCE, WALCL, M2 | FRED API | Inflation/labour context, Fed liquidity |
+| ZQ futures (Fed funds path) | yfinance | Rate cycle positioning |
+| Taiwan foreign equity flows | TWSE (scraped) | Cross-border flow monitor |
+| Japan TIC data | US Treasury (scraped) | Cross-border flow monitor |
+| China FX reserves | PBC (scraped) | Cross-border flow monitor |
+| Fama-French 5+Mom factors | Ken French Data Library | Factor attribution |
 
-**Progress report:** [docs/PROGRESS.md](docs/PROGRESS.md) (繁中，專案現況與限制)
-
-## MVP complete — what you get
-
-1. **20 market/macro series** cached under `data/raw/` (+ SPY for forward returns)
-2. **3 traffic lights** (recession / inflation / financial stress) + detail table with per-series **As of** dates
-3. **Historical regime match** (1994+ feature history) with decade diversity and `what_happened` blurbs
-4. **Gemini macro summary** (or labeled template fallback)
-5. Single command: `python run.py`
-
-## Data sources (display vs regime)
-
-| Key | Source | Notes |
-|-----|--------|-------|
-| Macro (CPI, NFP, …) | FRED via public CSV | Optional `FRED_API_KEY` for OpenBB |
-| `credit_spread_hy` | FRED `BAA10Y` | Used in **regime matching** (long history) |
-| `credit_spread_hy_oas` | FRED `BAMLH0A0HYM2` | **Display only**; FRED series from ~2023 |
-| `uso` | DBO ETF | Oil proxy (key kept as `uso` for backward compatibility) |
-| `gld` | GLD ETF | Share price; percentiles use 12m return |
-| Sectors / VIX / DXY | OpenBB / yfinance | |
-| `spy` | SPY ETF | Internal benchmark for match forward returns |
+---
 
 ## Project structure
 
 ```
-run.py              # Entry point
+flow_run.py             Cross-border capital flow pipeline
+run.py                  Main data + quant pipeline
+global_regime.py        Investment Clock per country
+synthesis.py            LLM synthesis + HTML rendering
+
 src/
-  collect.py        # Stage 1: data collection
-  indicators.py     # Stage 2: signals + traffic lights
-  history_match.py  # Stage 3: historical regime comparison
-  analyst.py        # Stage 4: Gemini narrative
-  factor_attrib.py  # Stage 2b: 4-panel SPY attribution (macro / sectors / CRR / FF5+Mom)
-  index_contrib.py  # Stage 2c: Top S&P 500 contributors (SPY proxy)
-  regime_stats.py   # Stage 3b: regime persistence stats
-  notify.py         # Email / Telegram delivery
-  web.py            # FastAPI brief browser
-  render.py         # Stage 4b: HTML output
-  futures_adjust.py # Panama back-adjustment for ZQ=F
-templates/
-  daily_brief.html
-data/raw/           # Cached CSVs (gitignored)
-data/processed/     # Computed outputs (gitignored)
-output/             # Daily HTML briefs (gitignored)
+  collect.py            FRED + yfinance data collection (30yr CSVs)
+  macro_quant_engine.py Z-scores, regime label, rate path, Fed liquidity
+  history_match.py      Historical analogue matching
+  divergence_match.py   Cross-country divergence matching
+  regime_tilt.py        Investment Clock (monthly regime + duration)
+  factor_attrib.py      Fama-French + sector factor attribution
+  indicators.py         Signal computation
+  country_signals.py    Per-country macro signal builder
+  sector_rotation.py    Sector momentum
+  config.py             Model config, path constants
+
+.github/workflows/
+  daily.yml             Nightly pipeline (cron)
+  ci.yml                Import + pytest on push
 ```
 
-## Known limitations
+---
 
-1. **OpenBB FRED access**: Some FRED series require a free API key. Get one at https://fred.stlouisfed.org/docs/api/api_key.html
-
-2. **ZQ=F roll adjustment**: CME continuous futures contract has roll artifacts at month boundaries. Panama back-adjustment is applied in `src/futures_adjust.py` before computing daily changes. (The `fed_surprise` reference project was not available; logic is self-contained here.)
-
-3. **Monthly vs daily frequency**: Some indicators update monthly (CPI, NFP). Forward-fill to daily/monthly for the feature matrix. Staleness is noted per series in the output.
-
-4. **No real-time data**: Output is as of previous market close. Not suitable for intraday decisions.
-
-5. **Correlation ≠ causation**: Historical matches are statistical similarity, not causal prediction. LLM output reflects this.
-
-6. **HMM regime model caveats**:
-   - State labels are heuristic (assigned after training from feature means).
-   - EM training can shift state boundaries over time; `random_state=42` reduces but does not eliminate this.
-   - Model only trains on months where all regime features exist (drops rows with missing values).
-   - Transition probabilities are descriptive (historical frequencies), not forecasts.
-   - 3 states is a starting point; increase `N_STATES` in `src/regime_hmm.py` if regimes look too coarse.
-
-## Phase 2 features
-
-| Feature | Module | Usage |
-|---------|--------|-------|
-| Four-panel factor attribution | `src/factor_attrib.py` | Macro/assets + 6 sector SPDRs + CRR + FF5/Mom; Stage 2b |
-| Top S&P 500 contributors (Panels E–F) | `src/index_contrib.py` | SSGA daily SPY holdings + yfinance prices; Stage 2c |
-| HMM regime classification | `src/regime_hmm.py` | Stage 3c (optional); adds Regime Analysis block |
-| Regime persistence / drawdown | `src/regime_stats.py` | Auto in `run.py` Stage 3b |
-| Email / Telegram delivery | `src/notify.py` | `python run.py --notify` or set `NOTIFY_CHANNELS` |
-| Web UI | `src/web.py` | `python -m src.web` → http://127.0.0.1:8080 |
-| Daily schedule | `scripts/daily_run.sh` | Cron or `scripts/com.macro.daily.plist.example` |
-| ECB / BOJ rates | `collect.py` | Optional columns in regime feature matrix |
-| Tests + CI | `tests/`, `.github/workflows/ci.yml` | `pytest tests/ -v` |
+## Running locally
 
 ```bash
-# Web UI
-python -m src.web
+pip install -r requirements.txt
 
-# Factor attribution (four panels: macro, XLK/XLF/XLV/XLE/XLU/XLI, CRR, FF5+Mom)
-python -m src.factor_attrib
+# Full pipeline (requires API keys in environment)
+python flow_run.py --date 2026-06-09
+python run.py --date 2026-06-09 --force-refresh
+python global_regime.py --force-refresh --date 2026-06-09
+python synthesis.py --date 2026-06-09
 
-# S&P 500 contributors (SPY proxy)
-python -m src.index_contrib
-
-# HMM regime classification (requires feature matrix outputs)
-python -m src.history_match
-python -m src.regime_hmm
-
-# Daily cron (after configuring .env notify vars)
-chmod +x scripts/daily_run.sh
-./scripts/daily_run.sh
+# Skip LLM call (uses placeholder text, useful for layout testing)
+python synthesis.py --date 2026-06-09 --skip-llm
 ```
 
-## Future layers
+### Required environment variables
 
-- Institutional 13F positioning (L5)
-- Mom factor / 5-factor model extension
+| Variable | Source |
+|---|---|
+| `DEEPSEEK_API_KEY` | [platform.deepseek.com](https://platform.deepseek.com) |
+| `FRED_API_KEY` | [fred.stlouisfed.org](https://fred.stlouisfed.org/docs/api/api_key.html) |
+| `FMP_API_KEY` | [financialmodelingprep.com](https://financialmodelingprep.com) |
+
+---
+
+## CI
+
+GitHub Actions runs `pytest tests/ -v` and an import check on every push to `main`. The daily pipeline itself runs on cron and commits only the final HTML — no credentials or raw data are committed.
