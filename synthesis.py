@@ -107,7 +107,7 @@ Write ONE paragraph (4-6 sentences) answering: "Where are we in the big cycle?"
 Use the data in Layer_1_Structural: Fed_Liquidity, Fed_Rate_Path, Yield_Curve.
 Do NOT mention the regime label or how long the current regime has been running — that is already shown on the market regime card.
 Structure the paragraph as follows:
-1. Where does the Fed's balance sheet and net liquidity stand — are conditions tightening or easing structurally?
+1. Where does the Fed's balance sheet and net liquidity stand — are conditions tightening or easing structurally? CRITICAL: judge by DIRECTION, not just level. Fed_Liquidity gives net_liquidity_direction ("expanding"/"draining"/"flat") and net_liquidity_13w_chg_bn (13-week change in $B). A large net-liquidity level is NOT "ample" if it is draining — say it is tightening. Also note whether reverse repo (RRP) is falling (cash returning to markets) or rising (cash being parked at the Fed, draining liquidity).
 2. What does the rate futures curve imply about the next 12 months — cuts, hikes, or hold?
 3. What does the yield curve shape tell us about where we are in the rate cycle?
 4. One closing sentence: what this structural backdrop means for investors over a multi-year horizon.

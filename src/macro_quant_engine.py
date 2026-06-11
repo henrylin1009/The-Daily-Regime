@@ -1163,6 +1163,35 @@ def _build_fed_liquidity_block() -> dict[str, Any]:
     walcl_52w = _pct_chg(walcl, 52)
     reserves_13w = _pct_chg(reserves, 13)
 
+    # Directional signals: is net liquidity expanding or draining?
+    # WALCL/TGA are weekly (13 obs = 13w); RRP is daily (~65 trading days = 13w).
+    def _val_bn_ago(s: pd.Series | None, periods: int, already_bn: bool = False) -> float | None:
+        if s is None or len(s) <= periods:
+            return None
+        v = float(s.iloc[-periods - 1])
+        return round(v, 1) if already_bn else round(v / 1_000, 1)
+
+    net_liq_13w_ago: float | None = None
+    walcl_ago = _val_bn_ago(walcl, 13)
+    tga_ago = _val_bn_ago(tga, 13)
+    rrp_ago = _val_bn_ago(rrp, 65, already_bn=True)
+    if walcl_ago is not None and tga_ago is not None:
+        net_liq_13w_ago = round(walcl_ago - tga_ago - (rrp_ago or 0), 1)
+
+    net_liquidity_13w_chg_bn: float | None = None
+    net_liquidity_dir: str = "unknown"
+    if net_liquidity_bn is not None and net_liq_13w_ago is not None:
+        net_liquidity_13w_chg_bn = round(net_liquidity_bn - net_liq_13w_ago, 1)
+        net_liquidity_dir = (
+            "expanding" if net_liquidity_13w_chg_bn > 50
+            else "draining" if net_liquidity_13w_chg_bn < -50
+            else "flat"
+        )
+
+    rrp_13w_chg_bn: float | None = None
+    if rrp_bn is not None and rrp_ago is not None:
+        rrp_13w_chg_bn = round(rrp_bn - rrp_ago, 1)
+
     # M2 YoY (monthly — 12 observations back)
     m2_yoy: float | None = None
     m2_latest_bn: float | None = None
@@ -1186,7 +1215,15 @@ def _build_fed_liquidity_block() -> dict[str, Any]:
 
     summary_parts = [f"Fed assets: ${walcl_bn:.0f}B ({_fmt(walcl_13w)} 13w, {_fmt(walcl_52w)} 52w) → {bs_signal}."]
     if net_liquidity_bn is not None:
-        summary_parts.append(f"Net liquidity (assets−TGA−RRP): ${net_liquidity_bn:.0f}B.")
+        nl = f"Net liquidity (assets−TGA−RRP): ${net_liquidity_bn:.0f}B"
+        if net_liquidity_13w_chg_bn is not None:
+            nl += f" ({'+' if net_liquidity_13w_chg_bn >= 0 else ''}{net_liquidity_13w_chg_bn:.0f}B 13w → {net_liquidity_dir})"
+        summary_parts.append(nl + ".")
+    if rrp_bn is not None:
+        rrp_str = f"Reverse repo (RRP): ${rrp_bn:.0f}B"
+        if rrp_13w_chg_bn is not None:
+            rrp_str += f" ({'+' if rrp_13w_chg_bn >= 0 else ''}{rrp_13w_chg_bn:.0f}B 13w)"
+        summary_parts.append(rrp_str + ".")
     if reserves_bn is not None:
         summary_parts.append(f"Bank reserves: ${reserves_bn:.0f}B ({_fmt(reserves_13w)} 13w).")
     if m2_yoy is not None:
@@ -1206,7 +1243,10 @@ def _build_fed_liquidity_block() -> dict[str, Any]:
         "bank_reserves_13w_pct": reserves_13w,
         "tga_bn": tga_bn,
         "rrp_bn": rrp_bn,
+        "rrp_13w_chg_bn": rrp_13w_chg_bn,
         "net_liquidity_bn": net_liquidity_bn,
+        "net_liquidity_13w_chg_bn": net_liquidity_13w_chg_bn,
+        "net_liquidity_direction": net_liquidity_dir,
         "m2_bn": m2_latest_bn,
         "m2_yoy_pct": m2_yoy,
         "summary": summary,
