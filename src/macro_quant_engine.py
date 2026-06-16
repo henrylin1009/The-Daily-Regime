@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import sys
+import time
 from typing import Any
 
 import numpy as np
@@ -154,8 +155,27 @@ def _fred_series(series_id: str) -> pd.Series:
     return out.sort_index()
 
 
+def _yf_download_retry(ticker: str, period: str, attempts: int = 3):
+    """yfinance download with retries — Yahoo intermittently times out (curl 28)."""
+    last_exc: Exception | None = None
+    for i in range(attempts):
+        try:
+            df = yf.download(
+                ticker, period=period, interval="1d", progress=False, auto_adjust=False
+            )
+            if df is not None and not df.empty:
+                return df
+        except Exception as exc:  # noqa: BLE001 — retry on any transient network error
+            last_exc = exc
+        if i < attempts - 1:
+            time.sleep(2 * (i + 1))  # 2s, 4s backoff
+    if last_exc is not None:
+        print(f"WARN: yfinance failed for {ticker} after {attempts} tries: {last_exc}")
+    return None
+
+
 def _yf_close_series(ticker: str, period: str = "3y") -> pd.Series:
-    df = yf.download(ticker, period=period, interval="1d", progress=False, auto_adjust=False)
+    df = _yf_download_retry(ticker, period=period)
     if df is None or df.empty:
         raise RuntimeError(f"No yfinance data for {ticker}")
     close = df["Close"]
