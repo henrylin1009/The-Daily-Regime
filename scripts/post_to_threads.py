@@ -47,7 +47,7 @@ def build_thread_posts(data: dict) -> list[str]:
     body = pulse.get("body_en", "").strip()
     date = data.get("date", "")
 
-    main_parts = [f"The Daily Regime — {date}"]
+    main_parts = [f"THE DAILY REGIME / {date}"]
     if headline:
         main_parts.append(headline)
     if body:
@@ -58,8 +58,8 @@ def build_thread_posts(data: dict) -> list[str]:
 
     watch = data.get("synthesis", {}).get("watch_list", [])
     if watch:
-        watch_txt = "\n".join(f"- {w}" for w in watch)
-        posts.append(_truncate(f"Watch list:\n{watch_txt}"))
+        watch_txt = "\n".join(f"▸ {w}" for w in watch)
+        posts.append(_truncate(f"WATCH LIST\n\n{watch_txt}"))
 
     return [p for p in posts if p]
 
