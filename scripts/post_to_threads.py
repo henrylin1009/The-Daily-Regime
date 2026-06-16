@@ -84,14 +84,14 @@ def _truncate_sentences(text: str, limit: int = MAX_LEN) -> str:
     return _truncate(text, limit)
 
 
-def generate_hook(headline: str, body: str) -> str:
-    """Generate a two-line contrast hook via DeepSeek.
+def generate_copy(headline: str, body: str, raw_summary: str) -> tuple[str, str]:
+    """Generate the contrast hook and a tightened market summary in one DeepSeek call.
 
-    Returns "" on any failure so the daily post never breaks.
+    Returns ("", "") on any failure so the daily post falls back to raw fields.
     """
     api_key = os.environ.get("DEEPSEEK_API_KEY")
     if not api_key or not headline:
-        return ""
+        return "", ""
 
     try:
         from openai import OpenAI
@@ -101,31 +101,36 @@ def generate_hook(headline: str, body: str) -> str:
             base_url=os.environ.get("DEEPSEEK_BASE_URL", "https://api.deepseek.com").rstrip("/"),
         )
         prompt = (
-            "You write the opening hook for a macro markets post on Threads.\n"
-            "Style: cold, precise, no hype, no emoji, no hashtags, no jargon.\n\n"
+            "You write copy for a macro markets thread on Threads.\n"
+            "Style: cold, precise, no hype, no emoji, no hashtags, no jargon "
+            "(no tickers, no exact index levels like '7,384', no percentile talk).\n\n"
             f"Today headline: {headline}\n"
-            f"Today detail: {body}\n\n"
-            "Write a two-line opener in the style "
+            f"Today detail: {body}\n"
+            f"Raw market summary: {raw_summary}\n\n"
+            "Produce two fields as JSON:\n"
+            '1. "hook": a two-line opener in the style '
             '"Everyone sees X.\\nAlmost no one is watching Y." — the crowd view vs. '
-            "the tension building underneath. Two short lines separated by \\n, "
-            "max ~20 words total.\n"
-            'Return only JSON: {"hook": "...""}'
+            "the tension underneath. Two short lines separated by \\n, ~20 words max.\n"
+            '2. "summary": rewrite the raw market summary as ONE clean paragraph, '
+            "plain language, keeping percentage moves but dropping exact price levels. "
+            "It MUST end on a complete sentence and stay under 440 characters.\n"
+            'Return only JSON: {"hook": "...", "summary": "..."}'
         )
         resp = client.chat.completions.create(
             model=os.environ.get("DEEPSEEK_GEAR_MODEL", "deepseek-v4-flash"),
             messages=[{"role": "user", "content": prompt}],
-            max_tokens=1000,  # v4-flash is a reasoning model; leave room for thinking + JSON
+            max_tokens=2500,  # v4-flash is a reasoning model; leave room for thinking + JSON
             temperature=0.6,
             response_format={"type": "json_object"},
         )
         out = json.loads(resp.choices[0].message.content)
-        return out.get("hook", "").strip()
-    except Exception as exc:  # noqa: BLE001 — never let hook generation break posting
-        print(f"WARN: hook generation failed, posting without hook: {exc}", file=sys.stderr)
-        return ""
+        return out.get("hook", "").strip(), out.get("summary", "").strip()
+    except Exception as exc:  # noqa: BLE001 — never let copy generation break posting
+        print(f"WARN: copy generation failed, falling back to raw fields: {exc}", file=sys.stderr)
+        return "", ""
 
 
-def build_thread_posts(data: dict, hook: str = "") -> list[str]:
+def build_thread_posts(data: dict, hook: str = "", summary: str = "") -> list[str]:
     """Build the three-post thread: lead post, market summary, watch list."""
     synthesis = data.get("synthesis", {})
     pulse = synthesis.get("today_pulse", {})
@@ -147,8 +152,9 @@ def build_thread_posts(data: dict, hook: str = "") -> list[str]:
     lead_parts.append(HASHTAG)
     posts = [_truncate("\n\n".join(lead_parts))]
 
-    # Post 2 — fuller market summary, jargon-sanitised.
-    summary = _sanitize(pulse.get("market_summary_en", "").strip())
+    # Post 2 — market summary. Prefer the LLM-tightened version; fall back to the
+    # raw field if the LLM failed. Sanitise either way to catch leaked tickers.
+    summary = _sanitize(summary or pulse.get("market_summary_en", "").strip())
     if summary:
         summary = _truncate_sentences(summary, MAX_LEN - len("// MARKET SUMMARY\n\n"))
         posts.append(f"// MARKET SUMMARY\n\n{summary}")
@@ -201,10 +207,12 @@ def main() -> None:
 
     data = json.loads(data_path.read_text())
     pulse = data.get("synthesis", {}).get("today_pulse", {})
-    hook = generate_hook(
-        pulse.get("headline_en", "").strip(), pulse.get("body_en", "").strip()
+    hook, summary = generate_copy(
+        pulse.get("headline_en", "").strip(),
+        pulse.get("body_en", "").strip(),
+        pulse.get("market_summary_en", "").strip(),
     )
-    posts = build_thread_posts(data, hook=hook)
+    posts = build_thread_posts(data, hook=hook, summary=summary)
     if not posts:
         print("ERROR: no content extracted from synthesis data.", file=sys.stderr)
         sys.exit(1)
