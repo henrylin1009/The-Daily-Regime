@@ -47,19 +47,21 @@ def build_thread_posts(data: dict) -> list[str]:
     body = pulse.get("body_en", "").strip()
     date = data.get("date", "")
 
-    watch = data.get("synthesis", {}).get("watch_list", [])
-    watch_txt = "\n".join(f"- {w}" for w in watch)
-
-    parts = [f"The Daily Regime — {date}"]
+    main_parts = [f"The Daily Regime — {date}"]
     if headline:
-        parts.append(headline)
+        main_parts.append(headline)
     if body:
-        parts.append(body)
-    if watch_txt:
-        parts.append(f"Watch list:\n{watch_txt}")
+        main_parts.append(body)
+    main_post = _truncate("\n\n".join(main_parts))
 
-    post = _truncate("\n\n".join(parts))
-    return [post] if post else []
+    posts = [main_post] if main_post else []
+
+    watch = data.get("synthesis", {}).get("watch_list", [])
+    if watch:
+        watch_txt = "\n".join(f"- {w}" for w in watch)
+        posts.append(_truncate(f"Watch list:\n{watch_txt}"))
+
+    return [p for p in posts if p]
 
 
 def create_and_publish(token: str, user_id: str, text: str, reply_to_id: str | None) -> str:
