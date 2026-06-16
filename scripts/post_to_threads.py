@@ -32,7 +32,6 @@ load_dotenv()
 
 GRAPH_BASE = "https://graph.threads.net/v1.0"
 MAX_LEN = 500  # Threads per-post character limit
-HASHTAG = "#macro"
 ROOT = Path(__file__).resolve().parent.parent
 
 # today_pulse.signal -> short header tag shown after the date
@@ -149,7 +148,6 @@ def build_thread_posts(data: dict, hook: str = "", summary: str = "") -> list[st
         lead_parts.append(hook)
     if body:
         lead_parts.append(body)
-    lead_parts.append(HASHTAG)
     posts = [_truncate("\n\n".join(lead_parts))]
 
     # Post 2 — market summary. Prefer the LLM-tightened version; fall back to the
