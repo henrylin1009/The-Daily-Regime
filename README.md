@@ -115,10 +115,40 @@ src/
   sector_rotation.py    Sector momentum
   config.py             Model config, path constants
 
+scripts/
+  post_to_threads.py        Posts headline+body / watch-list reply to Threads
+  refresh_threads_token.py  Refreshes the 60-day Threads token, writes back to GitHub Secrets
+
 .github/workflows/
-  daily.yml             Nightly pipeline (cron)
-  ci.yml                Import + pytest on push
+  daily.yml                  Nightly pipeline (cron)
+  refresh_threads_token.yml  Bi-monthly Threads token refresh (cron)
+  ci.yml                     Import + pytest on push
 ```
+
+---
+
+## Threads auto-posting
+
+Each night, after `synthesis.py` produces the report, `daily.yml` runs `scripts/post_to_threads.py`, which reads `output/synthesis_data_{date}.json` and posts two connected Threads posts under the `the_daily_regime` account:
+
+1. **Main post** — `THE DAILY REGIME / {date}` header + today's headline + body (English, no emoji, plain-text formatting)
+2. **Reply post** — `WATCH LIST` with `▸`-bulleted items, threaded as a reply to the main post (keeps the main post from being truncated by the 500-char limit)
+
+### Setup (already done, for reference)
+
+1. Created a Meta App ("The Daily Regime") at [developers.facebook.com](https://developers.facebook.com), added the **Threads API** use case with `threads_basic` + `threads_content_publish` scopes.
+2. Added the Threads account (`the_daily_regime`) as a confirmed **Threads tester** under App Roles (the account had to accept the invite from inside the Threads app under Settings → Website permissions).
+3. Generated a long-lived access token via the Developer Console's **User token generator** (no manual OAuth flow needed since it's a single-account, self-use case).
+4. Looked up the numeric Threads user ID: `GET https://graph.threads.net/v1.0/me?fields=id,username&access_token={token}`.
+5. Stored `THREADS_ACCESS_TOKEN` and `THREADS_USER_ID` as GitHub repo secrets, referenced in `daily.yml`.
+
+### Token refresh
+
+Threads long-lived tokens expire after 60 days. `refresh_threads_token.yml` runs on the 1st and 16th of each month, calling `GET /v1.0/refresh_access_token` and writing the new token back into the `THREADS_ACCESS_TOKEN` GitHub secret via the GitHub REST API (encrypted with the repo's Actions public key, using `PyNaCl`).
+
+This requires one more secret: **`GH_PAT`** — a fine-grained GitHub Personal Access Token scoped to this repo with **Secrets: Read and write** permission. Without it, the refresh job fails to write the new token back.
+
+If the refresh workflow ever fails (e.g. `GH_PAT` expired), the fallback is manual: regenerate a long-lived token from the Developer Console's User token generator and update the `THREADS_ACCESS_TOKEN` secret by hand.
 
 ---
 
