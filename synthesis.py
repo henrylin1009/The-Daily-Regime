@@ -71,6 +71,7 @@ Use the Key Indicator Pulse deltas (1d/1w/1m) as your primary evidence. If nothi
 - body_en / body_zh: 2 sentences. What moved (with the actual delta number), and what it means for markets RIGHT NOW.
 - signal: "risk_on" | "risk_off" | "rates_tightening" | "rates_easing" | "liquidity_draining" | "liquidity_expanding" | "neutral"
 - market_summary_en / market_summary_zh: ONE paragraph (3-5 sentences). Use the PRE-FLAGGED SIGNALS section in the prompt as your primary focus (biggest movers + extreme percentile readings). Include exact numbers. Connect them into a coherent narrative — if multiple signals point in the same direction, say so; if there is a contradiction (e.g. stocks at all-time highs but rates pricing hikes), explain what that means for investors. Bloomberg brief style, plain language, no tickers.
+  HARD RULE — figures must be copied, never recalled: EVERY number you cite (spread, yield, rate, index level, percentile, % change) MUST appear verbatim in the data provided in this prompt. Do NOT compute, round differently, or recall any figure from memory. In particular, the 2-year/10-year spread MUST equal the "US 2-10Y Treasury Spread" value in the PRE-FLAGGED SIGNALS section, and whether the curve is flattening or steepening MUST match its engine curve classification tag. If a number you want is not in the prompt, describe it qualitatively instead of inventing a value.
 
 【Labour Market Rule】
 Check Labour_and_Inflation_Context in the quant data. If NFP_Change.trend_3m is "Accelerating" or "Decelerating" (not "Mixed"), you MUST mention the jobs market trend in either today_pulse.body or cio_directive.the_narrative — one sentence is enough. Translate plainly: "Accelerating" → "hiring is picking up", "Decelerating" → "the jobs market is cooling". Do not use "NFP", "PAYEMS", or "non-farm payrolls" — say "jobs", "hiring", or "the labour market".
@@ -1699,6 +1700,32 @@ def _build_flagged_signals(pulse: list[dict]) -> str:
             )
 
     return "\n".join(flagged) if flagged else "No significant moves flagged this week."
+
+
+def _yield_curve_anchor_line(quant_context_json: dict) -> str:
+    """One authoritative line stating the 2-10y spread + engine's curve tag.
+
+    The pre-flagged signals block covers VIX/10Y/HY/SPY/DXY but NOT the 2-10y
+    spread, so when market_summary mentions the curve the model has no salient
+    number and has been observed to hallucinate one. This pins the exact value
+    and direction the model MUST use, sourced straight from the quant engine's
+    Layer_1_Structural.Yield_Curve so prose can never disagree with the chart.
+    """
+    yc = {}
+    if isinstance(quant_context_json, dict):
+        yc = (quant_context_json.get("Layer_1_Structural") or {}).get("Yield_Curve") or {}
+    spread = yc.get("Spread_2y10y")
+    state = yc.get("State")
+    if spread is None and not state:
+        return ""
+    spread_txt = f"{float(spread):+.2f} pp" if isinstance(spread, (int, float)) else "n/a"
+    state_txt = state or "n/a"
+    return (
+        f"US 2-10Y Treasury Spread: {spread_txt} — engine curve classification: '{state_txt}'. "
+        f"If you mention the yield curve in market_summary, you MUST use this exact spread "
+        f"and this direction (a *Flattener* tag means flattening, a *Steepener* tag means "
+        f"steepening). Do NOT state any other spread value or infer the direction yourself."
+    )
 
 
 def _us_financial_conditions_summary() -> list[dict]:
@@ -4474,6 +4501,12 @@ def _build_synthesis_prompt(
         flagged_signals = _build_flagged_signals(indicator_pulse)
     except Exception:
         flagged_signals = "Indicator data unavailable."
+    try:
+        curve_anchor = _yield_curve_anchor_line(quant_context_json)
+        if curve_anchor:
+            flagged_signals = f"{flagged_signals}\n{curve_anchor}"
+    except Exception:
+        pass
     return f"""
 You are synthesizing today's The Macro Pulse War Room executive brief ({report_date}).
 
