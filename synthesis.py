@@ -3885,6 +3885,13 @@ def _call_deepseek(
             response_format={"type": "json_object"},
             temperature=0.35,
             max_tokens=max_tokens,
+            # v4-pro / v4-flash are reasoning models and thinking tokens count
+            # against max_tokens.  This is a formatting + summarising task, not
+            # one that needs a long chain of thought, so thinking is off; that
+            # leaves the whole budget for the JSON.  If the writing quality ever
+            # drops, swap to {"type": "enabled", "reasoning_effort": "low"}.
+            # Must go through extra_body: the openai SDK rejects unknown kwargs.
+            extra_body={"thinking": {"type": "disabled"}},
         )
         raw = (resp.choices[0].message.content or "").strip()
         payload = (parse_fn or _parse_cio_json)(raw)
@@ -4174,7 +4181,7 @@ def _get_synthesis(
     call1_out: dict | None = None
     last_error: str | None = None
     for model in _deepseek_models_to_try():
-        out, err = _call_deepseek(prompt_core, model, max_tokens=16384)
+        out, err = _call_deepseek(prompt_core, model, max_tokens=32768)
         if out:
             print(f"  DeepSeek Call 1 (main) succeeded ({model})", file=sys.stderr)
             call1_out = out
