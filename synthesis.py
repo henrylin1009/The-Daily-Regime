@@ -2972,25 +2972,6 @@ HTML_TMPL_LITE = """<!doctype html>
         {% endif %}
       </div>
 
-      {% if regime_prob_ts_data and regime_prob_ts_data != '{}' %}
-      <div class="viz-card" style="margin-top:0.4rem;">
-        <div class="viz-label">{% if block.lang == 'zh-Hant' %}Regime 歷史週期 · HMM 月度分類（1999–今）{% else %}Regime History · HMM monthly classification (1999–present){% endif %}</div>
-        <div id="chart-regime-prob-{{ block.lang }}" style="width:100%;"></div>
-        <div style="display:flex;flex-wrap:wrap;gap:0.55rem 1.1rem;margin-top:0.55rem;">
-          <span style="display:flex;align-items:center;gap:0.35rem;font-size:0.72rem;color:#5a5550;"><span style="width:11px;height:11px;background:#d4ede4;border-radius:2px;flex-shrink:0;display:inline-block;"></span>{% if block.lang == 'zh-Hant' %}擴張{% else %}Expansionary{% endif %}</span>
-          <span style="display:flex;align-items:center;gap:0.35rem;font-size:0.72rem;color:#5a5550;"><span style="width:11px;height:11px;background:#f5dada;border-radius:2px;flex-shrink:0;display:inline-block;"></span>{% if block.lang == 'zh-Hant' %}壓力/收縮{% else %}Stress / Contraction{% endif %}</span>
-          <span style="display:flex;align-items:center;gap:0.35rem;font-size:0.72rem;color:#5a5550;"><span style="width:11px;height:11px;background:#ebe7de;border-radius:2px;flex-shrink:0;display:inline-block;"></span>{% if block.lang == 'zh-Hant' %}中性/過渡{% else %}Neutral / Transitional{% endif %}</span>
-          <span style="display:flex;align-items:center;gap:0.35rem;font-size:0.72rem;color:#5a5550;"><span style="width:11px;height:11px;background:#f5e9cf;border-radius:2px;flex-shrink:0;display:inline-block;"></span>{% if block.lang == 'zh-Hant' %}緊縮{% else %}Restrictive{% endif %}</span>
-        </div>
-        <script>
-        (function(){
-          var d = {{ regime_prob_ts_data | safe }};
-          if(d.traces) Plotly.newPlot('chart-regime-prob-{{ block.lang }}', d.traces, d.layout, {responsive:true,displayModeBar:false,scrollZoom:false,doubleClick:false,editable:false});
-        })();
-        </script>
-      </div>
-      {% endif %}
-
       {% if regime_quadrant_data %}
       <div class="viz-card" style="margin-top:0.4rem;">
         <div class="viz-label">{% if block.lang == 'zh-Hant' %}體制軌跡 · 成長 × 通膨（近 12 個月）{% else %}Regime trajectory · Growth × Inflation (12m){% endif %}</div>
@@ -4990,14 +4971,6 @@ def _write_synthesis_lite_html(
     except Exception as exc:
         print(f"  Warning: z-score chart failed ({exc})", file=sys.stderr)
         zscore_data_zh = zscore_data_en = {}
-    try:
-        from src.config import PROCESSED_DIR as _PDIR
-        _hmm_path = _PDIR / "regime_hmm_summary.json"
-        _hmm_summary = json.loads(_hmm_path.read_text()) if _hmm_path.exists() else {}
-        regime_prob_ts_data = _hmm_summary.get("prob_timeseries", {})
-    except Exception as exc:
-        print(f"  Warning: regime prob timeseries failed ({exc})", file=sys.stderr)
-        regime_prob_ts_data = {}
     out_html_lite = OUTPUT_DIR / "synthesis_lite.html"
     meta = llm_meta if isinstance(llm_meta, dict) else {}
     out_html_lite.write_text(
@@ -5009,7 +4982,6 @@ def _write_synthesis_lite_html(
             regime_quadrant_data=json.dumps(regime_quadrant_data),
             zscore_data_zh=json.dumps(zscore_data_zh),
             zscore_data_en=json.dumps(zscore_data_en),
-            regime_prob_ts_data=json.dumps(regime_prob_ts_data),
             rrg_data=json.dumps(rrg_data),
             rrg_summary=rrg_summary,
             rrg_sector_stats=rrg_sector_stats,
